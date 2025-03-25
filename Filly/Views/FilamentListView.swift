@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FilamentListView: View {
     @ObservedObject var viewModel: FilamentViewModel
+    @ObservedObject var colorLibrary: ColorLibraryViewModel
     @State private var showingAddFilament = false
     @State private var searchText = ""
     
@@ -9,7 +10,7 @@ struct FilamentListView: View {
         NavigationView {
             List {
                 ForEach(filteredFilaments) { filament in
-                    NavigationLink(destination: FilamentDetailView(viewModel: viewModel, filament: filament)) {
+                    NavigationLink(destination: FilamentDetailView(viewModel: viewModel, colorLibrary: colorLibrary, filament: filament)) {
                         FilamentRowView(filament: filament)
                     }
                     .swipeActions(edge: .trailing) {
@@ -40,7 +41,7 @@ struct FilamentListView: View {
                 }
             }
             .sheet(isPresented: $showingAddFilament) {
-                AddFilamentView(viewModel: viewModel)
+                AddFilamentView(viewModel: viewModel, colorLibrary: colorLibrary)
             }
         }
     }
@@ -64,7 +65,7 @@ struct FilamentRowView: View {
     var body: some View {
         HStack(spacing: 15) {
             Circle()
-                .fill(getColorFromName(filament.color))
+                .fill(filament.getColor())
                 .frame(width: 30, height: 30)
                 .overlay(
                     Circle()
@@ -106,35 +107,6 @@ struct FilamentRowView: View {
             }
         }
         .padding(.vertical, 4)
-    }
-    
-    private func getColorFromName(_ name: String) -> Color {
-        // 这里是一个简单的映射，实际应用中可以更复杂
-        let lowerName = name.lowercased()
-        
-        if lowerName.contains("黑") || lowerName.contains("black") {
-            return .black
-        } else if lowerName.contains("白") || lowerName.contains("white") {
-            return .white
-        } else if lowerName.contains("红") || lowerName.contains("red") {
-            return .red
-        } else if lowerName.contains("蓝") || lowerName.contains("blue") {
-            return .blue
-        } else if lowerName.contains("绿") || lowerName.contains("green") {
-            return .green
-        } else if lowerName.contains("黄") || lowerName.contains("yellow") {
-            return .yellow
-        } else if lowerName.contains("紫") || lowerName.contains("purple") {
-            return .purple
-        } else if lowerName.contains("橙") || lowerName.contains("orange") {
-            return .orange
-        } else if lowerName.contains("灰") || lowerName.contains("gray") {
-            return .gray
-        } else if lowerName.contains("透明") || lowerName.contains("clear") {
-            return Color(white: 0.9, opacity: 0.5)
-        } else {
-            return .gray
-        }
     }
     
     private func getProgressColor(percentage: Double) -> Color {

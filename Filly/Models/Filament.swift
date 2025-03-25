@@ -1,10 +1,12 @@
 import Foundation
+import SwiftUI
 
 struct Filament: Identifiable, Codable {
     var id = UUID()
     var brand: String
     var type: FilamentType
-    var color: String
+    var color: String // 颜色名称
+    var colorData: ColorData? // 颜色数据
     var weight: Double // 以克为单位
     var diameter: FilamentDiameter
     var remainingPercentage: Double // 剩余百分比（0-100）
@@ -13,16 +15,57 @@ struct Filament: Identifiable, Codable {
     
     // 自定义初始化方法
     init(brand: String, type: FilamentType, color: String, 
+         colorData: ColorData? = nil,
          weight: Double = 1000, diameter: FilamentDiameter = .mm175, 
          remainingPercentage: Double = 100, notes: String = "") {
         self.brand = brand
         self.type = type
         self.color = color
+        self.colorData = colorData
         self.weight = weight
         self.diameter = diameter
         self.remainingPercentage = remainingPercentage
         self.notes = notes
         self.dateAdded = Date()
+    }
+    
+    // 获取颜色对象
+    func getColor() -> Color {
+        if let colorData = colorData {
+            return colorData.toColor()
+        } else {
+            // 返回默认颜色映射
+            return getDefaultColor(for: color)
+        }
+    }
+    
+    // 默认颜色映射
+    private func getDefaultColor(for name: String) -> Color {
+        let lowerName = name.lowercased()
+        
+        if lowerName.contains("黑") || lowerName.contains("black") {
+            return .black
+        } else if lowerName.contains("白") || lowerName.contains("white") {
+            return .white
+        } else if lowerName.contains("红") || lowerName.contains("red") {
+            return .red
+        } else if lowerName.contains("蓝") || lowerName.contains("blue") {
+            return .blue
+        } else if lowerName.contains("绿") || lowerName.contains("green") {
+            return .green
+        } else if lowerName.contains("黄") || lowerName.contains("yellow") {
+            return .yellow
+        } else if lowerName.contains("紫") || lowerName.contains("purple") {
+            return .purple
+        } else if lowerName.contains("橙") || lowerName.contains("orange") {
+            return .orange
+        } else if lowerName.contains("灰") || lowerName.contains("gray") {
+            return .gray
+        } else if lowerName.contains("透明") || lowerName.contains("clear") {
+            return Color(white: 0.9, opacity: 0.5)
+        } else {
+            return .gray
+        }
     }
 }
 

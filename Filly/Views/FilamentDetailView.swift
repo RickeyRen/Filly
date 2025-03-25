@@ -2,9 +2,13 @@ import SwiftUI
 
 struct FilamentDetailView: View {
     @ObservedObject var viewModel: FilamentViewModel
+    @ObservedObject var colorLibrary: ColorLibraryViewModel
     @State var filament: Filament
     @State private var isEditing = false
     @State private var showingDeleteConfirm = false
+    @State private var showingColorPicker = false
+    @State private var selectedColorName = ""
+    @State private var selectedColor = Color.gray
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
@@ -13,13 +17,18 @@ struct FilamentDetailView: View {
                 // 耗材颜色和基本信息
                 HStack(spacing: 20) {
                     Circle()
-                        .fill(getColorFromName(filament.color))
+                        .fill(filament.getColor())
                         .frame(width: 80, height: 80)
                         .overlay(
                             Circle()
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
                         .shadow(radius: 2)
+                        .onTapGesture {
+                            selectedColorName = filament.color
+                            selectedColor = filament.getColor()
+                            showingColorPicker = true
+                        }
                     
                     VStack(alignment: .leading, spacing: 6) {
                         Text(filament.brand)
@@ -30,9 +39,21 @@ struct FilamentDetailView: View {
                             .font(.title3)
                             .foregroundColor(.secondary)
                         
-                        Text(filament.color)
-                            .font(.title3)
-                            .foregroundColor(.secondary)
+                        Button(action: {
+                            selectedColorName = filament.color
+                            selectedColor = filament.getColor()
+                            showingColorPicker = true
+                        }) {
+                            HStack {
+                                Text(filament.color)
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                        }
                     }
                 }
                 .padding()
@@ -163,7 +184,37 @@ struct FilamentDetailView: View {
             )
         }
         .sheet(isPresented: $isEditing) {
-            EditFilamentView(viewModel: viewModel, filament: $filament)
+            EditFilamentView(viewModel: viewModel, colorLibrary: colorLibrary, filament: $filament)
+        }
+        .sheet(isPresented: $showingColorPicker) {
+            ColorPickerView(
+                colorLibrary: colorLibrary,
+                selectedColorName: $selectedColorName,
+                selectedColor: $selectedColor
+            )
+            .onDisappear {
+                if selectedColorName != filament.color {
+                    // 更新颜色
+                    var updatedFilament = filament
+                    updatedFilament.color = selectedColorName
+                    
+                    // 查找匹配的颜色数据
+                    if let colorItem = colorLibrary.colors.first(where: { $0.name == selectedColorName }) {
+                        updatedFilament.colorData = colorItem.color
+                        colorLibrary.updateLastUsed(for: colorItem)
+                    } else {
+                        // 创建新的颜色数据
+                        updatedFilament.colorData = ColorData(from: selectedColor)
+                        
+                        // 添加到颜色库
+                        let newColor = FilamentColor(name: selectedColorName, color: selectedColor)
+                        colorLibrary.addColor(newColor)
+                    }
+                    
+                    viewModel.updateFilament(updatedFilament)
+                    filament = updatedFilament
+                }
+            }
         }
     }
     
@@ -172,35 +223,6 @@ struct FilamentDetailView: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter.string(from: date)
-    }
-    
-    private func getColorFromName(_ name: String) -> Color {
-        // 这里是一个简单的映射，实际应用中可以更复杂
-        let lowerName = name.lowercased()
-        
-        if lowerName.contains("黑") || lowerName.contains("black") {
-            return .black
-        } else if lowerName.contains("白") || lowerName.contains("white") {
-            return .white
-        } else if lowerName.contains("红") || lowerName.contains("red") {
-            return .red
-        } else if lowerName.contains("蓝") || lowerName.contains("blue") {
-            return .blue
-        } else if lowerName.contains("绿") || lowerName.contains("green") {
-            return .green
-        } else if lowerName.contains("黄") || lowerName.contains("yellow") {
-            return .yellow
-        } else if lowerName.contains("紫") || lowerName.contains("purple") {
-            return .purple
-        } else if lowerName.contains("橙") || lowerName.contains("orange") {
-            return .orange
-        } else if lowerName.contains("灰") || lowerName.contains("gray") {
-            return .gray
-        } else if lowerName.contains("透明") || lowerName.contains("clear") {
-            return Color(white: 0.9, opacity: 0.5)
-        } else {
-            return .gray
-        }
     }
 }
 
