@@ -196,37 +196,62 @@ struct ColorBubble: View {
             Circle()
                 .fill(color)
                 .frame(width: 50, height: 50)
+                // 内部深色阴影，创造凹陷感
                 .overlay(
                     Circle()
-                        .fill(
+                        .stroke(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    Color.white.opacity(0.2),
-                                    Color.clear
+                                    color.opacity(0.7),
+                                    color.opacity(1.0)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
-                            )
+                            ),
+                            lineWidth: 4
                         )
+                        .blur(radius: 2)
+                        .offset(x: 0, y: 1)
                 )
+                // 高光效果
                 .overlay(
                     Circle()
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    Color.black.opacity(0.1),
-                                    Color.clear
+                                    Color.white.opacity(0.5),
+                                    Color.white.opacity(0.0)
                                 ]),
-                                startPoint: .bottomTrailing,
-                                endPoint: .topLeading
+                                startPoint: .topLeading,
+                                endPoint: .center
                             )
                         )
+                        .scaleEffect(0.85)
                 )
+                // 边缘高光
                 .overlay(
                     Circle()
-                        .stroke(isSelected ? Color.blue : Color.gray, lineWidth: isSelected ? 3 : 1)
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.white.opacity(0.4),
+                                    Color.white.opacity(0.0)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
                 )
-                .shadow(color: color.opacity(0.5), radius: 4, x: 0, y: 2)
+                // 选中状态边框
+                .overlay(
+                    Circle()
+                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1)
+                )
+                // 外部阴影
+                .shadow(color: color.opacity(0.5), radius: 5, x: 0, y: 2)
+                // 环境光阴影
+                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
             
             Text(name)
                 .font(.caption)

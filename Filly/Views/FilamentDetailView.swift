@@ -19,36 +19,77 @@ struct FilamentDetailView: View {
                     Circle()
                         .fill(filament.getColor())
                         .frame(width: 80, height: 80)
+                        // 内部深色阴影，创造凹陷感
                         .overlay(
                             Circle()
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                        .shadow(color: filament.getColor().opacity(0.5), radius: 8, x: 0, y: 3)
-                        .overlay(
-                            Circle()
-                                .fill(
+                                .stroke(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
-                                            Color.white.opacity(0.3),
-                                            Color.clear
+                                            filament.getColor().opacity(0.7),
+                                            filament.getColor().opacity(1.0)
                                         ]),
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
-                                    )
+                                    ),
+                                    lineWidth: 6
                                 )
+                                .blur(radius: 3)
+                                .offset(x: 0, y: 1)
                         )
+                        // 主高光效果
                         .overlay(
                             Circle()
                                 .fill(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
-                                            Color.black.opacity(0.15),
-                                            Color.clear
+                                            Color.white.opacity(0.6),
+                                            Color.white.opacity(0.0)
                                         ]),
-                                        startPoint: .bottomTrailing,
-                                        endPoint: .topLeading
+                                        startPoint: .topLeading,
+                                        endPoint: .center
                                     )
                                 )
+                                .scaleEffect(0.85)
+                        )
+                        // 边缘高光
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.white.opacity(0.5),
+                                            Color.white.opacity(0.0)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 3
+                                )
+                        )
+                        // 边框
+                        .overlay(
+                            Circle()
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
+                        // 主阴影
+                        .shadow(color: filament.getColor().opacity(0.5), radius: 8, x: 0, y: 4)
+                        // 环境光阴影
+                        .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 6)
+                        // 内部光泽
+                        .overlay(
+                            Circle()
+                                .fill(
+                                    RadialGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.white.opacity(0.2),
+                                            Color.clear
+                                        ]),
+                                        center: .center,
+                                        startRadius: 5,
+                                        endRadius: 40
+                                    )
+                                )
+                                .scaleEffect(0.9)
                         )
                         .onTapGesture {
                             selectedColorName = filament.color

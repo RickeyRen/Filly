@@ -64,24 +64,45 @@ struct AddFilamentView: View {
                                     Circle()
                                         .fill(selectedColor)
                                         .frame(width: 20, height: 20)
+                                        // 内部深色阴影
                                         .overlay(
                                             Circle()
-                                                .stroke(Color.gray, lineWidth: 1)
+                                                .stroke(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [
+                                                            selectedColor.opacity(0.7),
+                                                            selectedColor.opacity(1.0)
+                                                        ]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    ),
+                                                    lineWidth: 2
+                                                )
+                                                .blur(radius: 1)
                                         )
-                                        .shadow(color: selectedColor.opacity(0.3), radius: 2, x: 0, y: 1)
+                                        // 高光效果
                                         .overlay(
                                             Circle()
                                                 .fill(
                                                     LinearGradient(
                                                         gradient: Gradient(colors: [
-                                                            Color.white.opacity(0.2),
-                                                            Color.clear
+                                                            Color.white.opacity(0.4),
+                                                            Color.white.opacity(0.0)
                                                         ]),
                                                         startPoint: .topLeading,
-                                                        endPoint: .bottomTrailing
+                                                        endPoint: .center
                                                     )
                                                 )
+                                                .scaleEffect(0.85)
                                         )
+                                        // 边框
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                        )
+                                        // 阴影效果
+                                        .shadow(color: selectedColor.opacity(0.4), radius: 2, x: 0, y: 1)
+                                        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
                                     
                                     Text(color)
                                         .foregroundColor(.secondary)
@@ -273,24 +294,45 @@ struct EditFilamentView: View {
                                     Circle()
                                         .fill(selectedColor)
                                         .frame(width: 20, height: 20)
+                                        // 内部深色阴影
                                         .overlay(
                                             Circle()
-                                                .stroke(Color.gray, lineWidth: 1)
+                                                .stroke(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [
+                                                            selectedColor.opacity(0.7),
+                                                            selectedColor.opacity(1.0)
+                                                        ]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    ),
+                                                    lineWidth: 2
+                                                )
+                                                .blur(radius: 1)
                                         )
-                                        .shadow(color: selectedColor.opacity(0.3), radius: 2, x: 0, y: 1)
+                                        // 高光效果
                                         .overlay(
                                             Circle()
                                                 .fill(
                                                     LinearGradient(
                                                         gradient: Gradient(colors: [
-                                                            Color.white.opacity(0.2),
-                                                            Color.clear
+                                                            Color.white.opacity(0.4),
+                                                            Color.white.opacity(0.0)
                                                         ]),
                                                         startPoint: .topLeading,
-                                                        endPoint: .bottomTrailing
+                                                        endPoint: .center
                                                     )
                                                 )
+                                                .scaleEffect(0.85)
                                         )
+                                        // 边框
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                        )
+                                        // 阴影效果
+                                        .shadow(color: selectedColor.opacity(0.4), radius: 2, x: 0, y: 1)
+                                        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
                                     
                                     Text(color)
                                         .foregroundColor(.secondary)
@@ -388,3 +430,4 @@ struct EditFilamentView: View {
         presentationMode.wrappedValue.dismiss()
     }
 } 
+
