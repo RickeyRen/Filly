@@ -101,46 +101,58 @@ struct AddFilamentView: View {
                 }
                 
                 Section(header: Text("耗材盘")) {
-                    Stepper(value: $spoolCount, in: 1...10) {
-                        HStack {
-                            Text("盘数")
-                            Spacer()
+                    HStack {
+                        Text("添加盘数")
+                            .font(.headline)
+                        
+                        Spacer()
+                        
+                        HStack(spacing: 16) {
+                            Button(action: {
+                                if spoolCount > 1 {
+                                    spoolCount -= 1
+                                    updateSpoolsData(newCount: spoolCount)
+                                }
+                            }) {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundColor(spoolCount > 1 ? .blue : .gray)
+                                    .font(.title2)
+                            }
+                            .disabled(spoolCount <= 1)
+                            
                             Text("\(spoolCount)")
-                                .fontWeight(.medium)
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .frame(minWidth: 30)
+                            
+                            Button(action: {
+                                if spoolCount < 10 {
+                                    spoolCount += 1
+                                    updateSpoolsData(newCount: spoolCount)
+                                }
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(spoolCount < 10 ? .blue : .gray)
+                                    .font(.title2)
+                            }
+                            .disabled(spoolCount >= 10)
                         }
                     }
-                    .onChange(of: spoolCount) { newValue in
-                        updateSpoolsData(newCount: newValue)
-                    }
+                    .padding(.vertical, 8)
+                    
+                    Divider()
+                        .padding(.vertical, 8)
                     
                     ForEach(0..<spoolsData.count, id: \.self) { index in
-                        VStack(alignment: .leading) {
-                            Text("第\(index+1)盘")
-                                .font(.headline)
-                                .padding(.vertical, 4)
-                            
-                            HStack {
-                                Text("剩余量")
-                                Spacer()
-                                Text("\(Int(spoolsData[index].remainingPercentage))%")
-                            }
-                            
-                            Slider(value: Binding(
-                                get: { spoolsData[index].remainingPercentage },
-                                set: { newValue in
-                                    spoolsData[index].remainingPercentage = newValue
-                                }
-                            ), in: 0...100, step: 5)
-                            
-                            TextField("备注（可选）", text: Binding(
-                                get: { spoolsData[index].notes },
-                                set: { newValue in
-                                    spoolsData[index].notes = newValue
-                                }
-                            ))
-                            .font(.caption)
+                        SpoolEditorView(
+                            index: index + 1,
+                            spool: $spoolsData[index]
+                        )
+                        .padding(.vertical, 8)
+                        
+                        if index < spoolsData.count - 1 {
+                            Divider()
                         }
-                        .padding(.vertical, 4)
                     }
                 }
                 
@@ -410,6 +422,142 @@ struct EditFilamentView: View {
         viewModel.updateFilament(updatedFilament)
         filament = updatedFilament
         presentationMode.wrappedValue.dismiss()
+    }
+}
+
+// MARK: - 辅助视图
+
+// 耗材盘编辑视图
+struct SpoolEditorView: View {
+    let index: Int
+    @Binding var spool: FilamentSpool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("第\(index)盘")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Text("\(Int(spool.remainingPercentage))%")
+                    .fontWeight(.medium)
+                    .foregroundColor(
+                        spool.remainingPercentage >= 95 ? .green :
+                            (spool.remainingPercentage > 0 ? .orange : .red)
+                    )
+            }
+            
+            // 状态选择器
+            HStack {
+                StatusButton(
+                    title: "全新",
+                    isSelected: spool.remainingPercentage >= 95,
+                    color: .green
+                ) {
+                    spool.remainingPercentage = 100
+                }
+                
+                StatusButton(
+                    title: "部分使用",
+                    isSelected: spool.remainingPercentage > 0 && spool.remainingPercentage < 95,
+                    color: .orange
+                ) {
+                    if spool.remainingPercentage >= 95 || spool.remainingPercentage <= 0 {
+                        spool.remainingPercentage = 50
+                    }
+                }
+                
+                StatusButton(
+                    title: "空盘",
+                    isSelected: spool.remainingPercentage <= 0,
+                    color: .red
+                ) {
+                    spool.remainingPercentage = 0
+                }
+            }
+            
+            // 精确调整
+            if spool.remainingPercentage > 0 && spool.remainingPercentage < 95 {
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("精确调整")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                    }
+                    
+                    HStack {
+                        ForEach([25, 50, 75], id: \.self) { value in
+                            Button(action: {
+                                spool.remainingPercentage = Double(value)
+                            }) {
+                                Text("\(value)%")
+                                    .font(.caption)
+                                    .foregroundColor(
+                                        Int(spool.remainingPercentage) == value ? .white : .primary
+                                    )
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Int(spool.remainingPercentage) == value ? 
+                                            Color.blue : Color.gray.opacity(0.2)
+                                    )
+                                    .cornerRadius(8)
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    Slider(value: $spool.remainingPercentage, in: 5...90, step: 5)
+                        .accentColor(.orange)
+                }
+                .padding(.top, 4)
+            }
+            
+            TextField("备注（可选）", text: $spool.notes)
+                .font(.caption)
+                .padding(10)
+                .background(Color(UIColor.tertiarySystemBackground))
+                .cornerRadius(8)
+        }
+    }
+}
+
+// 状态选择按钮
+struct StatusButton: View {
+    let title: String
+    let isSelected: Bool
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Circle()
+                    .fill(isSelected ? color : Color.clear)
+                    .frame(width: 16, height: 16)
+                    .overlay(
+                        Circle()
+                            .stroke(color, lineWidth: 2)
+                    )
+                
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundColor(isSelected ? color : .primary)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(isSelected ? color.opacity(0.1) : Color.clear)
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? color : Color.gray.opacity(0.3), lineWidth: 1)
+            )
+        }
     }
 } 
 
