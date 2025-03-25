@@ -31,7 +31,7 @@ struct ColorPickerView: View {
                             .padding(.horizontal)
                         
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
+                            HStack(spacing: 16) {
                                 ForEach(colorLibrary.recentlyUsedColors()) { colorItem in
                                     ColorBubble(
                                         color: colorItem.toColor(),
@@ -47,7 +47,7 @@ struct ColorPickerView: View {
                             }
                             .padding(.horizontal)
                         }
-                        .frame(height: 90)
+                        .frame(height: 100)
                     }
                     .padding(.vertical, 8)
                 }
@@ -192,15 +192,41 @@ struct ColorBubble: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack {
+        VStack(spacing: 8) {
             Circle()
                 .fill(color)
                 .frame(width: 50, height: 50)
                 .overlay(
                     Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.white.opacity(0.2),
+                                    Color.clear
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.black.opacity(0.1),
+                                    Color.clear
+                                ]),
+                                startPoint: .bottomTrailing,
+                                endPoint: .topLeading
+                            )
+                        )
+                )
+                .overlay(
+                    Circle()
                         .stroke(isSelected ? Color.blue : Color.gray, lineWidth: isSelected ? 3 : 1)
                 )
-                .shadow(radius: isSelected ? 3 : 0)
+                .shadow(color: color.opacity(0.5), radius: 4, x: 0, y: 2)
             
             Text(name)
                 .font(.caption)
@@ -208,5 +234,7 @@ struct ColorBubble: View {
                 .frame(width: 70)
                 .multilineTextAlignment(.center)
         }
+        .frame(width: 70)
+        .padding(.vertical, 4)
     }
 } 

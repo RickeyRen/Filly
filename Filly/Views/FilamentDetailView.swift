@@ -23,7 +23,33 @@ struct FilamentDetailView: View {
                             Circle()
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
-                        .shadow(radius: 2)
+                        .shadow(color: filament.getColor().opacity(0.5), radius: 8, x: 0, y: 3)
+                        .overlay(
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.white.opacity(0.3),
+                                            Color.clear
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                        .overlay(
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.black.opacity(0.15),
+                                            Color.clear
+                                        ]),
+                                        startPoint: .bottomTrailing,
+                                        endPoint: .topLeading
+                                    )
+                                )
+                        )
                         .onTapGesture {
                             selectedColorName = filament.color
                             selectedColor = filament.getColor()

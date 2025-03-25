@@ -68,6 +68,20 @@ struct AddFilamentView: View {
                                             Circle()
                                                 .stroke(Color.gray, lineWidth: 1)
                                         )
+                                        .shadow(color: selectedColor.opacity(0.3), radius: 2, x: 0, y: 1)
+                                        .overlay(
+                                            Circle()
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [
+                                                            Color.white.opacity(0.2),
+                                                            Color.clear
+                                                        ]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                )
+                                        )
                                     
                                     Text(color)
                                         .foregroundColor(.secondary)
@@ -262,6 +276,20 @@ struct EditFilamentView: View {
                                         .overlay(
                                             Circle()
                                                 .stroke(Color.gray, lineWidth: 1)
+                                        )
+                                        .shadow(color: selectedColor.opacity(0.3), radius: 2, x: 0, y: 1)
+                                        .overlay(
+                                            Circle()
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [
+                                                            Color.white.opacity(0.2),
+                                                            Color.clear
+                                                        ]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                )
                                         )
                                     
                                     Text(color)
