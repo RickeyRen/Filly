@@ -1,5 +1,11 @@
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
 struct FilamentDetailView: View {
     @ObservedObject var viewModel: FilamentViewModel
     @ObservedObject var colorLibrary: ColorLibraryViewModel
@@ -109,7 +115,7 @@ struct FilamentDetailView: View {
                     }
                 }
                 .padding()
-                .background(Color(UIColor.systemBackground))
+                .background(SystemColorCompatibility.systemBackground)
                 .cornerRadius(12)
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
@@ -199,7 +205,7 @@ struct FilamentDetailView: View {
                         }
                         .padding(.vertical, 8)
                         .padding(.horizontal, 12)
-                        .background(Color(UIColor.tertiarySystemBackground))
+                        .background(SystemColorCompatibility.tertiarySystemBackground)
                         .cornerRadius(12)
                         .padding(.bottom, 10)
                         
@@ -221,7 +227,7 @@ struct FilamentDetailView: View {
                     }
                 }
                 .padding()
-                .background(Color(UIColor.systemBackground))
+                .background(SystemColorCompatibility.systemBackground)
                 .cornerRadius(12)
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
@@ -288,7 +294,7 @@ struct FilamentDetailView: View {
                     
                     // 查找匹配的颜色数据
                     if let colorItem = colorLibrary.colors.first(where: { $0.name == selectedColorName }) {
-                        updatedFilament.colorData = colorItem.color
+                        updatedFilament.colorData = colorItem.colorData
                         colorLibrary.updateLastUsed(for: colorItem)
                     } else {
                         // 创建新的颜色数据
@@ -650,7 +656,7 @@ struct SpoolItemView: View {
                 }
             }
         }
-        .background(Color(UIColor.secondarySystemBackground))
+        .background(SystemColorCompatibility.secondarySystemBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: Color.black.opacity(0.07), radius: 3, x: 0, y: 2)
         .overlay(
@@ -819,7 +825,7 @@ struct SpoolPercentageAdjustSheet: View {
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: max(4, CGFloat(percentage) / 100.0 * UIScreen.main.bounds.width * 0.8), height: 20)
+                        .frame(width: max(4, CGFloat(percentage) / 100.0 * ScreenSizeCompatibility.mainWidth * 0.8), height: 20)
                 }
                 .padding(.horizontal)
                 
@@ -854,15 +860,19 @@ struct SpoolPercentageAdjustSheet: View {
                 Spacer()
             }
             .padding()
-            .navigationBarItems(
-                leading: Button("取消") {
-                    presentationMode.wrappedValue.dismiss()
-                },
-                trailing: Button("保存") {
-                    onSave()
-                    presentationMode.wrappedValue.dismiss()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
                 }
-            )
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") {
+                        onSave()
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
         }
     }
 }

@@ -50,7 +50,7 @@ struct Filament: Identifiable, Codable {
     // 获取颜色对象
     func getColor() -> Color {
         if let colorData = colorData {
-            return colorData.toColor()
+            return colorData.getUIColor()
         } else {
             // 返回默认颜色映射
             return getDefaultColor(for: color)

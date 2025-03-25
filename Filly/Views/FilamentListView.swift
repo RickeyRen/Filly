@@ -25,6 +25,7 @@ struct FilamentListView: View {
             .searchable(text: $searchText, prompt: "搜索耗材")
             .navigationTitle("耗材库存")
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingAddFilament = true
@@ -32,6 +33,15 @@ struct FilamentListView: View {
                         Image(systemName: "plus")
                     }
                 }
+                #elseif os(macOS)
+                ToolbarItem {
+                    Button {
+                        showingAddFilament = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+                #endif
             }
             .sheet(isPresented: $showingAddFilament) {
                 AddFilamentView(viewModel: viewModel, colorLibrary: colorLibrary)

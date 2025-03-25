@@ -1,19 +1,26 @@
+import Foundation
 import SwiftUI
+
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 struct FilamentColor: Identifiable, Codable, Equatable {
     var id = UUID()
     var name: String
-    var color: ColorData
+    var colorData: ColorData
     var lastUsed: Date
     
     init(name: String, color: Color) {
         self.name = name
-        self.color = ColorData(from: color)
+        self.colorData = ColorData(from: color)
         self.lastUsed = Date()
     }
     
-    func toColor() -> Color {
-        return color.toColor()
+    func getUIColor() -> Color {
+        return Color(red: colorData.red, green: colorData.green, blue: colorData.blue, opacity: colorData.alpha)
     }
     
     static func ==(lhs: FilamentColor, rhs: FilamentColor) -> Bool {
@@ -41,31 +48,51 @@ struct ColorData: Codable {
     var red: Double
     var green: Double
     var blue: Double
-    var opacity: Double
+    var alpha: Double
     
-    init(red: Double, green: Double, blue: Double, opacity: Double = 1.0) {
+    init(red: Double, green: Double, blue: Double, alpha: Double = 1.0) {
         self.red = red
         self.green = green
         self.blue = blue
-        self.opacity = opacity
+        self.alpha = alpha
     }
     
     init(from color: Color) {
+        #if os(iOS)
+        let uiColor = UIColor(color)
         var red: CGFloat = 0
         var green: CGFloat = 0
         var blue: CGFloat = 0
-        var opacity: CGFloat = 0
-        
-        let uiColor = UIColor(color)
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &opacity)
-        
+        var alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         self.red = Double(red)
         self.green = Double(green)
         self.blue = Double(blue)
-        self.opacity = Double(opacity)
+        self.alpha = Double(alpha)
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        // 确保转换为RGB颜色空间
+        if let rgbColor = nsColor.usingColorSpace(.sRGB) {
+            var red: CGFloat = 0
+            var green: CGFloat = 0
+            var blue: CGFloat = 0
+            var alpha: CGFloat = 0
+            rgbColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+            self.red = Double(red)
+            self.green = Double(green)
+            self.blue = Double(blue)
+            self.alpha = Double(alpha)
+        } else {
+            // 如果无法转换，则使用默认值
+            self.red = 0.5
+            self.green = 0.5
+            self.blue = 0.5
+            self.alpha = 1.0
+        }
+        #endif
     }
     
-    func toColor() -> Color {
-        return Color(.sRGB, red: red, green: green, blue: blue, opacity: opacity)
+    func getUIColor() -> Color {
+        return Color(red: red, green: green, blue: blue, opacity: alpha)
     }
 } 

@@ -1,5 +1,11 @@
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
 struct ColorPickerView: View {
     @ObservedObject var colorLibrary: ColorLibraryViewModel
     @Binding var selectedColorName: String
@@ -19,7 +25,7 @@ struct ColorPickerView: View {
                 // 搜索栏
                 TextField("搜索颜色", text: $searchText)
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(SystemColorCompatibility.tertiarySystemBackground)
                     .cornerRadius(10)
                     .padding(.horizontal)
                 
@@ -34,13 +40,13 @@ struct ColorPickerView: View {
                             HStack(spacing: 16) {
                                 ForEach(colorLibrary.recentlyUsedColors()) { colorItem in
                                     ColorBubble(
-                                        color: colorItem.toColor(),
+                                        color: colorItem.getUIColor(),
                                         name: colorItem.name,
                                         isSelected: selectedColorName == colorItem.name
                                     )
                                     .onTapGesture {
                                         self.selectedColorName = colorItem.name
-                                        self.selectedColor = colorItem.toColor()
+                                        self.selectedColor = colorItem.getUIColor()
                                         colorLibrary.updateLastUsed(for: colorItem)
                                     }
                                 }
@@ -57,7 +63,7 @@ struct ColorPickerView: View {
                     VStack(spacing: 16) {
                         TextField("颜色名称", text: $newColorName)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(SystemColorCompatibility.tertiarySystemBackground)
                             .cornerRadius(10)
                         
                         SwiftUI.ColorPicker("选择颜色", selection: $newColor)
@@ -95,7 +101,7 @@ struct ColorPickerView: View {
                         ForEach(filteredColors) { colorItem in
                             HStack {
                                 Circle()
-                                    .fill(colorItem.toColor())
+                                    .fill(colorItem.getUIColor())
                                     .frame(width: 30, height: 30)
                                     .overlay(
                                         Circle()
@@ -115,7 +121,7 @@ struct ColorPickerView: View {
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 self.selectedColorName = colorItem.name
-                                self.selectedColor = colorItem.toColor()
+                                self.selectedColor = colorItem.getUIColor()
                                 colorLibrary.updateLastUsed(for: colorItem)
                                 presentationMode.wrappedValue.dismiss()
                             }
@@ -128,6 +134,7 @@ struct ColorPickerView: View {
             }
             .navigationTitle("选择颜色")
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("取消") {
                         presentationMode.wrappedValue.dismiss()
@@ -145,6 +152,25 @@ struct ColorPickerView: View {
                         }
                     }
                 }
+                #elseif os(macOS)
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(isAddingNew ? "返回列表" : "添加颜色") {
+                        if isAddingNew {
+                            isAddingNew = false
+                        } else {
+                            isAddingNew = true
+                            newColorName = ""
+                            newColor = Color.blue
+                        }
+                    }
+                }
+                #endif
             }
             .alert(isPresented: $showingAlert) {
                 Alert(

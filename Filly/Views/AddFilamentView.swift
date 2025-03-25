@@ -1,5 +1,11 @@
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
 struct AddFilamentView: View {
     @ObservedObject var viewModel: FilamentViewModel
     @ObservedObject var colorLibrary: ColorLibraryViewModel
@@ -163,6 +169,7 @@ struct AddFilamentView: View {
             }
             .navigationTitle("添加耗材")
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("取消") {
                         presentationMode.wrappedValue.dismiss()
@@ -175,6 +182,20 @@ struct AddFilamentView: View {
                     }
                     .disabled(brand.isEmpty || color.isEmpty)
                 }
+                #elseif os(macOS)
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") {
+                        saveFilament()
+                    }
+                    .disabled(brand.isEmpty || color.isEmpty)
+                }
+                #endif
             }
             .sheet(isPresented: $showingColorPicker) {
                 ColorPickerView(
@@ -193,7 +214,7 @@ struct AddFilamentView: View {
             // 设置默认颜色
             if let firstColor = colorLibrary.colors.first {
                 color = firstColor.name
-                selectedColor = firstColor.toColor()
+                selectedColor = firstColor.getUIColor()
             }
             
             // 初始化耗材盘数据
@@ -217,7 +238,7 @@ struct AddFilamentView: View {
         // 获取颜色数据
         var colorData: ColorData? = nil
         if let colorItem = colorLibrary.colors.first(where: { $0.name == color }) {
-            colorData = colorItem.color
+            colorData = colorItem.colorData
             colorLibrary.updateLastUsed(for: colorItem)
         } else if !color.isEmpty {
             colorData = ColorData(from: selectedColor)
@@ -375,6 +396,7 @@ struct EditFilamentView: View {
             }
             .navigationTitle("编辑耗材")
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("取消") {
                         presentationMode.wrappedValue.dismiss()
@@ -387,6 +409,20 @@ struct EditFilamentView: View {
                     }
                     .disabled(brand.isEmpty || color.isEmpty)
                 }
+                #elseif os(macOS)
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") {
+                        saveChanges()
+                    }
+                    .disabled(brand.isEmpty || color.isEmpty)
+                }
+                #endif
             }
             .sheet(isPresented: $showingColorPicker) {
                 ColorPickerView(
@@ -402,7 +438,7 @@ struct EditFilamentView: View {
         // 获取颜色数据
         var colorData: ColorData? = nil
         if let colorItem = colorLibrary.colors.first(where: { $0.name == color }) {
-            colorData = colorItem.color
+            colorData = colorItem.colorData
             colorLibrary.updateLastUsed(for: colorItem)
         } else if !color.isEmpty {
             colorData = ColorData(from: selectedColor)
@@ -521,7 +557,7 @@ struct SpoolEditorView: View {
             TextField("备注（可选）", text: $spool.notes)
                 .font(.caption)
                 .padding(10)
-                .background(Color(UIColor.tertiarySystemBackground))
+                .background(SystemColorCompatibility.tertiarySystemBackground)
                 .cornerRadius(8)
         }
     }
