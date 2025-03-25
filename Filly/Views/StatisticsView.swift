@@ -30,13 +30,41 @@ struct StatisticsView: View {
                 
                 Section(header: Text("总览")) {
                     HStack {
-                        Text("耗材总数")
+                        Text("耗材类型总数")
                         Spacer()
                         Text("\(viewModel.filaments.count)")
                             .fontWeight(.bold)
                     }
                     
-                    let totalWeight = viewModel.filaments.reduce(0) { $0 + $1.weight * ($1.remainingPercentage / 100) }
+                    let totalSpools = viewModel.filaments.reduce(0) { $0 + $1.spools.count }
+                    HStack {
+                        Text("耗材盘总数")
+                        Spacer()
+                        Text("\(totalSpools)")
+                            .fontWeight(.bold)
+                    }
+                    
+                    let fullSpools = viewModel.filaments.reduce(0) { $0 + $1.fullSpoolCount }
+                    HStack {
+                        Text("全新耗材盘数")
+                        Spacer()
+                        Text("\(fullSpools)")
+                            .fontWeight(.bold)
+                            .foregroundColor(.green)
+                    }
+                    
+                    let usedSpools = viewModel.filaments.reduce(0) { $0 + ($1.remainingSpoolCount - $1.fullSpoolCount) }
+                    HStack {
+                        Text("部分使用的耗材盘数")
+                        Spacer()
+                        Text("\(usedSpools)")
+                            .fontWeight(.bold)
+                            .foregroundColor(.orange)
+                    }
+                    
+                    let totalWeight = viewModel.filaments.reduce(0) { acc, filament in
+                        acc + filament.spools.reduce(0) { $0 + filament.weight * ($1.remainingPercentage / 100) / Double(filament.spools.count) }
+                    }
                     HStack {
                         Text("剩余总重量")
                         Spacer()
@@ -58,7 +86,7 @@ struct StatRow: View {
         HStack {
             Text(name)
             Spacer()
-            Text("\(count)")
+            Text("\(count)盘")
                 .fontWeight(.bold)
         }
     }

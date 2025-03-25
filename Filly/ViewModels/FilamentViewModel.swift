@@ -17,9 +17,19 @@ class FilamentViewModel: ObservableObject {
     // 添加示例数据
     private func addSampleData() {
         let samples = [
-            Filament(brand: "Bambu Lab", type: .pla, color: "黑色", weight: 1000),
-            Filament(brand: "天瑞 Tianrui", type: .petg, color: "蓝色", weight: 1000),
-            Filament(brand: "易生 eSUN", type: .tpu, color: "透明", weight: 500)
+            Filament(brand: "Bambu Lab", type: .pla, color: "黑色", weight: 1000, 
+                     spools: [
+                        FilamentSpool(remainingPercentage: 100),
+                        FilamentSpool(remainingPercentage: 100),
+                        FilamentSpool(remainingPercentage: 80, notes: "轻微受潮")
+                     ]),
+            Filament(brand: "天瑞 Tianrui", type: .petg, color: "蓝色", weight: 1000,
+                     spools: [
+                        FilamentSpool(remainingPercentage: 100),
+                        FilamentSpool(remainingPercentage: 20, notes: "打印床校准测试用")
+                     ]),
+            Filament(brand: "易生 eSUN", type: .tpu, color: "透明", weight: 500,
+                     spools: [FilamentSpool(remainingPercentage: 100)])
         ]
         
         filaments.append(contentsOf: samples)
@@ -62,10 +72,33 @@ class FilamentViewModel: ObservableObject {
         }
     }
     
-    // 更新剩余量
-    func updateRemainingPercentage(id: UUID, percentage: Double) {
-        if let index = filaments.firstIndex(where: { $0.id == id }) {
-            filaments[index].remainingPercentage = max(0, min(100, percentage))
+    // 更新耗材盘的剩余量
+    func updateSpoolPercentage(filamentId: UUID, spoolId: UUID, percentage: Double) {
+        if let filamentIndex = filaments.firstIndex(where: { $0.id == filamentId }),
+           let spoolIndex = filaments[filamentIndex].spools.firstIndex(where: { $0.id == spoolId }) {
+            filaments[filamentIndex].spools[spoolIndex].remainingPercentage = max(0, min(100, percentage))
+            saveFilaments()
+        }
+    }
+    
+    // 移除空盘
+    func removeEmptySpool(filamentId: UUID, spoolId: UUID) {
+        if let filamentIndex = filaments.firstIndex(where: { $0.id == filamentId }) {
+            filaments[filamentIndex].spools.removeAll(where: { $0.id == spoolId })
+            
+            // 如果所有盘都被移除，删除整个耗材
+            if filaments[filamentIndex].spools.isEmpty {
+                filaments.remove(at: filamentIndex)
+            }
+            
+            saveFilaments()
+        }
+    }
+    
+    // 添加新的耗材盘
+    func addSpool(to filamentId: UUID, spool: FilamentSpool = FilamentSpool()) {
+        if let index = filaments.firstIndex(where: { $0.id == filamentId }) {
+            filaments[index].spools.append(spool)
             saveFilaments()
         }
     }
@@ -90,7 +123,7 @@ class FilamentViewModel: ObservableObject {
         var brandCounts: [String: Int] = [:]
         
         for filament in filaments {
-            brandCounts[filament.brand, default: 0] += 1
+            brandCounts[filament.brand, default: 0] += filament.spools.count
         }
         
         return brandCounts.map { (brand: $0.key, count: $0.value) }
@@ -102,7 +135,7 @@ class FilamentViewModel: ObservableObject {
         var typeCounts: [String: Int] = [:]
         
         for filament in filaments {
-            typeCounts[filament.type.rawValue, default: 0] += 1
+            typeCounts[filament.type.rawValue, default: 0] += filament.spools.count
         }
         
         return typeCounts.map { (type: $0.key, count: $0.value) }

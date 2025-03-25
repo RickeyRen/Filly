@@ -13,6 +13,8 @@ struct AddFilamentView: View {
     @State private var weight = 1000.0
     @State private var selectedDiameter = FilamentDiameter.mm175
     @State private var notes = ""
+    @State private var spoolCount = 1
+    @State private var spoolsData: [FilamentSpool] = [FilamentSpool()]
     @State private var showingCustomBrand = false
     @State private var showingColorPicker = false
     
@@ -60,53 +62,16 @@ struct AddFilamentView: View {
                             Spacer()
                             
                             if !color.isEmpty {
-                                HStack {
-                                    Circle()
-                                        .fill(selectedColor)
-                                        .frame(width: 20, height: 20)
-                                        // 内部深色阴影
-                                        .overlay(
-                                            Circle()
-                                                .stroke(
-                                                    LinearGradient(
-                                                        gradient: Gradient(colors: [
-                                                            selectedColor.opacity(0.7),
-                                                            selectedColor.opacity(1.0)
-                                                        ]),
-                                                        startPoint: .topLeading,
-                                                        endPoint: .bottomTrailing
-                                                    ),
-                                                    lineWidth: 2
-                                                )
-                                                .blur(radius: 1)
-                                        )
-                                        // 高光效果
-                                        .overlay(
-                                            Circle()
-                                                .fill(
-                                                    LinearGradient(
-                                                        gradient: Gradient(colors: [
-                                                            Color.white.opacity(0.4),
-                                                            Color.white.opacity(0.0)
-                                                        ]),
-                                                        startPoint: .topLeading,
-                                                        endPoint: .center
-                                                    )
-                                                )
-                                                .scaleEffect(0.85)
-                                        )
-                                        // 边框
-                                        .overlay(
-                                            Circle()
-                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                        )
-                                        // 阴影效果
-                                        .shadow(color: selectedColor.opacity(0.4), radius: 2, x: 0, y: 1)
-                                        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
-                                    
-                                    Text(color)
-                                        .foregroundColor(.secondary)
-                                }
+                                Circle()
+                                    .fill(selectedColor)
+                                    .frame(width: 20, height: 20)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                    )
+                                
+                                Text(color)
+                                    .foregroundColor(.secondary)
                             } else {
                                 Text("选择颜色")
                                     .foregroundColor(.secondary)
@@ -132,6 +97,50 @@ struct AddFilamentView: View {
                             Spacer()
                             Text("\(Int(weight))g")
                         }
+                    }
+                }
+                
+                Section(header: Text("耗材盘")) {
+                    Stepper(value: $spoolCount, in: 1...10) {
+                        HStack {
+                            Text("盘数")
+                            Spacer()
+                            Text("\(spoolCount)")
+                                .fontWeight(.medium)
+                        }
+                    }
+                    .onChange(of: spoolCount) { newValue in
+                        updateSpoolsData(newCount: newValue)
+                    }
+                    
+                    ForEach(0..<spoolsData.count, id: \.self) { index in
+                        VStack(alignment: .leading) {
+                            Text("第\(index+1)盘")
+                                .font(.headline)
+                                .padding(.vertical, 4)
+                            
+                            HStack {
+                                Text("剩余量")
+                                Spacer()
+                                Text("\(Int(spoolsData[index].remainingPercentage))%")
+                            }
+                            
+                            Slider(value: Binding(
+                                get: { spoolsData[index].remainingPercentage },
+                                set: { newValue in
+                                    spoolsData[index].remainingPercentage = newValue
+                                }
+                            ), in: 0...100, step: 5)
+                            
+                            TextField("备注（可选）", text: Binding(
+                                get: { spoolsData[index].notes },
+                                set: { newValue in
+                                    spoolsData[index].notes = newValue
+                                }
+                            ))
+                            .font(.caption)
+                        }
+                        .padding(.vertical, 4)
                     }
                 }
                 
@@ -174,6 +183,21 @@ struct AddFilamentView: View {
                 color = firstColor.name
                 selectedColor = firstColor.toColor()
             }
+            
+            // 初始化耗材盘数据
+            updateSpoolsData(newCount: spoolCount)
+        }
+    }
+    
+    private func updateSpoolsData(newCount: Int) {
+        // 保持现有数据
+        if newCount > spoolsData.count {
+            // 添加新盘
+            let newSpools = (0..<(newCount - spoolsData.count)).map { _ in FilamentSpool() }
+            spoolsData.append(contentsOf: newSpools)
+        } else if newCount < spoolsData.count {
+            // 移除多余的盘
+            spoolsData = Array(spoolsData.prefix(newCount))
         }
     }
     
@@ -196,7 +220,7 @@ struct AddFilamentView: View {
             colorData: colorData,
             weight: weight,
             diameter: selectedDiameter,
-            remainingPercentage: 100,
+            spools: spoolsData,
             notes: notes
         )
         
@@ -218,7 +242,6 @@ struct EditFilamentView: View {
     @State private var selectedColor: Color
     @State private var weight: Double
     @State private var selectedDiameter: FilamentDiameter
-    @State private var remainingPercentage: Double
     @State private var notes: String
     @State private var showingCustomBrand = false
     @State private var showingColorPicker = false
@@ -235,7 +258,6 @@ struct EditFilamentView: View {
         _selectedColor = State(initialValue: filament.wrappedValue.getColor())
         _weight = State(initialValue: filament.wrappedValue.weight)
         _selectedDiameter = State(initialValue: filament.wrappedValue.diameter)
-        _remainingPercentage = State(initialValue: filament.wrappedValue.remainingPercentage)
         _notes = State(initialValue: filament.wrappedValue.notes)
         
         // 检查是否是自定义品牌
@@ -290,53 +312,16 @@ struct EditFilamentView: View {
                             Spacer()
                             
                             if !color.isEmpty {
-                                HStack {
-                                    Circle()
-                                        .fill(selectedColor)
-                                        .frame(width: 20, height: 20)
-                                        // 内部深色阴影
-                                        .overlay(
-                                            Circle()
-                                                .stroke(
-                                                    LinearGradient(
-                                                        gradient: Gradient(colors: [
-                                                            selectedColor.opacity(0.7),
-                                                            selectedColor.opacity(1.0)
-                                                        ]),
-                                                        startPoint: .topLeading,
-                                                        endPoint: .bottomTrailing
-                                                    ),
-                                                    lineWidth: 2
-                                                )
-                                                .blur(radius: 1)
-                                        )
-                                        // 高光效果
-                                        .overlay(
-                                            Circle()
-                                                .fill(
-                                                    LinearGradient(
-                                                        gradient: Gradient(colors: [
-                                                            Color.white.opacity(0.4),
-                                                            Color.white.opacity(0.0)
-                                                        ]),
-                                                        startPoint: .topLeading,
-                                                        endPoint: .center
-                                                    )
-                                                )
-                                                .scaleEffect(0.85)
-                                        )
-                                        // 边框
-                                        .overlay(
-                                            Circle()
-                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                        )
-                                        // 阴影效果
-                                        .shadow(color: selectedColor.opacity(0.4), radius: 2, x: 0, y: 1)
-                                        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
-                                    
-                                    Text(color)
-                                        .foregroundColor(.secondary)
-                                }
+                                Circle()
+                                    .fill(selectedColor)
+                                    .frame(width: 20, height: 20)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                    )
+                                
+                                Text(color)
+                                    .foregroundColor(.secondary)
                             } else {
                                 Text("选择颜色")
                                     .foregroundColor(.secondary)
@@ -363,19 +348,17 @@ struct EditFilamentView: View {
                             Text("\(Int(weight))g")
                         }
                     }
-                    
-                    HStack {
-                        Text("剩余量")
-                        Spacer()
-                        Text("\(Int(remainingPercentage))%")
-                    }
-                    
-                    Slider(value: $remainingPercentage, in: 0...100, step: 5)
                 }
                 
                 Section(header: Text("备注")) {
                     TextEditor(text: $notes)
                         .frame(minHeight: 100)
+                }
+                
+                Section(header: Text("提示")) {
+                    Text("耗材盘管理请在详情页面进行")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
             .navigationTitle("编辑耗材")
@@ -422,7 +405,6 @@ struct EditFilamentView: View {
         updatedFilament.colorData = colorData
         updatedFilament.weight = weight
         updatedFilament.diameter = selectedDiameter
-        updatedFilament.remainingPercentage = remainingPercentage
         updatedFilament.notes = notes
         
         viewModel.updateFilament(updatedFilament)

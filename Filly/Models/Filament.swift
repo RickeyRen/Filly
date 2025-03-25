@@ -9,24 +9,42 @@ struct Filament: Identifiable, Codable {
     var colorData: ColorData? // 颜色数据
     var weight: Double // 以克为单位
     var diameter: FilamentDiameter
-    var remainingPercentage: Double // 剩余百分比（0-100）
-    var notes: String
+    var spools: [FilamentSpool] // 耗材盘数组
     var dateAdded: Date
+    var notes: String
     
     // 自定义初始化方法
     init(brand: String, type: FilamentType, color: String, 
          colorData: ColorData? = nil,
          weight: Double = 1000, diameter: FilamentDiameter = .mm175, 
-         remainingPercentage: Double = 100, notes: String = "") {
+         spools: [FilamentSpool] = [FilamentSpool()], notes: String = "") {
         self.brand = brand
         self.type = type
         self.color = color
         self.colorData = colorData
         self.weight = weight
         self.diameter = diameter
-        self.remainingPercentage = remainingPercentage
-        self.notes = notes
+        self.spools = spools
         self.dateAdded = Date()
+        self.notes = notes
+    }
+    
+    // 获取平均剩余百分比（为了兼容旧代码）
+    var remainingPercentage: Double {
+        if spools.isEmpty {
+            return 0
+        }
+        return spools.reduce(0) { $0 + $1.remainingPercentage } / Double(spools.count)
+    }
+    
+    // 获取剩余盘数
+    var remainingSpoolCount: Int {
+        return spools.filter { $0.remainingPercentage > 0 }.count
+    }
+    
+    // 获取满盘数量（100%）
+    var fullSpoolCount: Int {
+        return spools.filter { $0.remainingPercentage >= 100 }.count
     }
     
     // 获取颜色对象

@@ -36,100 +36,57 @@ struct FilamentDetailView: View {
                                 .blur(radius: 3)
                                 .offset(x: 0, y: 1)
                         )
-                        // 主高光效果
-                        .overlay(
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.white.opacity(0.6),
-                                            Color.white.opacity(0.0)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .center
-                                    )
-                                )
-                                .scaleEffect(0.85)
-                        )
-                        // 边缘高光
-                        .overlay(
-                            Circle()
-                                .stroke(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.white.opacity(0.5),
-                                            Color.white.opacity(0.0)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 3
-                                )
-                        )
-                        // 边框
-                        .overlay(
-                            Circle()
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                        )
-                        // 主阴影
-                        .shadow(color: filament.getColor().opacity(0.5), radius: 8, x: 0, y: 4)
-                        // 环境光阴影
-                        .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 6)
-                        // 内部光泽
-                        .overlay(
-                            Circle()
-                                .fill(
-                                    RadialGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.white.opacity(0.2),
-                                            Color.clear
-                                        ]),
-                                        center: .center,
-                                        startRadius: 5,
-                                        endRadius: 40
-                                    )
-                                )
-                                .scaleEffect(0.9)
-                        )
-                        .onTapGesture {
-                            selectedColorName = filament.color
-                            selectedColor = filament.getColor()
-                            showingColorPicker = true
-                        }
                     
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(filament.brand)
-                            .font(.title2)
-                            .fontWeight(.bold)
+                        HStack {
+                            Text(filament.brand)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                selectedColorName = filament.color
+                                selectedColor = filament.getColor()
+                                showingColorPicker = true
+                            }) {
+                                Image(systemName: "eyedropper")
+                                    .foregroundColor(.blue)
+                            }
+                        }
                         
                         Text(filament.type.rawValue)
-                            .font(.title3)
+                            .font(.headline)
                             .foregroundColor(.secondary)
                         
-                        Button(action: {
-                            selectedColorName = filament.color
-                            selectedColor = filament.getColor()
-                            showingColorPicker = true
-                        }) {
-                            HStack {
-                                Text(filament.color)
-                                    .font(.title3)
-                                    .foregroundColor(.secondary)
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
+                        Text(filament.color)
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        HStack {
+                            Text("共\(filament.spools.count)盘")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            
+                            Spacer()
+                            
+                            if filament.fullSpoolCount > 0 {
+                                Text("\(filament.fullSpoolCount)盘全新")
+                                    .font(.subheadline)
+                                    .foregroundColor(.green)
+                            }
+                            
+                            let partialCount = filament.remainingSpoolCount - filament.fullSpoolCount
+                            if partialCount > 0 {
+                                Text("\(partialCount)盘部分使用")
+                                    .font(.subheadline)
+                                    .foregroundColor(.orange)
                             }
                         }
                     }
                 }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
-                // 详细信息卡片
+                // 详细信息
                 VStack(alignment: .leading, spacing: 15) {
                     Text("详细信息")
                         .font(.headline)
@@ -156,32 +113,47 @@ struct FilamentDetailView: View {
                 .cornerRadius(12)
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
-                // 耗材使用量
+                // 耗材盘列表
                 VStack(alignment: .leading, spacing: 15) {
-                    Text("使用情况")
-                        .font(.headline)
-                        .padding(.bottom, 5)
-                    
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("剩余量")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Text("\(Int(filament.remainingPercentage))%")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                        }
+                    HStack {
+                        Text("耗材盘")
+                            .font(.headline)
+                            .padding(.bottom, 5)
                         
-                        UsageSlider(percentage: Binding(
-                            get: { filament.remainingPercentage },
-                            set: { newValue in
-                                filament.remainingPercentage = newValue
-                                viewModel.updateRemainingPercentage(id: filament.id, percentage: newValue)
+                        Spacer()
+                        
+                        Button(action: {
+                            viewModel.addSpool(to: filament.id)
+                            // 更新本地状态
+                            if let updatedFilament = viewModel.filaments.first(where: { $0.id == filament.id }) {
+                                filament = updatedFilament
                             }
-                        ))
+                        }) {
+                            Label("添加", systemImage: "plus.circle")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    
+                    if filament.spools.isEmpty {
+                        Text("没有耗材盘")
+                            .foregroundColor(.secondary)
+                            .padding()
+                    } else {
+                        ForEach(filament.spools) { spool in
+                            SpoolItemView(
+                                viewModel: viewModel,
+                                filamentId: filament.id,
+                                spool: spool,
+                                onUpdate: { updatedSpool in
+                                    // 更新本地状态
+                                    if let updatedFilament = viewModel.filaments.first(where: { $0.id == filament.id }) {
+                                        filament = updatedFilament
+                                    }
+                                }
+                            )
+                            .padding(.vertical, 4)
+                        }
                     }
                 }
                 .padding()
@@ -215,21 +187,6 @@ struct FilamentDetailView: View {
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                    
-                    Button(action: {
-                        viewModel.markAsEmpty(id: filament.id)
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        HStack {
-                            Image(systemName: "xmark.circle")
-                            Text("标记为用完")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                     }
@@ -283,6 +240,96 @@ struct FilamentDetailView: View {
                 }
             }
         }
+    }
+    
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+}
+
+// 单盘耗材视图
+struct SpoolItemView: View {
+    @ObservedObject var viewModel: FilamentViewModel
+    let filamentId: UUID
+    let spool: FilamentSpool
+    let onUpdate: (FilamentSpool) -> Void
+    
+    @State private var showingOptions = false
+    @State private var showingDeleteConfirm = false
+    
+    var body: some View {
+        VStack(spacing: 10) {
+            HStack {
+                Text("添加日期: \(formattedDate(spool.dateAdded))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                Button(action: {
+                    showingOptions = true
+                }) {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundColor(.secondary)
+                }
+                .confirmationDialog("耗材盘选项", isPresented: $showingOptions) {
+                    Button("标记为用完") {
+                        viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
+                        onUpdate(spool)
+                    }
+                    
+                    Button("删除", role: .destructive) {
+                        showingDeleteConfirm = true
+                    }
+                    
+                    Button("取消", role: .cancel) { }
+                }
+                .alert(isPresented: $showingDeleteConfirm) {
+                    Alert(
+                        title: Text("确认删除"),
+                        message: Text("确定要删除这盘耗材吗？"),
+                        primaryButton: .destructive(Text("删除")) {
+                            viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
+                            onUpdate(spool)
+                        },
+                        secondaryButton: .cancel()
+                    )
+                }
+            }
+            
+            HStack {
+                Text("\(Int(spool.remainingPercentage))%")
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                Text(spool.remainingPercentage >= 100 ? "全新" : "部分使用")
+                    .font(.caption)
+                    .foregroundColor(spool.remainingPercentage >= 100 ? .green : .orange)
+            }
+            
+            UsageSlider(percentage: Binding(
+                get: { spool.remainingPercentage },
+                set: { newValue in
+                    viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: newValue)
+                    onUpdate(spool)
+                }
+            ))
+            
+            if !spool.notes.isEmpty {
+                Text(spool.notes)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 4)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(10)
     }
     
     private func formattedDate(_ date: Date) -> String {

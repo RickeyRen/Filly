@@ -19,13 +19,6 @@ struct FilamentListView: View {
                         } label: {
                             Label("删除", systemImage: "trash")
                         }
-                        
-                        Button {
-                            viewModel.markAsEmpty(id: filament.id)
-                        } label: {
-                            Label("用完", systemImage: "xmark.circle")
-                        }
-                        .tint(.orange)
                     }
                 }
             }
@@ -98,24 +91,23 @@ struct FilamentRowView: View {
             Spacer()
             
             VStack(alignment: .trailing) {
-                Text("\(Int(filament.remainingPercentage))%")
+                Text("\(filament.remainingSpoolCount)盘")
                     .fontWeight(.medium)
                 
-                ProgressView(value: filament.remainingPercentage, total: 100)
-                    .progressViewStyle(LinearProgressViewStyle(tint: getProgressColor(percentage: filament.remainingPercentage)))
-                    .frame(width: 50)
+                if filament.fullSpoolCount > 0 {
+                    Text("\(filament.fullSpoolCount)盘全新")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
+                
+                let partialCount = filament.remainingSpoolCount - filament.fullSpoolCount
+                if partialCount > 0 {
+                    Text("\(partialCount)盘部分使用")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
             }
         }
         .padding(.vertical, 4)
-    }
-    
-    private func getProgressColor(percentage: Double) -> Color {
-        if percentage < 30 {
-            return .red
-        } else if percentage < 70 {
-            return .orange
-        } else {
-            return .green
-        }
     }
 } 
