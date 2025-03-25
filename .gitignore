@@ -1,0 +1,45 @@
+# Xcode
+#
+# 忽略Xcode的项目用户特定文件
+xcuserdata/
+
+# 忽略构建产品
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+#
+# 建议不要将Pods目录加入到您的版本控制系统中
+Pods/
+
+# Swift包管理器
+#
+.build/
+
+# macOS系统文件
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 缩略图
+._*
+
+# 可能出现在卷根目录中的文件
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# 可能在远程AFP共享上创建的目录
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk 
