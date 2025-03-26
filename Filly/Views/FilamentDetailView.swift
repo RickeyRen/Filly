@@ -334,6 +334,16 @@ struct SpoolItemView: View {
     @State private var currentDragPercentage: Double = 0
     @State private var isDragging = false
     
+    // 动画状态控制
+    @State private var shouldAnimate = false
+    @State private var isNewlyAdded = false
+    @State private var glowOpacity = 0.0
+    @State private var highlightOpacity = 0.0
+    @State private var animatedScale = 1.0
+    @State private var animatedRotation = 0.0
+    @State private var shadowRadius = 0.0
+    @State private var backgroundSaturation = 0.0
+    
     // 屏幕宽度
     @State private var sliderWidth: CGFloat = 0
     
@@ -344,6 +354,10 @@ struct SpoolItemView: View {
         self.onUpdate = onUpdate
         self._tempPercentage = State(initialValue: spool.remainingPercentage)
         self._currentDragPercentage = State(initialValue: spool.remainingPercentage)
+        
+        // 根据ID和时间戳确定是否为新添加的耗材盘
+        let isNew = spool.dateAdded.timeIntervalSinceNow > -2.0 && spool.remainingPercentage >= 100
+        self._isNewlyAdded = State(initialValue: isNew)
     }
     
     // 确定耗材盘状态
@@ -656,13 +670,54 @@ struct SpoolItemView: View {
                 }
             }
         }
-        .background(SystemColorCompatibility.secondarySystemBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: Color.black.opacity(0.07), radius: 3, x: 0, y: 2)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(statusColor.opacity(0.2), lineWidth: 1)
+        .background(
+            ZStack {
+                // 基础背景
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(SystemColorCompatibility.systemBackground)
+                
+                // 呼吸光晕效果 - 只在新添加时显示
+                if isNewlyAdded {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(statusColor)
+                        .opacity(glowOpacity)
+                        .blendMode(.overlay)
+                }
+                
+                // 高亮边框 - 只在新添加时显示
+                if isNewlyAdded {
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [statusColor.opacity(0.8), statusColor.opacity(0.4), statusColor.opacity(0.8)]), 
+                                startPoint: .topLeading, 
+                                endPoint: .bottomTrailing
+                            ), 
+                            lineWidth: 1.5
+                        )
+                        .opacity(highlightOpacity)
+                }
+            }
         )
+        .scaleEffect(animatedScale)
+        .rotation3DEffect(
+            .degrees(animatedRotation),
+            axis: (x: 0.0, y: 1.0, z: 0.0),
+            anchor: .center,
+            anchorZ: 0.0,
+            perspective: 0.3
+        )
+        .shadow(color: isNewlyAdded ? statusColor.opacity(0.3) : Color.black.opacity(0.1), 
+                radius: isNewlyAdded ? shadowRadius : 5, 
+                x: 0, 
+                y: isNewlyAdded ? 2 : 5)
+        .saturation(1.0 + backgroundSaturation)
+        .onAppear {
+            // 仅当是新添加的耗材盘时才触发动画
+            if isNewlyAdded {
+                startAnimationSequence()
+            }
+        }
         .contentShape(Rectangle())
         .contextMenu {
             Button(action: {
@@ -710,6 +765,58 @@ struct SpoolItemView: View {
                     onUpdate(spool)
                 }
             )
+        }
+    }
+    
+    private func startAnimationSequence() {
+        shouldAnimate = true
+        
+        // 1. 初始状态设置
+        animatedScale = 0.95
+        animatedRotation = -5
+        shadowRadius = 2
+        glowOpacity = 0.0
+        highlightOpacity = 0.0
+        backgroundSaturation = 0.0
+        
+        // 2. 第一阶段动画：弹出和旋转
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
+            animatedScale = 1.05
+            animatedRotation = 5
+            shadowRadius = 12
+            glowOpacity = 0.3
+            highlightOpacity = 0.8
+            backgroundSaturation = 0.1
+        }
+        
+        // 3. 第二阶段：稳定动画
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.65, blendDuration: 0.3)) {
+                animatedScale = 1.02
+                animatedRotation = 0
+                shadowRadius = 8
+                glowOpacity = 0.2
+                backgroundSaturation = 0.05
+            }
+        }
+        
+        // 4. 第三阶段：脉冲光晕效果
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+            withAnimation(.easeInOut(duration: 1.2).repeatCount(3, autoreverses: true)) {
+                glowOpacity = 0.4
+                highlightOpacity = 1.0
+            }
+        }
+        
+        // 5. 最终阶段：回到正常状态
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4.5) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8, blendDuration: 0.3)) {
+                animatedScale = 1.0
+                shadowRadius = 5
+                glowOpacity = 0.0
+                highlightOpacity = 0.0
+                backgroundSaturation = 0.0
+            }
         }
     }
     
