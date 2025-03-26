@@ -81,37 +81,22 @@ class FilamentViewModel: ObservableObject {
         }
     }
     
-    // 移除空盘
+    // 移除空盘 - 优化版
     func removeEmptySpool(filamentId: UUID, spoolId: UUID) {
-        print("开始删除耗材盘")
-        
-        // 直接修改数据源
-        for i in 0..<filaments.count {
-            if filaments[i].id == filamentId {
-                print("找到对应耗材，共有\(filaments[i].spools.count)个耗材盘")
-                
-                // 直接通过索引操作
-                let oldCount = filaments[i].spools.count
-                filaments[i].spools.removeAll { $0.id == spoolId }
-                
-                print("删除后还剩\(filaments[i].spools.count)个耗材盘")
-                
-                // 检查是否全部删除
-                if filaments[i].spools.isEmpty {
-                    print("所有耗材盘已删除，移除整个耗材")
-                    filaments.remove(at: i)
-                }
-                
-                // 保存并刷新UI
-                saveFilaments()
-                objectWillChange.send()
-                
-                print("删除操作完成")
-                return
+        // 直接修改数据源 - 使用更高效的方式
+        if let filamentIndex = filaments.firstIndex(where: { $0.id == filamentId }) {
+            // 直接使用removeAll方法，而不是循环比较
+            filaments[filamentIndex].spools.removeAll(where: { $0.id == spoolId })
+            
+            // 检查是否全部删除
+            if filaments[filamentIndex].spools.isEmpty {
+                filaments.remove(at: filamentIndex)
             }
+            
+            // 立即保存并通知UI
+            saveFilaments()
+            objectWillChange.send()
         }
-        
-        print("未找到要删除的耗材")
     }
     
     // 添加新的耗材盘
@@ -125,14 +110,12 @@ class FilamentViewModel: ObservableObject {
         }
     }
     
-    // 保存数据
+    // 保存数据 - 高效版
     private func saveFilaments() {
-        print("保存数据中...")
         do {
             let encoded = try JSONEncoder().encode(filaments)
             UserDefaults.standard.set(encoded, forKey: saveKey)
             UserDefaults.standard.synchronize() // 立即保存
-            print("数据保存成功")
         } catch {
             print("数据保存失败: \(error)")
         }

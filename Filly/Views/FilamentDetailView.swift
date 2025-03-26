@@ -688,28 +688,31 @@ struct SpoolItemView: View {
                 
                 // 删除按钮
                 Button(action: {
-                    // 直接执行删除，不再使用确认对话框
-                    print("直接执行删除操作: filamentId=\(filamentId), spoolId=\(spool.id)")
+                    // 高级删除动画效果
+                    print("执行删除操作: filamentId=\(filamentId), spoolId=\(spool.id)")
                     
-                    // 先播放简单动画
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        animatedScale = 0.01
+                    // 开始执行高级动画
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                        animatedScale = 1.08
+                        glowOpacity = 0.5
+                        shadowRadius = 10
                     }
                     
-                    // 延迟删除，给动画留出时间
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                        // 直接调用删除方法
-                        viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
+                    // 连续动画：缩放+旋转
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            animatedScale = 0.01
+                            animatedRotation = 180
+                            glowOpacity = 0.8
+                        }
                         
-                        // 再次延迟，等待删除操作完成
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            // 手动触发UI更新
-                            if let updatedFilament = viewModel.filaments.first(where: { $0.id == filamentId }) {
-                                onUpdate(FilamentSpool())
-                            } else {
-                                // 如果整个耗材已删除，回到上一级
-                                onUpdate(FilamentSpool())
-                            }
+                        // 更快的删除流程 - 直接在动画过程中删除
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            // 直接调用删除方法
+                            viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
+                            
+                            // 立即触发UI更新
+                            onUpdate(FilamentSpool())
                         }
                     }
                 }) {
@@ -742,27 +745,23 @@ struct SpoolItemView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(SystemColorCompatibility.systemBackground)
                 
-                // 呼吸光晕效果 - 只在新添加时显示
-                if isNewlyAdded {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(statusColor)
-                        .opacity(glowOpacity)
-                        .blendMode(.overlay)
-                }
+                // 高亮光晕效果
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(statusColor)
+                    .opacity(glowOpacity)
+                    .blendMode(.overlay)
                 
-                // 高亮边框 - 只在新添加时显示
-                if isNewlyAdded {
-                    RoundedRectangle(cornerRadius: 16)
-                        .strokeBorder(
-                            LinearGradient(
-                                gradient: Gradient(colors: [statusColor.opacity(0.8), statusColor.opacity(0.4), statusColor.opacity(0.8)]), 
-                                startPoint: .topLeading, 
-                                endPoint: .bottomTrailing
-                            ), 
-                            lineWidth: 1.5
-                        )
-                        .opacity(highlightOpacity)
-                }
+                // 边框效果
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(colors: [statusColor.opacity(0.8), statusColor.opacity(0.4)]), 
+                            startPoint: .topLeading, 
+                            endPoint: .bottomTrailing
+                        ), 
+                        lineWidth: 1.5
+                    )
+                    .opacity(highlightOpacity)
             }
         )
         .scaleEffect(animatedScale)
