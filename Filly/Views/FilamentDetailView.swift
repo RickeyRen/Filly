@@ -688,31 +688,55 @@ struct SpoolItemView: View {
                 
                 // 删除按钮
                 Button(action: {
-                    // 高级删除动画效果
+                    // 高级物理感动画效果
                     print("执行删除操作: filamentId=\(filamentId), spoolId=\(spool.id)")
+
+                    // 第一阶段：轻微震动与发光效果
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.prepare()
+                    impactFeedback.impactOccurred()
                     
-                    // 开始执行高级动画
-                    withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                        animatedScale = 1.08
-                        glowOpacity = 0.5
-                        shadowRadius = 10
+                    // 初始轻微震动
+                    withAnimation(.interpolatingSpring(mass: 0.2, stiffness: 170, damping: 8, initialVelocity: 20)) {
+                        animatedScale = 0.94
+                        animatedRotation = -3
+                        glowOpacity = 0.1
                     }
                     
-                    // 连续动画：缩放+旋转
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            animatedScale = 0.01
-                            animatedRotation = 180
-                            glowOpacity = 0.8
+                    // 第二阶段：弹性扩张与准备
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(.interpolatingSpring(mass: 0.4, stiffness: 120, damping: 10, initialVelocity: 5)) {
+                            animatedScale = 1.12
+                            animatedRotation = 5
+                            glowOpacity = 0.6
+                            highlightOpacity = 0.9
+                            shadowRadius = 15
+                            backgroundSaturation = 0.15
                         }
                         
-                        // 更快的删除流程 - 直接在动画过程中删除
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                            // 直接调用删除方法
-                            viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
+                        // 第三阶段：强调状态与浮动效果
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                            // 轻微位置浮动动画
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                animatedRotation = -2
+                            }
                             
-                            // 立即触发UI更新
-                            onUpdate(FilamentSpool())
+                            // 第四阶段：融化消失效果
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                                withAnimation(.timingCurve(0.55, 0.055, 0.675, 0.19, duration: 0.28)) {
+                                    animatedScale = 0.001
+                                    animatedRotation = 90
+                                    glowOpacity = 1.0
+                                    shadowRadius = 2
+                                    backgroundSaturation = 0.0
+                                }
+                                
+                                // 执行实际删除
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
+                                    onUpdate(FilamentSpool())
+                                }
+                            }
                         }
                     }
                 }) {
@@ -745,38 +769,73 @@ struct SpoolItemView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(SystemColorCompatibility.systemBackground)
                 
-                // 高亮光晕效果
+                // 深度阴影层
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.black.opacity(0.03 + (glowOpacity * 0.1)))
+                    .offset(x: 0, y: 1)
+                    .blur(radius: 2)
+                
+                // 高光层
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                statusColor.opacity(0.12 + (glowOpacity * 0.4)),
+                                Color.clear
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .blendMode(.overlay)
+                
+                // 动态光晕效果
                 RoundedRectangle(cornerRadius: 16)
                     .fill(statusColor)
                     .opacity(glowOpacity)
-                    .blendMode(.overlay)
+                    .blur(radius: 8 * glowOpacity)
+                    .blendMode(.screen)
                 
-                // 边框效果
+                // 精致边框
                 RoundedRectangle(cornerRadius: 16)
                     .strokeBorder(
                         LinearGradient(
-                            gradient: Gradient(colors: [statusColor.opacity(0.8), statusColor.opacity(0.4)]), 
+                            gradient: Gradient(colors: [
+                                statusColor.opacity(0.7 + (highlightOpacity * 0.3)),
+                                statusColor.opacity(0.3),
+                                statusColor.opacity(0.5 + (highlightOpacity * 0.3))
+                            ]), 
                             startPoint: .topLeading, 
                             endPoint: .bottomTrailing
                         ), 
-                        lineWidth: 1.5
+                        lineWidth: 1.2
                     )
-                    .opacity(highlightOpacity)
+                    .opacity(0.4 + highlightOpacity * 0.6)
             }
         )
         .scaleEffect(animatedScale)
         .rotation3DEffect(
             .degrees(animatedRotation),
-            axis: (x: 0.0, y: 1.0, z: 0.0),
+            axis: (x: 0.2, y: 1.0, z: 0.1),
             anchor: .center,
             anchorZ: 0.0,
-            perspective: 0.3
+            perspective: 0.2
         )
-        .shadow(color: isNewlyAdded ? statusColor.opacity(0.3) : Color.black.opacity(0.1), 
-                radius: isNewlyAdded ? shadowRadius : 5, 
-                x: 0, 
-                y: isNewlyAdded ? 2 : 5)
+        .shadow(
+            color: statusColor.opacity(0.2 + glowOpacity * 0.4), 
+            radius: shadowRadius, 
+            x: animatedRotation * 0.1, 
+            y: 3
+        )
+        .shadow(
+            color: Color.black.opacity(0.06),
+            radius: 6,
+            x: 0,
+            y: 3
+        )
+        .brightness(glowOpacity * 0.05)
         .saturation(1.0 + backgroundSaturation)
+        .blur(radius: glowOpacity > 0.8 ? (glowOpacity - 0.8) * 4 : 0) // 消失时轻微模糊
         .onAppear {
             // 仅当是新添加的耗材盘时才触发动画
             if isNewlyAdded {
