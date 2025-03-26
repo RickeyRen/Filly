@@ -682,7 +682,53 @@ struct SpoolItemView: View {
                 
                 // 删除按钮
                 Button(action: {
-                    showingDeleteConfirm = true
+                    // 设置删除动画
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7, blendDuration: 0.2)) {
+                        // 开始震动特效
+                        animatedScale = 1.03
+                        animatedRotation = 3
+                        shadowRadius = 10
+                        glowOpacity = 0.3
+                        highlightOpacity = 0.6
+                        backgroundSaturation = 0.1
+                    }
+                    
+                    // 震动效果
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0.1)) {
+                            animatedRotation = -3
+                        }
+                        
+                        // 第二次震动
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            withAnimation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0.1)) {
+                                animatedRotation = 3
+                            }
+                            
+                            // 第三次震动并显示删除确认
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8, blendDuration: 0.1)) {
+                                    animatedRotation = 0
+                                    glowOpacity = 0.5
+                                    shadowRadius = 12
+                                }
+                                
+                                // 停顿片刻后显示确认对话框
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    showingDeleteConfirm = true
+                                    
+                                    // 重置特效
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.2)) {
+                                        animatedScale = 1.0
+                                        shadowRadius = 5
+                                        glowOpacity = 0.0
+                                        highlightOpacity = 0.0
+                                        backgroundSaturation = 0.0
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }) {
                     Image(systemName: "trash.circle.fill")
                         .font(.system(size: 22))
@@ -762,10 +808,35 @@ struct SpoolItemView: View {
                 title: Text("确认删除"),
                 message: Text("确定要删除这盘耗材吗？"),
                 primaryButton: .destructive(Text("删除")) {
-                    viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
-                    onUpdate(spool)
+                    // 执行删除操作前先添加删除动画
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        animatedScale = 1.05
+                    }
+                    
+                    withAnimation(.easeInOut(duration: 0.5).delay(0.1)) {
+                        animatedScale = 0.01
+                        animatedRotation = 180
+                        glowOpacity = 0.8
+                        shadowRadius = 20
+                    }
+                    
+                    // 延迟一段时间后执行实际删除，让动画有时间播放
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
+                        onUpdate(spool)
+                    }
                 },
-                secondaryButton: .cancel(Text("取消"))
+                secondaryButton: .cancel(Text("取消")) {
+                    // 取消后恢复原状
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.2)) {
+                        animatedScale = 1.0
+                        animatedRotation = 0
+                        shadowRadius = 5
+                        glowOpacity = 0.0
+                        highlightOpacity = 0.0
+                        backgroundSaturation = 0.0
+                    }
+                }
             )
         }
         .sheet(isPresented: $isEditingPercentage) {
