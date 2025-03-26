@@ -96,9 +96,12 @@ class FilamentViewModel: ObservableObject {
     }
     
     // 添加新的耗材盘
-    func addSpool(to filamentId: UUID, spool: FilamentSpool = FilamentSpool()) {
+    func addSpool(to filamentId: UUID) {
         if let index = filaments.firstIndex(where: { $0.id == filamentId }) {
-            filaments[index].spools.append(spool)
+            var updatedFilament = filaments[index]
+            let newSpool = FilamentSpool(remainingPercentage: 100)
+            updatedFilament.spools.insert(newSpool, at: 0) // 将新耗材盘插入到数组的第一个位置
+            filaments[index] = updatedFilament
             saveFilaments()
         }
     }
