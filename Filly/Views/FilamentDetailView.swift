@@ -422,56 +422,16 @@ struct SpoolItemView: View {
                 
                 Spacer()
                 
-                // 快捷操作按钮
-                HStack(spacing: 10) {
-                    Button(action: {
-                        isEditingPercentage = true
-                    }) {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 16))
-                            .foregroundColor(.blue)
-                            .padding(8)
-                            .background(Color.blue.opacity(0.1))
-                            .clipShape(Circle())
-                    }
-                    
-                    Menu {
-                        Button("全新 (100%)") {
-                            viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 100)
-                            onUpdate(spool)
-                        }
-                        
-                        Button("75%") {
-                            viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 75)
-                            onUpdate(spool)
-                        }
-                        
-                        Button("50%") {
-                            viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 50)
-                            onUpdate(spool)
-                        }
-                        
-                        Button("25%") {
-                            viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 25)
-                            onUpdate(spool)
-                        }
-                        
-                        Divider()
-                        
-                        Button("标记为用完", role: .destructive) {
-                            viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 0)
-                            onUpdate(spool)
-                        }
-                        
-                        Button("删除", role: .destructive) {
-                            showingDeleteConfirm = true
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 16))
-                            .foregroundColor(.secondary)
-                            .padding(8)
-                    }
+                // 直接编辑按钮
+                Button(action: {
+                    isEditingPercentage = true
+                }) {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 16))
+                        .foregroundColor(.blue)
+                        .padding(8)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Circle())
                 }
             }
             .padding(.horizontal)
@@ -503,6 +463,7 @@ struct SpoolItemView: View {
                         .frame(width: 80, height: 80)
                         .rotationEffect(Angle(degrees: -90))
                         .shadow(color: statusColor.opacity(0.3), radius: 2, x: 0, y: 1)
+                        .animation(.easeInOut(duration: 0.6), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
                     
                     // 轻微的阴影效果
                     Circle()
@@ -524,6 +485,7 @@ struct SpoolItemView: View {
                         )
                         .frame(width: 60, height: 60)
                         .rotationEffect(Angle(degrees: -90))
+                        .animation(.easeInOut(duration: 0.6), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
                     
                     // 中心耗材盘模型
                     SpoolModel(color: statusColor)
@@ -561,6 +523,7 @@ struct SpoolItemView: View {
                                     // 修正进度条宽度计算，从左侧正好开始到手柄中心位置
                                     .frame(width: CGFloat(isDragging ? currentDragPercentage : spool.remainingPercentage) / 100.0 * trackWidth, height: trackHeight)
                                     .padding(.leading, horizontalPadding) // 与背景条左侧对齐
+                                    .animation(.easeInOut(duration: 0.6), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
                             }
                             
                             // 拖动手柄
@@ -577,6 +540,7 @@ struct SpoolItemView: View {
                                     x: horizontalPadding + CGFloat(isDragging ? currentDragPercentage : spool.remainingPercentage) / 100.0 * trackWidth,
                                     y: handleWidth / 2 // 垂直居中在ZStack中
                                 )
+                                .animation(.easeInOut(duration: 0.6), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
                                 .gesture(
                                     DragGesture()
                                         .onChanged { value in
@@ -656,7 +620,80 @@ struct SpoolItemView: View {
                 .frame(height: 50)
                 .padding(.trailing, 4) // 减少右侧内边距，确保100%显示完整
             }
-            .padding(.bottom, 16)
+            .padding(.bottom, 8)
+            
+            // 用完和删除按钮行
+            HStack(spacing: 10) {
+                // 添加"用完了"按钮
+                Button(action: {
+                    // 开始平滑动画序列
+                    isDragging = true // 设置为拖动状态，这样UI会使用currentDragPercentage
+                    
+                    // 动画组合 - 同时进行特效和值变化
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.2)) {
+                        // 特效动画
+                        animatedScale = 1.05
+                        animatedRotation = -5
+                        shadowRadius = 12
+                        glowOpacity = 0.4
+                        highlightOpacity = 0.8
+                        backgroundSaturation = 0.1
+                    }
+                    
+                    // 值动画与特效动画并行，无需等待
+                    withAnimation(.easeOut(duration: 0.8)) {
+                        currentDragPercentage = 0 // 平滑动画到0%
+                    }
+                    
+                    // 更新数据库中的值并结束动画
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        // 更新数据库中的值
+                        viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 0)
+                        onUpdate(spool)
+                        
+                        // 结束特效 - 渐变回正常状态
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.2)) {
+                            animatedScale = 1.0
+                            animatedRotation = 0
+                            shadowRadius = 5
+                            glowOpacity = 0.0
+                            highlightOpacity = 0.0
+                            backgroundSaturation = 0.0
+                        }
+                        
+                        // 完成后重置状态
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            isDragging = false
+                        }
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16))
+                        Text("用完了")
+                            .font(.headline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.red.opacity(0.8))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                
+                // 删除按钮
+                Button(action: {
+                    showingDeleteConfirm = true
+                }) {
+                    Image(systemName: "trash.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundColor(.red)
+                        .padding(8)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(Circle())
+                }
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 10)
             
             // 备注信息
             if !spool.notes.isEmpty {
@@ -719,33 +756,7 @@ struct SpoolItemView: View {
             }
         }
         .contentShape(Rectangle())
-        .contextMenu {
-            Button(action: {
-                isEditingPercentage = true
-            }) {
-                Label("调整剩余量", systemImage: "slider.horizontal.3")
-            }
-            
-            Button(action: {
-                viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 100)
-                onUpdate(spool)
-            }) {
-                Label("设为全新", systemImage: "circle.fill")
-            }
-            
-            Button(action: {
-                viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 0)
-                onUpdate(spool)
-            }) {
-                Label("标记为用完", systemImage: "xmark.circle")
-            }
-            
-            Button(role: .destructive, action: {
-                showingDeleteConfirm = true
-            }) {
-                Label("删除", systemImage: "trash")
-            }
-        }
+        // 恢复确认对话框和编辑表单
         .alert(isPresented: $showingDeleteConfirm) {
             Alert(
                 title: Text("确认删除"),
