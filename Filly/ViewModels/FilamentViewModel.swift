@@ -83,16 +83,35 @@ class FilamentViewModel: ObservableObject {
     
     // 移除空盘
     func removeEmptySpool(filamentId: UUID, spoolId: UUID) {
-        if let filamentIndex = filaments.firstIndex(where: { $0.id == filamentId }) {
-            filaments[filamentIndex].spools.removeAll(where: { $0.id == spoolId })
-            
-            // 如果所有盘都被移除，删除整个耗材
-            if filaments[filamentIndex].spools.isEmpty {
-                filaments.remove(at: filamentIndex)
+        print("开始删除耗材盘")
+        
+        // 直接修改数据源
+        for i in 0..<filaments.count {
+            if filaments[i].id == filamentId {
+                print("找到对应耗材，共有\(filaments[i].spools.count)个耗材盘")
+                
+                // 直接通过索引操作
+                let oldCount = filaments[i].spools.count
+                filaments[i].spools.removeAll { $0.id == spoolId }
+                
+                print("删除后还剩\(filaments[i].spools.count)个耗材盘")
+                
+                // 检查是否全部删除
+                if filaments[i].spools.isEmpty {
+                    print("所有耗材盘已删除，移除整个耗材")
+                    filaments.remove(at: i)
+                }
+                
+                // 保存并刷新UI
+                saveFilaments()
+                objectWillChange.send()
+                
+                print("删除操作完成")
+                return
             }
-            
-            saveFilaments()
         }
+        
+        print("未找到要删除的耗材")
     }
     
     // 添加新的耗材盘
@@ -108,16 +127,32 @@ class FilamentViewModel: ObservableObject {
     
     // 保存数据
     private func saveFilaments() {
-        if let encoded = try? JSONEncoder().encode(filaments) {
+        print("保存数据中...")
+        do {
+            let encoded = try JSONEncoder().encode(filaments)
             UserDefaults.standard.set(encoded, forKey: saveKey)
+            UserDefaults.standard.synchronize() // 立即保存
+            print("数据保存成功")
+        } catch {
+            print("数据保存失败: \(error)")
         }
     }
     
     // 加载数据
     private func loadFilaments() {
-        if let data = UserDefaults.standard.data(forKey: saveKey),
-           let decoded = try? JSONDecoder().decode([Filament].self, from: data) {
-            filaments = decoded
+        print("ViewModel: 开始加载耗材数据")
+        if let data = UserDefaults.standard.data(forKey: saveKey) {
+            do {
+                let decoded = try JSONDecoder().decode([Filament].self, from: data)
+                filaments = decoded
+                print("ViewModel: 耗材数据加载成功，共\(filaments.count)个耗材")
+            } catch {
+                print("ViewModel: 解析耗材数据失败: \(error.localizedDescription)")
+                filaments = []
+            }
+        } else {
+            print("ViewModel: 未找到保存的耗材数据")
+            filaments = []
         }
     }
     

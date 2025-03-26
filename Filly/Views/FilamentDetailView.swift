@@ -215,10 +215,16 @@ struct FilamentDetailView: View {
                                 viewModel: viewModel,
                                 filamentId: filament.id,
                                 spool: spool,
-                                onUpdate: { updatedSpool in
-                                    // 更新本地状态
+                                onUpdate: { _ in
+                                    print("触发更新UI回调")
+                                    
+                                    // 先检查整个耗材是否还存在
                                     if let updatedFilament = viewModel.filaments.first(where: { $0.id == filament.id }) {
+                                        print("更新耗材UI，当前有\(updatedFilament.spools.count)个耗材盘")
                                         filament = updatedFilament
+                                    } else {
+                                        print("耗材已被删除，返回上一级")
+                                        presentationMode.wrappedValue.dismiss()
                                     }
                                 }
                             )
@@ -682,50 +688,27 @@ struct SpoolItemView: View {
                 
                 // 删除按钮
                 Button(action: {
-                    // 设置删除动画
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7, blendDuration: 0.2)) {
-                        // 开始震动特效
-                        animatedScale = 1.03
-                        animatedRotation = 3
-                        shadowRadius = 10
-                        glowOpacity = 0.3
-                        highlightOpacity = 0.6
-                        backgroundSaturation = 0.1
+                    // 直接执行删除，不再使用确认对话框
+                    print("直接执行删除操作: filamentId=\(filamentId), spoolId=\(spool.id)")
+                    
+                    // 先播放简单动画
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        animatedScale = 0.01
                     }
                     
-                    // 震动效果
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0.1)) {
-                            animatedRotation = -3
-                        }
+                    // 延迟删除，给动画留出时间
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        // 直接调用删除方法
+                        viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
                         
-                        // 第二次震动
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                            withAnimation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0.1)) {
-                                animatedRotation = 3
-                            }
-                            
-                            // 第三次震动并显示删除确认
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8, blendDuration: 0.1)) {
-                                    animatedRotation = 0
-                                    glowOpacity = 0.5
-                                    shadowRadius = 12
-                                }
-                                
-                                // 停顿片刻后显示确认对话框
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    showingDeleteConfirm = true
-                                    
-                                    // 重置特效
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.2)) {
-                                        animatedScale = 1.0
-                                        shadowRadius = 5
-                                        glowOpacity = 0.0
-                                        highlightOpacity = 0.0
-                                        backgroundSaturation = 0.0
-                                    }
-                                }
+                        // 再次延迟，等待删除操作完成
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            // 手动触发UI更新
+                            if let updatedFilament = viewModel.filaments.first(where: { $0.id == filamentId }) {
+                                onUpdate(FilamentSpool())
+                            } else {
+                                // 如果整个耗材已删除，回到上一级
+                                onUpdate(FilamentSpool())
                             }
                         }
                     }
@@ -802,43 +785,6 @@ struct SpoolItemView: View {
             }
         }
         .contentShape(Rectangle())
-        // 恢复确认对话框和编辑表单
-        .alert(isPresented: $showingDeleteConfirm) {
-            Alert(
-                title: Text("确认删除"),
-                message: Text("确定要删除这盘耗材吗？"),
-                primaryButton: .destructive(Text("删除")) {
-                    // 执行删除操作前先添加删除动画
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        animatedScale = 1.05
-                    }
-                    
-                    withAnimation(.easeInOut(duration: 0.5).delay(0.1)) {
-                        animatedScale = 0.01
-                        animatedRotation = 180
-                        glowOpacity = 0.8
-                        shadowRadius = 20
-                    }
-                    
-                    // 延迟一段时间后执行实际删除，让动画有时间播放
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                        viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
-                        onUpdate(spool)
-                    }
-                },
-                secondaryButton: .cancel(Text("取消")) {
-                    // 取消后恢复原状
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.2)) {
-                        animatedScale = 1.0
-                        animatedRotation = 0
-                        shadowRadius = 5
-                        glowOpacity = 0.0
-                        highlightOpacity = 0.0
-                        backgroundSaturation = 0.0
-                    }
-                }
-            )
-        }
         .sheet(isPresented: $isEditingPercentage) {
             SpoolPercentageAdjustSheet(
                 percentage: $tempPercentage,
