@@ -469,7 +469,8 @@ struct SpoolItemView: View {
                         .frame(width: 80, height: 80)
                         .rotationEffect(Angle(degrees: -90))
                         .shadow(color: statusColor.opacity(0.3), radius: 2, x: 0, y: 1)
-                        .animation(.easeInOut(duration: 0.6), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
+                        // 拖动时移除动画延迟
+                        .animation(isDragging ? .interactiveSpring() : .spring(response: 0.3), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
                     
                     // 轻微的阴影效果
                     Circle()
@@ -491,7 +492,8 @@ struct SpoolItemView: View {
                         )
                         .frame(width: 60, height: 60)
                         .rotationEffect(Angle(degrees: -90))
-                        .animation(.easeInOut(duration: 0.6), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
+                        // 拖动时使用即时动画
+                        .animation(isDragging ? .interactiveSpring() : .spring(response: 0.3), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
                     
                     // 中心耗材盘模型
                     SpoolModel(color: statusColor)
@@ -529,7 +531,8 @@ struct SpoolItemView: View {
                                     // 修正进度条宽度计算，从左侧正好开始到手柄中心位置
                                     .frame(width: CGFloat(isDragging ? currentDragPercentage : spool.remainingPercentage) / 100.0 * trackWidth, height: trackHeight)
                                     .padding(.leading, horizontalPadding) // 与背景条左侧对齐
-                                    .animation(.easeInOut(duration: 0.6), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
+                                    // 移除慢动画，让进度条与手柄同步
+                                    .animation(isDragging ? nil : .spring(response: 0.3), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
                             }
                             
                             // 拖动手柄
@@ -546,7 +549,8 @@ struct SpoolItemView: View {
                                     x: horizontalPadding + CGFloat(isDragging ? currentDragPercentage : spool.remainingPercentage) / 100.0 * trackWidth,
                                     y: handleWidth / 2 // 垂直居中在ZStack中
                                 )
-                                .animation(.easeInOut(duration: 0.6), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
+                                // 移除慢动画，让拖动更跟手
+                                .animation(isDragging ? nil : .spring(response: 0.3), value: isDragging ? currentDragPercentage : spool.remainingPercentage)
                                 .gesture(
                                     DragGesture()
                                         .onChanged { value in
@@ -559,8 +563,10 @@ struct SpoolItemView: View {
                                             // 计算百分比，限制在0-100范围内
                                             let newPercentage = max(0, min(100, Double(relativePosition / trackWidth * 100)))
                                             
-                                            // 实时更新UI
-                                            currentDragPercentage = newPercentage
+                                            // 立即更新UI，不使用动画
+                                            withAnimation(.interactiveSpring()) {
+                                                currentDragPercentage = newPercentage
+                                            }
                                         }
                                         .onEnded { value in
                                             // 计算相对于滑块轨道的位置
