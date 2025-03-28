@@ -926,57 +926,115 @@ struct SpoolModel: View {
     
     var body: some View {
         ZStack {
-            // 耗材盘底部
-            Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [color.opacity(0.7), color.opacity(0.9)]),
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 20
-                    )
-                )
-                .frame(width: 34, height: 34)
-                .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 2)
+            // 外部耗材线圈效果
+            ZStack {
+                // 线材缠绕效果 - 底层
+                ForEach(0..<8) { i in
+                    Capsule()
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: [
+                                color.opacity(0.7),
+                                color.opacity(0.9)
+                            ]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        ))
+                        .frame(width: 40, height: 3.5)
+                        .offset(y: CGFloat(i) * 4.2 - 14)
+                }
+                
+                // 线材高光
+                ForEach(0..<8) { i in
+                    Capsule()
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.white.opacity(0.1 + (i % 3 == 0 ? 0.3 : 0)),
+                                Color.clear
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ))
+                        .frame(width: 40, height: 3.5)
+                        .offset(y: CGFloat(i) * 4.2 - 14)
+                }
+            }
+            .mask(
+                // 线轴外轮廓形状
+                ZStack {
+                    Capsule()
+                        .frame(width: 40, height: 38)
+                    
+                    // 中心空隙
+                    Circle()
+                        .frame(width: 12)
+                        .blendMode(.destinationOut)
+                }
+                .compositingGroup()
+            )
             
-            // 耗材盘中央凹陷效果
-            Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [color.opacity(0.5), color.opacity(0.8)]),
-                        center: .center,
-                        startRadius: 2,
-                        endRadius: 12
-                    )
-                )
-                .frame(width: 22, height: 22)
-            
-            // 中心孔
+            // 线轴底盘效果（左侧）
             Circle()
                 .fill(
                     LinearGradient(
-                        gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)]),
+                        gradient: Gradient(colors: [
+                            Color.gray.opacity(0.6),
+                            Color.gray.opacity(0.3)
+                        ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-                .frame(width: 10, height: 10)
-                .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
-            
-            // 高光效果
-            Circle()
-                .trim(from: 0, to: 0.4)
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.1)]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 2
+                .frame(width: 15, height: 38)
+                .offset(x: -16, y: 0)
+                .mask(
+                    Capsule()
+                        .frame(width: 12, height: 38)
                 )
-                .frame(width: 30, height: 30)
-                .rotationEffect(Angle(degrees: -45))
+            
+            // 线轴底盘效果（右侧）
+            Circle()
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.gray.opacity(0.5),
+                            Color.gray.opacity(0.3)
+                        ]),
+                        startPoint: .topTrailing,
+                        endPoint: .bottomLeading
+                    )
+                )
+                .frame(width: 15, height: 38)
+                .offset(x: 16, y: 0)
+                .mask(
+                    Capsule()
+                        .frame(width: 12, height: 38)
+                )
+            
+            // 中心轴
+            ZStack {
+                // 轴孔
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.black.opacity(0.8),
+                                Color.black.opacity(0.5)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(width: 8, height: 8)
+                
+                // 轴孔高光
+                Circle()
+                    .fill(Color.white.opacity(0.3))
+                    .frame(width: 3, height: 3)
+                    .offset(x: -1, y: -1)
+            }
         }
+        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+        .rotationEffect(Angle(degrees: 90))
     }
 }
 
@@ -1144,3 +1202,5 @@ struct SpoolStatusItem: View {
         .frame(maxWidth: .infinity)
     }
 } 
+} 
+} } 
