@@ -1196,26 +1196,36 @@ struct SpoolStatusItem: View {
     }
 }
 
-// 3D线材卷模型 - 优化设计
+// 3D线材卷模型 - 精细优化设计
 struct FilamentReelView: View {
     let color: Color
     
     var body: some View {
         ZStack {
-            // 外部圆环 - 直接使用传入的颜色填充到边缘
+            // 外部圆环 - 采用渐变填充增强立体感
             Circle()
-                .fill(color)
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            color.opacity(1.0),
+                            darken(color, by: 0.15)
+                        ]),
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 38
+                    )
+                )
                 .frame(width: 76, height: 76)
             
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<8) { i in
                 let radius = 20.0 + CGFloat(i) * 3.0
                 
-                // 主线条 - 根据背景色调整对比度
+                // 主线条 - 根据背景色调整对比度和宽度
                 Circle()
                     .stroke(
-                        getContrastColor(for: color, opacity: 0.25),
-                        lineWidth: 1.2
+                        getContrastColor(for: color, opacity: 0.22 + (CGFloat(i) * 0.01)),
+                        lineWidth: 1.0 + (CGFloat(7-i) * 0.03)
                     )
                     .frame(width: radius * 2, height: radius * 2)
             }
@@ -1223,70 +1233,147 @@ struct FilamentReelView: View {
             // 中心孔周围的边缘
             Circle()
                 .stroke(
-                    getContrastColor(for: color, opacity: 0.35),
-                    lineWidth: 2.0
+                    getContrastColor(for: color, opacity: 0.4),
+                    lineWidth: 1.8
                 )
                 .frame(width: 27, height: 27)
             
-            // 中心孔 - 白色
+            // 中心孔 - 白色，增加微妙阴影和内边缘
             Circle()
-                .fill(Color.white)
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color.white,
+                            Color.white.opacity(0.95)
+                        ]),
+                        center: .center,
+                        startRadius: 4,
+                        endRadius: 12
+                    )
+                )
                 .frame(width: 24, height: 24)
-                .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 0.5)
+                .overlay(
+                    Circle()
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(0.15), radius: 1, x: 0, y: 0.5)
             
-            // 顶部高光 - 塑料质感
+            // 顶部高光 - 增强塑料质感
             Circle()
-                .trim(from: 0.0, to: 0.25)
+                .trim(from: 0.0, to: 0.3)
                 .stroke(
-                    Color.white.opacity(0.5),
+                    Color.white.opacity(0.4),
                     style: StrokeStyle(lineWidth: 20, lineCap: .round)
                 )
                 .frame(width: 44, height: 44)
                 .rotationEffect(Angle(degrees: -20))
                 .offset(y: -7)
-                .blur(radius: 4)
+                .blur(radius: 3)
                 
-            // 最外侧边框 - 放在最上层
+            // 最外侧边框 - 使用更细的边框和渐变效果
             Circle()
                 .stroke(
-                    getBorderColor(for: color),
-                    lineWidth: 1.5
+                    getOptimizedBorderColor(for: color),
+                    lineWidth: 1.0
                 )
                 .frame(width: 76, height: 76)
         }
         .frame(width: 85, height: 85)
     }
     
-    // 获取与背景色形成对比的线条颜色
+    // 获取与背景色形成最佳对比的线条颜色
     private func getContrastColor(for backgroundColor: Color, opacity: CGFloat) -> Color {
         // 估算背景色亮度
         let brightness = getColorBrightness(backgroundColor)
         
         // 根据背景色亮度调整线条颜色
-        if brightness > 0.7 {
-            // 亮色背景，使用深色线条
-            return Color.black.opacity(opacity * 2.0)
-        } else if brightness < 0.3 {
-            // 暗色背景，使用亮色线条
-            return Color.white.opacity(opacity * 1.5)
+        if brightness > 0.75 {
+            // 非常亮的背景色，使用更深的线条
+            return darken(backgroundColor, by: 0.4).opacity(opacity * 1.5)
+        } else if brightness > 0.5 {
+            // 中亮度背景色，使用适度深色线条
+            return darken(backgroundColor, by: 0.3).opacity(opacity * 1.8)
+        } else if brightness > 0.25 {
+            // 中暗度背景色，使用适度亮色线条
+            return lighten(backgroundColor, by: 0.3).opacity(opacity * 1.8)
         } else {
-            // 中等亮度，使用半透明黑色或白色
-            return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity * 1.8)
+            // 非常暗的背景色，使用更亮的线条
+            return lighten(backgroundColor, by: 0.4).opacity(opacity * 1.5)
         }
     }
     
-    // 获取边框颜色 - 增强对于各种背景的可见度
-    private func getBorderColor(for backgroundColor: Color) -> Color {
+    // 获取优化的边框颜色 - 增强对比度但保持和底色协调
+    private func getOptimizedBorderColor(for backgroundColor: Color) -> Color {
         let brightness = getColorBrightness(backgroundColor)
         
-        // 根据耗材颜色的亮度决定使用黑色或白色边框
-        if brightness > 0.6 {
-            // 亮色耗材使用黑色边框
-            return Color.black.opacity(0.7)
+        // 根据亮度创建一个更加微妙的边框颜色
+        if brightness > 0.75 {
+            // 亮色耗材使用深色边框
+            return darken(backgroundColor, by: 0.5).opacity(0.8)
+        } else if brightness > 0.5 {
+            // 中亮度耗材使用中等深色边框
+            return darken(backgroundColor, by: 0.4).opacity(0.7)
+        } else if brightness > 0.25 {
+            // 中暗度耗材使用中等亮色边框
+            return lighten(backgroundColor, by: 0.4).opacity(0.7)
         } else {
-            // 暗色耗材使用白色边框
-            return Color.white.opacity(0.7)
+            // 暗色耗材使用亮色边框
+            return lighten(backgroundColor, by: 0.5).opacity(0.8)
         }
+    }
+    
+    // 使颜色变暗一定程度
+    private func darken(_ color: Color, by amount: CGFloat) -> Color {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(UIColor(
+            red: max(0, red - amount),
+            green: max(0, green - amount),
+            blue: max(0, blue - amount),
+            alpha: alpha
+        ))
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(NSColor(
+            red: max(0, red - amount),
+            green: max(0, green - amount),
+            blue: max(0, blue - amount),
+            alpha: alpha
+        ))
+        #endif
+    }
+    
+    // 使颜色变亮一定程度
+    private func lighten(_ color: Color, by amount: CGFloat) -> Color {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(UIColor(
+            red: min(1, red + amount),
+            green: min(1, green + amount),
+            blue: min(1, blue + amount),
+            alpha: alpha
+        ))
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(NSColor(
+            red: min(1, red + amount),
+            green: min(1, green + amount),
+            blue: min(1, blue + amount),
+            alpha: alpha
+        ))
+        #endif
     }
     
     // 估算颜色亮度 (0-1范围)
@@ -1459,26 +1546,36 @@ struct MiniFilamentReelView: View {
     }
 }
 
-// 简化的2D耗材盘图标 - 更真实的设计
+// 简化的2D耗材盘图标 - 精细优化设计
 struct SimpleFillamentReel2D: View {
     let color: Color
     
     var body: some View {
         ZStack {
-            // 外部圆环 - 直接使用传入的颜色填充到边缘
+            // 外部圆环 - 采用渐变填充增强立体感
             Circle()
-                .fill(color)
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            color.opacity(1.0),
+                            darken(color, by: 0.15)
+                        ]),
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 22.5
+                    )
+                )
                 .frame(width: 45, height: 45)
             
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<5) { i in
                 let radius = 13.0 + CGFloat(i) * 3.0
                 
-                // 主线条 - 根据背景色调整对比度
+                // 主线条 - 根据背景色调整对比度和宽度
                 Circle()
                     .stroke(
-                        getContrastColor(for: color, opacity: 0.25),
-                        lineWidth: 0.8
+                        getContrastColor(for: color, opacity: 0.22 + (CGFloat(i) * 0.01)),
+                        lineWidth: 0.8 + (CGFloat(4-i) * 0.02)
                     )
                     .frame(width: radius * 2, height: radius * 2)
             }
@@ -1486,69 +1583,146 @@ struct SimpleFillamentReel2D: View {
             // 中心孔周围的边缘
             Circle()
                 .stroke(
-                    getContrastColor(for: color, opacity: 0.35),
-                    lineWidth: 1.5
+                    getContrastColor(for: color, opacity: 0.4),
+                    lineWidth: 1.3
                 )
                 .frame(width: 16, height: 16)
             
-            // 中心孔 - 白色
+            // 中心孔 - 白色，增加微妙阴影和内边缘
             Circle()
-                .fill(Color.white)
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color.white,
+                            Color.white.opacity(0.95)
+                        ]),
+                        center: .center,
+                        startRadius: 2,
+                        endRadius: 7
+                    )
+                )
                 .frame(width: 14, height: 14)
-                .shadow(color: Color.black.opacity(0.2), radius: 0.5, x: 0, y: 0.3)
+                .overlay(
+                    Circle()
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(0.15), radius: 0.5, x: 0, y: 0.3)
             
-            // 顶部高光 - 塑料质感
+            // 顶部高光 - 增强塑料质感
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
-                    Color.white.opacity(0.5),
+                    Color.white.opacity(0.4),
                     style: StrokeStyle(lineWidth: 14, lineCap: .round)
                 )
                 .frame(width: 26, height: 26)
                 .rotationEffect(Angle(degrees: -20))
                 .offset(y: -5)
-                .blur(radius: 3)
+                .blur(radius: 2.5)
                 
-            // 最外侧边框 - 放在最上层
+            // 最外侧边框 - 使用更细的边框和渐变效果
             Circle()
                 .stroke(
-                    getBorderColor(for: color),
-                    lineWidth: 1.2
+                    getOptimizedBorderColor(for: color),
+                    lineWidth: 0.8
                 )
                 .frame(width: 45, height: 45)
         }
     }
     
-    // 获取与背景色形成对比的线条颜色
+    // 获取与背景色形成最佳对比的线条颜色
     private func getContrastColor(for backgroundColor: Color, opacity: CGFloat) -> Color {
         // 估算背景色亮度
         let brightness = getColorBrightness(backgroundColor)
         
         // 根据背景色亮度调整线条颜色
-        if brightness > 0.7 {
-            // 亮色背景，使用深色线条
-            return Color.black.opacity(opacity * 2.0)
-        } else if brightness < 0.3 {
-            // 暗色背景，使用亮色线条
-            return Color.white.opacity(opacity * 1.5)
+        if brightness > 0.75 {
+            // 非常亮的背景色，使用更深的线条
+            return darken(backgroundColor, by: 0.4).opacity(opacity * 1.5)
+        } else if brightness > 0.5 {
+            // 中亮度背景色，使用适度深色线条
+            return darken(backgroundColor, by: 0.3).opacity(opacity * 1.8)
+        } else if brightness > 0.25 {
+            // 中暗度背景色，使用适度亮色线条
+            return lighten(backgroundColor, by: 0.3).opacity(opacity * 1.8)
         } else {
-            // 中等亮度，使用半透明黑色或白色
-            return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity * 1.8)
+            // 非常暗的背景色，使用更亮的线条
+            return lighten(backgroundColor, by: 0.4).opacity(opacity * 1.5)
         }
     }
     
-    // 获取边框颜色 - 增强对于各种背景的可见度
-    private func getBorderColor(for backgroundColor: Color) -> Color {
+    // 获取优化的边框颜色 - 增强对比度但保持和底色协调
+    private func getOptimizedBorderColor(for backgroundColor: Color) -> Color {
         let brightness = getColorBrightness(backgroundColor)
         
-        // 根据耗材颜色的亮度决定使用黑色或白色边框
-        if brightness > 0.6 {
-            // 亮色耗材使用黑色边框
-            return Color.black.opacity(0.7)
+        // 根据亮度创建一个更加微妙的边框颜色
+        if brightness > 0.75 {
+            // 亮色耗材使用深色边框
+            return darken(backgroundColor, by: 0.5).opacity(0.8)
+        } else if brightness > 0.5 {
+            // 中亮度耗材使用中等深色边框
+            return darken(backgroundColor, by: 0.4).opacity(0.7)
+        } else if brightness > 0.25 {
+            // 中暗度耗材使用中等亮色边框
+            return lighten(backgroundColor, by: 0.4).opacity(0.7)
         } else {
-            // 暗色耗材使用白色边框
-            return Color.white.opacity(0.7)
+            // 暗色耗材使用亮色边框
+            return lighten(backgroundColor, by: 0.5).opacity(0.8)
         }
+    }
+    
+    // 使颜色变暗一定程度
+    private func darken(_ color: Color, by amount: CGFloat) -> Color {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(UIColor(
+            red: max(0, red - amount),
+            green: max(0, green - amount),
+            blue: max(0, blue - amount),
+            alpha: alpha
+        ))
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(NSColor(
+            red: max(0, red - amount),
+            green: max(0, green - amount),
+            blue: max(0, blue - amount),
+            alpha: alpha
+        ))
+        #endif
+    }
+    
+    // 使颜色变亮一定程度
+    private func lighten(_ color: Color, by amount: CGFloat) -> Color {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(UIColor(
+            red: min(1, red + amount),
+            green: min(1, green + amount),
+            blue: min(1, blue + amount),
+            alpha: alpha
+        ))
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(NSColor(
+            red: min(1, red + amount),
+            green: min(1, green + amount),
+            blue: min(1, blue + amount),
+            alpha: alpha
+        ))
+        #endif
     }
     
     // 估算颜色亮度 (0-1范围)
