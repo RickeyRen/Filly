@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct FillyApp: App {
+    @StateObject private var themeManager = ThemeManager()
+    
     var body: some Scene {
         WindowGroup {
             SplashScreen()
+                .environmentObject(themeManager)
+                .preferredColorScheme(themeManager.selectedTheme.colorScheme)
         }
     }
 }
