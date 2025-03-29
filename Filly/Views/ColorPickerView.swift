@@ -100,12 +100,13 @@ struct ColorPickerView: View {
                     List {
                         ForEach(filteredColors) { colorItem in
                             HStack {
-                                Circle()
-                                    .fill(colorItem.getUIColor())
-                                    .frame(width: 30, height: 30)
+                                // 使用MiniFilamentReelView替换简单圆形
+                                MiniFilamentReelView(color: colorItem.getUIColor())
+                                    .frame(width: 32, height: 32)
                                     .overlay(
                                         Circle()
-                                            .stroke(Color.gray, lineWidth: 1)
+                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                            .frame(width: 36, height: 36)
                                     )
                                 
                                 Text(colorItem.name)
