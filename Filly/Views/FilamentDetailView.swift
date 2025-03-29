@@ -1208,7 +1208,7 @@ struct FilamentReelView: View {
                     RadialGradient(
                         gradient: Gradient(colors: [
                             color.opacity(1.0),
-                            darken(color, by: 0.15)
+                            darken(color, by: 0.2)
                         ]),
                         center: .center,
                         startRadius: 0,
@@ -1217,24 +1217,24 @@ struct FilamentReelView: View {
                 )
                 .frame(width: 76, height: 76)
             
-            // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
+            // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线 - 增强线条对比度
             ForEach(0..<8) { i in
                 let radius = 20.0 + CGFloat(i) * 3.0
                 
-                // 主线条 - 根据背景色调整对比度和宽度
+                // 主线条 - 增强对比度和可见性
                 Circle()
                     .stroke(
-                        getContrastColor(for: color, opacity: 0.22 + (CGFloat(i) * 0.01)),
-                        lineWidth: 1.0 + (CGFloat(7-i) * 0.03)
+                        getEnhancedContrastColor(for: color, index: i),
+                        lineWidth: 1.2 + (CGFloat(7-i) * 0.05)
                     )
                     .frame(width: radius * 2, height: radius * 2)
             }
             
-            // 中心孔周围的边缘
+            // 中心孔周围的边缘 - 加粗边缘线
             Circle()
                 .stroke(
-                    getContrastColor(for: color, opacity: 0.4),
-                    lineWidth: 1.8
+                    getStrongContrastColor(for: color),
+                    lineWidth: 2.0
                 )
                 .frame(width: 27, height: 27)
             
@@ -1254,7 +1254,7 @@ struct FilamentReelView: View {
                 .frame(width: 24, height: 24)
                 .overlay(
                     Circle()
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 0.7)
                 )
                 .shadow(color: Color.black.opacity(0.15), radius: 1, x: 0, y: 0.5)
             
@@ -1262,7 +1262,7 @@ struct FilamentReelView: View {
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
-                    Color.white.opacity(0.4),
+                    Color.white.opacity(0.5),
                     style: StrokeStyle(lineWidth: 20, lineCap: .round)
                 )
                 .frame(width: 44, height: 44)
@@ -1270,18 +1270,87 @@ struct FilamentReelView: View {
                 .offset(y: -7)
                 .blur(radius: 3)
                 
-            // 最外侧边框 - 使用更细的边框和渐变效果
+            // 最外侧边框 - 使用更清晰的边框
             Circle()
                 .stroke(
-                    getOptimizedBorderColor(for: color),
-                    lineWidth: 1.0
+                    getStrongBorderColor(for: color),
+                    lineWidth: 1.2
                 )
                 .frame(width: 76, height: 76)
         }
         .frame(width: 85, height: 85)
     }
     
-    // 获取与背景色形成最佳对比的线条颜色
+    // 获取与背景色形成明显对比的增强线条颜色
+    private func getEnhancedContrastColor(for backgroundColor: Color, index: Int) -> Color {
+        // 估算背景色亮度
+        let brightness = getColorBrightness(backgroundColor)
+        
+        // 交替使用基于亮度的不同对比方案，增加线条之间的区分度
+        if index % 2 == 0 {
+            // 偶数索引的线条
+            if brightness > 0.7 {
+                // 亮色背景使用较深对比色
+                return darken(backgroundColor, by: 0.5).opacity(0.9)
+            } else if brightness > 0.4 {
+                // 中等亮度背景使用适度对比色 
+                return lighten(backgroundColor, by: 0.35).opacity(0.9)
+            } else {
+                // 暗色背景使用明显的亮色
+                return lighten(backgroundColor, by: 0.6).opacity(0.9)
+            }
+        } else {
+            // 奇数索引的线条，使用不同强度
+            if brightness > 0.7 {
+                // 亮色背景
+                return darken(backgroundColor, by: 0.3).opacity(0.9)
+            } else if brightness > 0.4 {
+                // 中等亮度背景
+                return darken(backgroundColor, by: 0.25).opacity(0.9)
+            } else {
+                // 暗色背景
+                return lighten(backgroundColor, by: 0.4).opacity(0.9)
+            }
+        }
+    }
+    
+    // 获取强对比边框颜色，确保边框在任何背景色上都清晰可见
+    private func getStrongBorderColor(for backgroundColor: Color) -> Color {
+        let brightness = getColorBrightness(backgroundColor)
+        
+        // 为所有亮度范围使用更强对比度的边框
+        if brightness > 0.8 {
+            // 非常亮的背景色
+            return darken(backgroundColor, by: 0.7).opacity(0.9)
+        } else if brightness > 0.6 {
+            // 亮色背景
+            return darken(backgroundColor, by: 0.5).opacity(0.9)
+        } else if brightness > 0.4 {
+            // 中等亮度背景
+            return lighten(backgroundColor, by: 0.4).opacity(0.9)
+        } else if brightness > 0.2 {
+            // 中暗背景
+            return lighten(backgroundColor, by: 0.6).opacity(0.9)
+        } else {
+            // 非常暗的背景
+            return lighten(backgroundColor, by: 0.8).opacity(0.9)
+        }
+    }
+    
+    // 获取中心孔边缘的强对比色
+    private func getStrongContrastColor(for backgroundColor: Color) -> Color {
+        let brightness = getColorBrightness(backgroundColor)
+        
+        if brightness > 0.5 {
+            // 亮色背景使用深色对比
+            return darken(backgroundColor, by: 0.6).opacity(0.9)
+        } else {
+            // 暗色背景使用亮色对比
+            return lighten(backgroundColor, by: 0.7).opacity(0.9)
+        }
+    }
+    
+    // 获取与背景色形成最佳对比的线条颜色 (原方法保留，但不使用)
     private func getContrastColor(for backgroundColor: Color, opacity: CGFloat) -> Color {
         // 估算背景色亮度
         let brightness = getColorBrightness(backgroundColor)
@@ -1302,7 +1371,7 @@ struct FilamentReelView: View {
         }
     }
     
-    // 获取优化的边框颜色 - 增强对比度但保持和底色协调
+    // 获取优化的边框颜色 - 增强对比度但保持和底色协调 (原方法保留，但不使用)
     private func getOptimizedBorderColor(for backgroundColor: Color) -> Color {
         let brightness = getColorBrightness(backgroundColor)
         
@@ -1558,7 +1627,7 @@ struct SimpleFillamentReel2D: View {
                     RadialGradient(
                         gradient: Gradient(colors: [
                             color.opacity(1.0),
-                            darken(color, by: 0.15)
+                            darken(color, by: 0.2)
                         ]),
                         center: .center,
                         startRadius: 0,
@@ -1567,24 +1636,24 @@ struct SimpleFillamentReel2D: View {
                 )
                 .frame(width: 45, height: 45)
             
-            // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
+            // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线 - 增强线条可见性
             ForEach(0..<5) { i in
                 let radius = 13.0 + CGFloat(i) * 3.0
                 
-                // 主线条 - 根据背景色调整对比度和宽度
+                // 主线条 - 增强对比度和可见性
                 Circle()
                     .stroke(
-                        getContrastColor(for: color, opacity: 0.22 + (CGFloat(i) * 0.01)),
-                        lineWidth: 0.8 + (CGFloat(4-i) * 0.02)
+                        getEnhancedContrastColor(for: color, index: i),
+                        lineWidth: 1.0 + (CGFloat(4-i) * 0.05)
                     )
                     .frame(width: radius * 2, height: radius * 2)
             }
             
-            // 中心孔周围的边缘
+            // 中心孔周围的边缘 - 加粗边缘线
             Circle()
                 .stroke(
-                    getContrastColor(for: color, opacity: 0.4),
-                    lineWidth: 1.3
+                    getStrongContrastColor(for: color),
+                    lineWidth: 1.6
                 )
                 .frame(width: 16, height: 16)
             
@@ -1604,7 +1673,7 @@ struct SimpleFillamentReel2D: View {
                 .frame(width: 14, height: 14)
                 .overlay(
                     Circle()
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 0.7)
                 )
                 .shadow(color: Color.black.opacity(0.15), radius: 0.5, x: 0, y: 0.3)
             
@@ -1612,7 +1681,7 @@ struct SimpleFillamentReel2D: View {
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
-                    Color.white.opacity(0.4),
+                    Color.white.opacity(0.5),
                     style: StrokeStyle(lineWidth: 14, lineCap: .round)
                 )
                 .frame(width: 26, height: 26)
@@ -1620,54 +1689,82 @@ struct SimpleFillamentReel2D: View {
                 .offset(y: -5)
                 .blur(radius: 2.5)
                 
-            // 最外侧边框 - 使用更细的边框和渐变效果
+            // 最外侧边框 - 使用更清晰的边框
             Circle()
                 .stroke(
-                    getOptimizedBorderColor(for: color),
-                    lineWidth: 0.8
+                    getStrongBorderColor(for: color),
+                    lineWidth: 1.0
                 )
                 .frame(width: 45, height: 45)
         }
     }
     
-    // 获取与背景色形成最佳对比的线条颜色
-    private func getContrastColor(for backgroundColor: Color, opacity: CGFloat) -> Color {
+    // 获取与背景色形成明显对比的增强线条颜色
+    private func getEnhancedContrastColor(for backgroundColor: Color, index: Int) -> Color {
         // 估算背景色亮度
         let brightness = getColorBrightness(backgroundColor)
         
-        // 根据背景色亮度调整线条颜色
-        if brightness > 0.75 {
-            // 非常亮的背景色，使用更深的线条
-            return darken(backgroundColor, by: 0.4).opacity(opacity * 1.5)
-        } else if brightness > 0.5 {
-            // 中亮度背景色，使用适度深色线条
-            return darken(backgroundColor, by: 0.3).opacity(opacity * 1.8)
-        } else if brightness > 0.25 {
-            // 中暗度背景色，使用适度亮色线条
-            return lighten(backgroundColor, by: 0.3).opacity(opacity * 1.8)
+        // 交替使用基于亮度的不同对比方案，增加线条之间的区分度
+        if index % 2 == 0 {
+            // 偶数索引的线条
+            if brightness > 0.7 {
+                // 亮色背景使用较深对比色
+                return darken(backgroundColor, by: 0.5).opacity(0.9)
+            } else if brightness > 0.4 {
+                // 中等亮度背景使用适度对比色 
+                return lighten(backgroundColor, by: 0.35).opacity(0.9)
+            } else {
+                // 暗色背景使用明显的亮色
+                return lighten(backgroundColor, by: 0.6).opacity(0.9)
+            }
         } else {
-            // 非常暗的背景色，使用更亮的线条
-            return lighten(backgroundColor, by: 0.4).opacity(opacity * 1.5)
+            // 奇数索引的线条，使用不同强度
+            if brightness > 0.7 {
+                // 亮色背景
+                return darken(backgroundColor, by: 0.3).opacity(0.9)
+            } else if brightness > 0.4 {
+                // 中等亮度背景
+                return darken(backgroundColor, by: 0.25).opacity(0.9)
+            } else {
+                // 暗色背景
+                return lighten(backgroundColor, by: 0.4).opacity(0.9)
+            }
         }
     }
     
-    // 获取优化的边框颜色 - 增强对比度但保持和底色协调
-    private func getOptimizedBorderColor(for backgroundColor: Color) -> Color {
+    // 获取强对比边框颜色，确保边框在任何背景色上都清晰可见
+    private func getStrongBorderColor(for backgroundColor: Color) -> Color {
         let brightness = getColorBrightness(backgroundColor)
         
-        // 根据亮度创建一个更加微妙的边框颜色
-        if brightness > 0.75 {
-            // 亮色耗材使用深色边框
-            return darken(backgroundColor, by: 0.5).opacity(0.8)
-        } else if brightness > 0.5 {
-            // 中亮度耗材使用中等深色边框
-            return darken(backgroundColor, by: 0.4).opacity(0.7)
-        } else if brightness > 0.25 {
-            // 中暗度耗材使用中等亮色边框
-            return lighten(backgroundColor, by: 0.4).opacity(0.7)
+        // 为所有亮度范围使用更强对比度的边框
+        if brightness > 0.8 {
+            // 非常亮的背景色
+            return darken(backgroundColor, by: 0.7).opacity(0.9)
+        } else if brightness > 0.6 {
+            // 亮色背景
+            return darken(backgroundColor, by: 0.5).opacity(0.9)
+        } else if brightness > 0.4 {
+            // 中等亮度背景
+            return lighten(backgroundColor, by: 0.4).opacity(0.9)
+        } else if brightness > 0.2 {
+            // 中暗背景
+            return lighten(backgroundColor, by: 0.6).opacity(0.9)
         } else {
-            // 暗色耗材使用亮色边框
-            return lighten(backgroundColor, by: 0.5).opacity(0.8)
+            // 非常暗的背景
+            return lighten(backgroundColor, by: 0.8).opacity(0.9)
+        }
+    }
+    
+    // 获取中心孔边缘的强对比色
+    private func getStrongContrastColor(for backgroundColor: Color) -> Color {
+        let brightness = getColorBrightness(backgroundColor)
+        
+        if brightness > 0.5 {
+            // 亮色背景使用深色对比
+            return darken(backgroundColor, by: 0.6).opacity(0.9)
+        } else {
+            // 暗色背景使用亮色对比
+            return lighten(backgroundColor, by: 0.7).opacity(0.9)
         }
     }
     
