@@ -1202,24 +1202,16 @@ struct FilamentReelView: View {
     
     var body: some View {
         ZStack {
-            // 外部圆环 - 使用传入的颜色，直接延伸到边缘
+            // 外部圆环 - 直接使用传入的颜色填充到边缘
             Circle()
                 .fill(color)
-                .frame(width: 76, height: 76)
-            
-            // 耗材盘最外沿边缘
-            Circle()
-                .stroke(
-                    getBorderColor(for: color),
-                    lineWidth: 2.0
-                )
                 .frame(width: 76, height: 76)
             
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<8) { i in
                 let radius = 20.0 + CGFloat(i) * 3.0
                 
-                // 主线条
+                // 主线条 - 根据背景色调整对比度
                 Circle()
                     .stroke(
                         getContrastColor(for: color, opacity: 0.25),
@@ -1253,6 +1245,14 @@ struct FilamentReelView: View {
                 .rotationEffect(Angle(degrees: -20))
                 .offset(y: -7)
                 .blur(radius: 4)
+                
+            // 最外侧边框 - 放在最上层
+            Circle()
+                .stroke(
+                    getBorderColor(for: color),
+                    lineWidth: 1.5
+                )
+                .frame(width: 76, height: 76)
         }
         .frame(width: 85, height: 85)
     }
@@ -1465,24 +1465,16 @@ struct SimpleFillamentReel2D: View {
     
     var body: some View {
         ZStack {
-            // 外部圆环 - 使用传入的颜色，直接延伸到边缘
+            // 外部圆环 - 直接使用传入的颜色填充到边缘
             Circle()
                 .fill(color)
-                .frame(width: 45, height: 45)
-                
-            // 耗材盘最外沿边缘
-            Circle()
-                .stroke(
-                    getBorderColor(for: color),
-                    lineWidth: 1.5
-                )
                 .frame(width: 45, height: 45)
             
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<5) { i in
                 let radius = 13.0 + CGFloat(i) * 3.0
                 
-                // 主线条
+                // 主线条 - 根据背景色调整对比度
                 Circle()
                     .stroke(
                         getContrastColor(for: color, opacity: 0.25),
@@ -1516,6 +1508,14 @@ struct SimpleFillamentReel2D: View {
                 .rotationEffect(Angle(degrees: -20))
                 .offset(y: -5)
                 .blur(radius: 3)
+                
+            // 最外侧边框 - 放在最上层
+            Circle()
+                .stroke(
+                    getBorderColor(for: color),
+                    lineWidth: 1.2
+                )
+                .frame(width: 45, height: 45)
         }
     }
     
