@@ -100,11 +100,12 @@ struct ColorPickerView: View {
                     ScrollView {
                         LazyVGrid(
                             columns: [
-                                GridItem(.flexible(), spacing: 12),
-                                GridItem(.flexible(), spacing: 12),
-                                GridItem(.flexible(), spacing: 12)
+                                GridItem(.flexible(), spacing: 8),
+                                GridItem(.flexible(), spacing: 8),
+                                GridItem(.flexible(), spacing: 8),
+                                GridItem(.flexible(), spacing: 8)
                             ],
-                            spacing: 16
+                            spacing: 10
                         ) {
                             ForEach(filteredColors) { colorItem in
                                 ColorGridItem(
@@ -129,7 +130,7 @@ struct ColorPickerView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 10)
                         .padding(.bottom, 20)
                     }
                 }
@@ -249,30 +250,31 @@ struct ColorGridItem: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             MiniFilamentReelView(color: color)
-                .frame(width: 50, height: 50)
+                .frame(width: 45, height: 45)
                 .overlay(
                     Circle()
-                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1)
-                        .frame(width: 55, height: 55)
+                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
+                        .frame(width: 48, height: 48)
                 )
             
-            HStack {
+            HStack(spacing: 2) {
                 Text(name)
-                    .font(.caption)
+                    .font(.caption2)
                     .lineLimit(1)
                     .multilineTextAlignment(.center)
                 
                 if isSelected {
                     Image(systemName: "checkmark")
                         .foregroundColor(.blue)
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                 }
             }
+            .frame(maxWidth: .infinity)
         }
-        .frame(height: 85)
-        .padding(.vertical, 6)
+        .frame(height: 75)
+        .padding(.vertical, 4)
         .contentShape(Rectangle())
     }
 } 
