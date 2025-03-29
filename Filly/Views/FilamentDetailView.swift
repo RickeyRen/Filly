@@ -1202,13 +1202,6 @@ struct FilamentReelView: View {
     
     var body: some View {
         ZStack {
-            // 外层阴影
-            Circle()
-                .fill(color.opacity(0.3))
-                .frame(width: 78, height: 78)
-                .blur(radius: 2)
-                .offset(y: 2)
-            
             // 外部圆环 - 使用传入的颜色，直接延伸到边缘
             Circle()
                 .fill(color)
@@ -1225,16 +1218,6 @@ struct FilamentReelView: View {
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<8) { i in
                 let radius = 20.0 + CGFloat(i) * 3.0
-                
-                // 阴影线(在下方)增强立体感
-                Circle()
-                    .stroke(
-                        Color.black.opacity(0.15),
-                        lineWidth: 1.2
-                    )
-                    .frame(width: radius * 2, height: radius * 2)
-                    .offset(x: 0.5, y: 0.5)
-                    .blur(radius: 0.5)
                 
                 // 主线条
                 Circle()
@@ -1258,17 +1241,6 @@ struct FilamentReelView: View {
                 .fill(Color.white)
                 .frame(width: 24, height: 24)
                 .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 0.5)
-            
-            // 内圈轻微阴影 - 增加深度感
-            Circle()
-                .fill(getContrastColor(for: color, opacity: 0.15))
-                .frame(width: 24, height: 24)
-                .blur(radius: 1.5)
-                .mask(
-                    Circle()
-                        .frame(width: 21, height: 21)
-                        .offset(y: 1)
-                )
             
             // 顶部高光 - 塑料质感
             Circle()
@@ -1493,13 +1465,6 @@ struct SimpleFillamentReel2D: View {
     
     var body: some View {
         ZStack {
-            // 外层阴影
-            Circle()
-                .fill(color.opacity(0.3))
-                .frame(width: 46, height: 46)
-                .blur(radius: 1.5)
-                .offset(y: 1.5)
-            
             // 外部圆环 - 使用传入的颜色，直接延伸到边缘
             Circle()
                 .fill(color)
@@ -1516,16 +1481,6 @@ struct SimpleFillamentReel2D: View {
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<5) { i in
                 let radius = 13.0 + CGFloat(i) * 3.0
-                
-                // 阴影线(在下方)增强立体感
-                Circle()
-                    .stroke(
-                        Color.black.opacity(0.15),
-                        lineWidth: 0.8
-                    )
-                    .frame(width: radius * 2, height: radius * 2)
-                    .offset(x: 0.3, y: 0.3)
-                    .blur(radius: 0.3)
                 
                 // 主线条
                 Circle()
@@ -1550,17 +1505,6 @@ struct SimpleFillamentReel2D: View {
                 .frame(width: 14, height: 14)
                 .shadow(color: Color.black.opacity(0.2), radius: 0.5, x: 0, y: 0.3)
             
-            // 内圈轻微阴影 - 增加深度感
-            Circle()
-                .fill(getContrastColor(for: color, opacity: 0.15))
-                .frame(width: 14, height: 14)
-                .blur(radius: 1)
-                .mask(
-                    Circle()
-                        .frame(width: 12, height: 12)
-                        .offset(y: 0.5)
-                )
-            
             // 顶部高光 - 塑料质感
             Circle()
                 .trim(from: 0.0, to: 0.3)
@@ -1572,24 +1516,6 @@ struct SimpleFillamentReel2D: View {
                 .rotationEffect(Angle(degrees: -20))
                 .offset(y: -5)
                 .blur(radius: 3)
-                
-            // 额外添加细微的浮雕效果
-            ForEach([0.8, 1.8, 2.8, 3.8], id: \.self) { i in
-                let embossRadius = 10.0 + i * 6.0
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.white.opacity(0.15),
-                                Color.black.opacity(0.05)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 0.5
-                    )
-                    .frame(width: embossRadius * 2, height: embossRadius * 2)
-            }
         }
     }
     
