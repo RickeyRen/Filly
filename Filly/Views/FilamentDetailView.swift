@@ -20,77 +20,126 @@ struct FilamentDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // 耗材颜色和基本信息
-                HStack(spacing: 20) {
-                    Circle()
-                        .fill(filament.getColor())
-                        .frame(width: 80, height: 80)
-                        // 内部深色阴影，创造凹陷感
-                        .overlay(
-                            Circle()
-                                .stroke(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            filament.getColor().opacity(0.7),
-                                            filament.getColor().opacity(1.0)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 6
-                                )
-                                .blur(radius: 3)
-                                .offset(x: 0, y: 1)
-                        )
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text(filament.brand)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                selectedColorName = filament.color
-                                selectedColor = filament.getColor()
-                                showingColorPicker = true
-                            }) {
-                                Image(systemName: "eyedropper")
-                                    .foregroundColor(.blue)
+                // 耗材基本信息和操作按钮 - 放在同一个卡片中
+                VStack(alignment: .leading, spacing: 20) {
+                    // 耗材颜色和基本信息
+                    HStack(spacing: 20) {
+                        Circle()
+                            .fill(filament.getColor())
+                            .frame(width: 80, height: 80)
+                            // 内部深色阴影，创造凹陷感
+                            .overlay(
+                                Circle()
+                                    .stroke(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                filament.getColor().opacity(0.7),
+                                                filament.getColor().opacity(1.0)
+                                            ]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 6
+                                    )
+                                    .blur(radius: 3)
+                                    .offset(x: 0, y: 1)
+                            )
+                        
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text(filament.brand)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    selectedColorName = filament.color
+                                    selectedColor = filament.getColor()
+                                    showingColorPicker = true
+                                }) {
+                                    Image(systemName: "eyedropper")
+                                        .foregroundColor(.blue)
+                                }
                             }
-                        }
-                        
-                        Text(filament.type.rawValue)
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        Text(filament.color)
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        HStack {
-                            Text("共\(filament.spools.count)盘")
+                            
+                            Text(filament.type.rawValue)
                                 .font(.headline)
-                                .foregroundColor(.primary)
+                                .foregroundColor(.secondary)
                             
-                            Spacer()
+                            Text(filament.color)
+                                .font(.headline)
+                                .foregroundColor(.secondary)
                             
-                            if filament.fullSpoolCount > 0 {
-                                Text("\(filament.fullSpoolCount)盘全新")
-                                    .font(.subheadline)
-                                    .foregroundColor(.green)
-                            }
-                            
-                            let partialCount = filament.remainingSpoolCount - filament.fullSpoolCount
-                            if partialCount > 0 {
-                                Text("\(partialCount)盘部分使用")
-                                    .font(.subheadline)
-                                    .foregroundColor(.orange)
+                            HStack {
+                                Text("共\(filament.spools.count)盘")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                if filament.fullSpoolCount > 0 {
+                                    Text("\(filament.fullSpoolCount)盘全新")
+                                        .font(.subheadline)
+                                        .foregroundColor(.green)
+                                }
+                                
+                                let partialCount = filament.remainingSpoolCount - filament.fullSpoolCount
+                                if partialCount > 0 {
+                                    Text("\(partialCount)盘部分使用")
+                                        .font(.subheadline)
+                                        .foregroundColor(.orange)
+                                }
                             }
                         }
                     }
+                    
+                    Divider()
+                        .padding(.vertical, 5)
+                    
+                    // 操作按钮
+                    HStack(spacing: 16) {
+                        // 编辑按钮
+                        Button(action: {
+                            isEditing = true
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 16))
+                                Text("编辑耗材类型")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .frame(minWidth: 0, maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color(red: 0.9, green: 0.95, blue: 1.0))
+                            .foregroundColor(.blue)
+                            .cornerRadius(12)
+                        }
+                        
+                        // 删除按钮
+                        Button(action: {
+                            showingDeleteConfirm = true
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 16))
+                                Text("删除耗材类型")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .frame(minWidth: 0, maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color(red: 1.0, green: 0.95, blue: 0.95))
+                            .foregroundColor(.red)
+                            .cornerRadius(12)
+                        }
+                    }
+                    .padding(.horizontal, 2)
                 }
+                .padding(.vertical, 18)
+                .padding(.horizontal, 18)
+                .background(Color.white)
+                .cornerRadius(20)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
                 
                 // 详细信息
                 VStack(alignment: .leading, spacing: 15) {
@@ -236,46 +285,15 @@ struct FilamentDetailView: View {
                 .background(SystemColorCompatibility.systemBackground)
                 .cornerRadius(12)
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-                
-                // 操作按钮
-                VStack(spacing: 15) {
-                    Button(action: {
-                        isEditing = true
-                    }) {
-                        HStack {
-                            Image(systemName: "pencil")
-                            Text("编辑耗材")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                    
-                    Button(action: {
-                        showingDeleteConfirm = true
-                    }) {
-                        HStack {
-                            Image(systemName: "trash")
-                            Text("删除耗材")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                }
-                .padding(.top, 10)
             }
             .padding()
         }
         .navigationTitle("耗材详情")
+        .navigationBarTitleDisplayMode(.large)
         .alert(isPresented: $showingDeleteConfirm) {
             Alert(
                 title: Text("确认删除"),
-                message: Text("确定要删除此耗材吗？此操作无法撤销。"),
+                message: Text("确定要删除此耗材类型吗？此操作无法撤销。"),
                 primaryButton: .destructive(Text("删除")) {
                     viewModel.deleteFilament(id: filament.id)
                     presentationMode.wrappedValue.dismiss()
@@ -926,115 +944,57 @@ struct SpoolModel: View {
     
     var body: some View {
         ZStack {
-            // 外部耗材线圈效果
-            ZStack {
-                // 线材缠绕效果 - 底层
-                ForEach(0..<8) { i in
-                    Capsule()
-                        .fill(LinearGradient(
-                            gradient: Gradient(colors: [
-                                color.opacity(0.7),
-                                color.opacity(0.9)
-                            ]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ))
-                        .frame(width: 40, height: 3.5)
-                        .offset(y: CGFloat(i) * 4.2 - 14)
-                }
-                
-                // 线材高光
-                ForEach(0..<8) { i in
-                    Capsule()
-                        .fill(LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.white.opacity(0.1 + (i % 3 == 0 ? 0.3 : 0)),
-                                Color.clear
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ))
-                        .frame(width: 40, height: 3.5)
-                        .offset(y: CGFloat(i) * 4.2 - 14)
-                }
-            }
-            .mask(
-                // 线轴外轮廓形状
-                ZStack {
-                    Capsule()
-                        .frame(width: 40, height: 38)
-                    
-                    // 中心空隙
-                    Circle()
-                        .frame(width: 12)
-                        .blendMode(.destinationOut)
-                }
-                .compositingGroup()
-            )
+            // 耗材盘底部
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [color.opacity(0.7), color.opacity(0.9)]),
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 20
+                    )
+                )
+                .frame(width: 34, height: 34)
+                .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 2)
             
-            // 线轴底盘效果（左侧）
+            // 耗材盘中央凹陷效果
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [color.opacity(0.5), color.opacity(0.8)]),
+                        center: .center,
+                        startRadius: 2,
+                        endRadius: 12
+                    )
+                )
+                .frame(width: 22, height: 22)
+            
+            // 中心孔
             Circle()
                 .fill(
                     LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.gray.opacity(0.6),
-                            Color.gray.opacity(0.3)
-                        ]),
+                        gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-                .frame(width: 15, height: 38)
-                .offset(x: -16, y: 0)
-                .mask(
-                    Capsule()
-                        .frame(width: 12, height: 38)
-                )
+                .frame(width: 10, height: 10)
+                .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
             
-            // 线轴底盘效果（右侧）
+            // 高光效果
             Circle()
-                .fill(
+                .trim(from: 0, to: 0.4)
+                .stroke(
                     LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.gray.opacity(0.5),
-                            Color.gray.opacity(0.3)
-                        ]),
-                        startPoint: .topTrailing,
-                        endPoint: .bottomLeading
-                    )
+                        gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.1)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2
                 )
-                .frame(width: 15, height: 38)
-                .offset(x: 16, y: 0)
-                .mask(
-                    Capsule()
-                        .frame(width: 12, height: 38)
-                )
-            
-            // 中心轴
-            ZStack {
-                // 轴孔
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.black.opacity(0.8),
-                                Color.black.opacity(0.5)
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(width: 8, height: 8)
-                
-                // 轴孔高光
-                Circle()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(width: 3, height: 3)
-                    .offset(x: -1, y: -1)
-            }
+                .frame(width: 30, height: 30)
+                .rotationEffect(Angle(degrees: -45))
         }
-        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
-        .rotationEffect(Angle(degrees: 90))
     }
 }
 
@@ -1202,5 +1162,3 @@ struct SpoolStatusItem: View {
         .frame(maxWidth: .infinity)
     }
 } 
-} 
-} } 
