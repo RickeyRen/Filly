@@ -1214,6 +1214,14 @@ struct FilamentReelView: View {
                 .fill(color)
                 .frame(width: 74, height: 74)
             
+            // 耗材盘最外沿边缘
+            Circle()
+                .stroke(
+                    getContrastColor(for: color, opacity: 0.6),
+                    lineWidth: 2.5
+                )
+                .frame(width: 74, height: 74)
+            
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<8) { i in
                 let radius = 20.0 + CGFloat(i) * 3.0
@@ -1481,6 +1489,14 @@ struct SimpleFillamentReel2D: View {
             // 外部圆环 - 使用传入的颜色
             Circle()
                 .fill(color)
+                .frame(width: 44, height: 44)
+                
+            // 耗材盘最外沿边缘
+            Circle()
+                .stroke(
+                    getContrastColor(for: color, opacity: 0.6),
+                    lineWidth: 2.0
+                )
                 .frame(width: 44, height: 44)
             
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
