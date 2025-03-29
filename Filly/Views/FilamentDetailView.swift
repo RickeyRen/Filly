@@ -119,7 +119,7 @@ struct FilamentDetailView: View {
                 }
                 .padding(.vertical, 18)
                 .padding(.horizontal, 18)
-                .background(Color.white)
+                .background(SystemColorCompatibility.systemBackground)
                 .cornerRadius(20)
                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
                 
