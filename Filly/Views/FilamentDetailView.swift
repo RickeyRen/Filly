@@ -1219,7 +1219,7 @@ struct FilamentReelView: View {
                 let radius = 20.0 + CGFloat(i) * 3.0
                 Circle()
                     .stroke(
-                        Color.black.opacity(0.1),
+                        getContrastColor(for: color, opacity: 0.1),
                         lineWidth: 0.8
                     )
                     .frame(width: radius * 2, height: radius * 2)
@@ -1228,7 +1228,7 @@ struct FilamentReelView: View {
             // 中心孔周围的边缘
             Circle()
                 .stroke(
-                    Color.black.opacity(0.2),
+                    getContrastColor(for: color, opacity: 0.2),
                     lineWidth: 1.5
                 )
                 .frame(width: 27, height: 27)
@@ -1240,7 +1240,7 @@ struct FilamentReelView: View {
             
             // 内圈轻微阴影 - 增加深度感
             Circle()
-                .fill(Color.black.opacity(0.1))
+                .fill(getContrastColor(for: color, opacity: 0.1))
                 .frame(width: 24, height: 24)
                 .blur(radius: 1.5)
                 .mask(
@@ -1262,6 +1262,40 @@ struct FilamentReelView: View {
                 .blur(radius: 4)
         }
         .frame(width: 85, height: 85)
+    }
+    
+    // 获取与背景色形成对比的线条颜色
+    private func getContrastColor(for backgroundColor: Color, opacity: CGFloat) -> Color {
+        // 估算背景色亮度
+        let brightness = getColorBrightness(backgroundColor)
+        
+        // 根据背景色亮度调整线条颜色
+        if brightness > 0.7 {
+            // 亮色背景，使用深色线条
+            return Color.black.opacity(opacity * 1.5)
+        } else if brightness < 0.3 {
+            // 暗色背景，使用亮色线条
+            return Color.white.opacity(opacity * 1.2)
+        } else {
+            // 中等亮度，使用半透明黑色或白色
+            return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity)
+        }
+    }
+    
+    // 估算颜色亮度 (0-1范围)
+    private func getColorBrightness(_ color: Color) -> CGFloat {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        #endif
+        
+        // 使用亮度公式: 0.299R + 0.587G + 0.114B
+        return 0.299 * red + 0.587 * green + 0.114 * blue
     }
 }
 
@@ -1441,7 +1475,7 @@ struct SimpleFillamentReel2D: View {
                 let radius = 13.0 + CGFloat(i) * 3.0
                 Circle()
                     .stroke(
-                        Color.black.opacity(0.1),
+                        getContrastColor(for: color, opacity: 0.1),
                         lineWidth: 0.5
                     )
                     .frame(width: radius * 2, height: radius * 2)
@@ -1450,7 +1484,7 @@ struct SimpleFillamentReel2D: View {
             // 中心孔周围的边缘
             Circle()
                 .stroke(
-                    Color.black.opacity(0.2),
+                    getContrastColor(for: color, opacity: 0.2),
                     lineWidth: 1.0
                 )
                 .frame(width: 16, height: 16)
@@ -1462,7 +1496,7 @@ struct SimpleFillamentReel2D: View {
             
             // 内圈轻微阴影 - 增加深度感
             Circle()
-                .fill(Color.black.opacity(0.1))
+                .fill(getContrastColor(for: color, opacity: 0.1))
                 .frame(width: 14, height: 14)
                 .blur(radius: 1)
                 .mask(
@@ -1483,5 +1517,39 @@ struct SimpleFillamentReel2D: View {
                 .offset(y: -5)
                 .blur(radius: 3)
         }
+    }
+    
+    // 获取与背景色形成对比的线条颜色
+    private func getContrastColor(for backgroundColor: Color, opacity: CGFloat) -> Color {
+        // 估算背景色亮度
+        let brightness = getColorBrightness(backgroundColor)
+        
+        // 根据背景色亮度调整线条颜色
+        if brightness > 0.7 {
+            // 亮色背景，使用深色线条
+            return Color.black.opacity(opacity * 1.5)
+        } else if brightness < 0.3 {
+            // 暗色背景，使用亮色线条
+            return Color.white.opacity(opacity * 1.2)
+        } else {
+            // 中等亮度，使用半透明黑色或白色
+            return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity)
+        }
+    }
+    
+    // 估算颜色亮度 (0-1范围)
+    private func getColorBrightness(_ color: Color) -> CGFloat {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        #endif
+        
+        // 使用亮度公式: 0.299R + 0.587G + 0.114B
+        return 0.299 * red + 0.587 * green + 0.114 * blue
     }
 } 
