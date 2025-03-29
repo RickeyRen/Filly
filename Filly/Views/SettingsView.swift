@@ -8,18 +8,38 @@ struct SettingsView: View {
         NavigationView {
             List {
                 Section(header: Text("外观")) {
-                    // 主题设置
-                    Picker("主题", selection: $themeManager.selectedTheme) {
-                        ForEach(ThemeMode.allCases) { theme in
+                    // 显示当前选择的主题
+                    HStack {
+                        Label("当前主题", systemImage: themeManager.selectedTheme.iconName)
+                            .foregroundColor(themeIconColor(for: themeManager.selectedTheme))
+                        Spacer()
+                        Text(themeManager.selectedTheme.rawValue)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    // 主题选择按钮组
+                    ForEach(ThemeMode.allCases) { theme in
+                        Button(action: {
+                            themeManager.selectedTheme = theme
+                        }) {
                             HStack {
                                 Image(systemName: theme.iconName)
                                     .foregroundColor(themeIconColor(for: theme))
+                                    .font(.system(size: 18))
+                                
                                 Text(theme.rawValue)
+                                
+                                Spacer()
+                                
+                                if themeManager.selectedTheme == theme {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.blue)
+                                }
                             }
-                            .tag(theme)
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .pickerStyle(NavigationLinkPickerStyle())
                 }
                 
                 Section(header: Text("关于")) {
@@ -50,7 +70,7 @@ struct SettingsView: View {
             .listStyle(InsetGroupedListStyle())
             .navigationTitle("设置")
             .sheet(isPresented: $showingAbout) {
-                AboutView()
+                AboutView(isPresented: $showingAbout)
             }
         }
     }
@@ -68,6 +88,8 @@ struct SettingsView: View {
 }
 
 struct AboutView: View {
+    @Binding var isPresented: Bool
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
@@ -97,7 +119,7 @@ struct AboutView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") {
-                        // 关闭视图
+                        isPresented = false
                     }
                 }
             }

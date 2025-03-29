@@ -31,6 +31,8 @@ class ThemeManager: ObservableObject {
     @Published var selectedTheme: ThemeMode {
         didSet {
             UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selectedTheme")
+            // 发布通知，以便UI响应主题变化
+            NotificationCenter.default.post(name: .themeChanged, object: nil)
         }
     }
     
@@ -43,4 +45,9 @@ class ThemeManager: ObservableObject {
             self.selectedTheme = .system
         }
     }
+}
+
+// 主题变更通知名称
+extension Notification.Name {
+    static let themeChanged = Notification.Name("com.filly.themeChanged")
 } 
