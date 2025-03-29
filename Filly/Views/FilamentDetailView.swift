@@ -121,6 +121,22 @@ struct FilamentDetailView: View {
                 .padding(.horizontal, 18)
                 .background(SystemColorCompatibility.systemBackground)
                 .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.blue.opacity(0.6),
+                                    Color.blue.opacity(0.3),
+                                    Color.blue.opacity(0.6)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.2
+                        )
+                        .opacity(0.5)
+                )
                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
                 
                 // 详细信息
@@ -148,6 +164,22 @@ struct FilamentDetailView: View {
                 .padding()
                 .background(SystemColorCompatibility.systemBackground)
                 .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.gray.opacity(0.5),
+                                    Color.gray.opacity(0.2),
+                                    Color.gray.opacity(0.5)
+                                ]), 
+                                startPoint: .topLeading, 
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.0
+                        )
+                        .opacity(0.5)
+                )
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                 
                 // 耗材盘列表
@@ -266,6 +298,22 @@ struct FilamentDetailView: View {
                 .padding()
                 .background(SystemColorCompatibility.systemBackground)
                 .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.gray.opacity(0.5),
+                                    Color.gray.opacity(0.2),
+                                    Color.gray.opacity(0.5)
+                                ]), 
+                                startPoint: .topLeading, 
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.0
+                        )
+                        .opacity(0.5)
+                )
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             }
             .padding()
