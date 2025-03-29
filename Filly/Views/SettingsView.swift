@@ -3,51 +3,53 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @State private var showingAbout = false
-    @State private var localThemeSelection: ThemeMode
-    
-    // 在初始化时同步本地选择与全局设置
-    init() {
-        _localThemeSelection = State(initialValue: ThemeMode.system) // 默认值会被覆盖
-    }
     
     var body: some View {
         NavigationView {
             List {
                 Section(header: Text("外观")) {
-                    // 显示当前选择的主题
-                    HStack {
-                        Label("当前主题", systemImage: themeManager.selectedTheme.iconName)
-                            .foregroundColor(themeIconColor(for: themeManager.selectedTheme))
-                        Spacer()
-                        Text(themeManager.selectedTheme.rawValue)
-                            .foregroundColor(.secondary)
-                    }
-                    
                     // 主题选择按钮组
                     ForEach(ThemeMode.allCases) { theme in
                         Button(action: {
-                            // 设置本地状态并更新全局状态
-                            localThemeSelection = theme
-                            themeManager.selectedTheme = theme
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                themeManager.selectedTheme = theme
+                            }
                         }) {
                             HStack {
                                 Image(systemName: theme.iconName)
                                     .foregroundColor(themeIconColor(for: theme))
-                                    .font(.system(size: 18))
+                                    .font(.system(size: 20))
+                                    .frame(width: 30, height: 30)
+                                    .padding(6)
+                                    .background(
+                                        Circle()
+                                            .fill(themeIconColor(for: theme).opacity(0.1))
+                                    )
                                 
                                 Text(theme.rawValue)
+                                    .font(.body)
                                 
                                 Spacer()
                                 
                                 if themeManager.selectedTheme == theme {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.blue)
+                                        .font(.system(size: 14, weight: .bold))
+                                        .transition(.scale.combined(with: .opacity))
                                 }
                             }
+                            .padding(.vertical, 6)
                             .contentShape(Rectangle())
-                            .background(themeManager.selectedTheme == theme ? Color.gray.opacity(0.1) : Color.clear)
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(themeManager.selectedTheme == theme ? 
+                                    Color.blue.opacity(0.08) : 
+                                    Color.clear)
+                                .padding(.vertical, 2)
+                                .padding(.horizontal, 4)
+                        )
                     }
                 }
                 
@@ -58,32 +60,53 @@ struct SettingsView: View {
                         HStack {
                             Image(systemName: "info.circle")
                                 .foregroundColor(.blue)
+                                .font(.system(size: 20))
+                                .frame(width: 30, height: 30)
+                                .padding(6)
+                                .background(
+                                    Circle()
+                                        .fill(Color.blue.opacity(0.1))
+                                )
+                            
                             Text("关于应用")
+                                .font(.body)
+                            
                             Spacer()
+                            
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
+                        .padding(.vertical, 6)
                     }
                     
                     HStack {
                         Image(systemName: "app.badge.checkmark")
                             .foregroundColor(.green)
+                            .font(.system(size: 20))
+                            .frame(width: 30, height: 30)
+                            .padding(6)
+                            .background(
+                                Circle()
+                                    .fill(Color.green.opacity(0.1))
+                            )
+                        
                         Text("版本")
+                            .font(.body)
+                        
                         Spacer()
+                        
                         Text("1.0.0")
                             .foregroundColor(.gray)
                     }
+                    .padding(.vertical, 6)
                 }
             }
-            .listStyle(InsetGroupedListStyle())
+            .listStyle(SidebarListStyle())
             .navigationTitle("设置")
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: themeManager.selectedTheme)
             .sheet(isPresented: $showingAbout) {
                 AboutView(isPresented: $showingAbout)
-            }
-            .onAppear {
-                // 在视图出现时同步本地选择与全局设置
-                localThemeSelection = themeManager.selectedTheme
             }
         }
     }
@@ -128,7 +151,9 @@ struct AboutView: View {
             }
             .padding()
             .navigationTitle("关于")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") {
