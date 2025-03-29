@@ -1217,10 +1217,22 @@ struct FilamentReelView: View {
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<8) { i in
                 let radius = 20.0 + CGFloat(i) * 3.0
+                
+                // 阴影线(在下方)增强立体感
                 Circle()
                     .stroke(
-                        getContrastColor(for: color, opacity: 0.1),
-                        lineWidth: 0.8
+                        Color.black.opacity(0.15),
+                        lineWidth: 1.2
+                    )
+                    .frame(width: radius * 2, height: radius * 2)
+                    .offset(x: 0.5, y: 0.5)
+                    .blur(radius: 0.5)
+                
+                // 主线条
+                Circle()
+                    .stroke(
+                        getContrastColor(for: color, opacity: 0.25),
+                        lineWidth: 1.2
                     )
                     .frame(width: radius * 2, height: radius * 2)
             }
@@ -1228,8 +1240,8 @@ struct FilamentReelView: View {
             // 中心孔周围的边缘
             Circle()
                 .stroke(
-                    getContrastColor(for: color, opacity: 0.2),
-                    lineWidth: 1.5
+                    getContrastColor(for: color, opacity: 0.35),
+                    lineWidth: 2.0
                 )
                 .frame(width: 27, height: 27)
             
@@ -1237,10 +1249,11 @@ struct FilamentReelView: View {
             Circle()
                 .fill(Color.white)
                 .frame(width: 24, height: 24)
+                .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 0.5)
             
             // 内圈轻微阴影 - 增加深度感
             Circle()
-                .fill(getContrastColor(for: color, opacity: 0.1))
+                .fill(getContrastColor(for: color, opacity: 0.15))
                 .frame(width: 24, height: 24)
                 .blur(radius: 1.5)
                 .mask(
@@ -1253,7 +1266,7 @@ struct FilamentReelView: View {
             Circle()
                 .trim(from: 0.0, to: 0.25)
                 .stroke(
-                    Color.white.opacity(0.4),
+                    Color.white.opacity(0.5),
                     style: StrokeStyle(lineWidth: 20, lineCap: .round)
                 )
                 .frame(width: 44, height: 44)
@@ -1272,13 +1285,13 @@ struct FilamentReelView: View {
         // 根据背景色亮度调整线条颜色
         if brightness > 0.7 {
             // 亮色背景，使用深色线条
-            return Color.black.opacity(opacity * 1.5)
+            return Color.black.opacity(opacity * 2.0)
         } else if brightness < 0.3 {
             // 暗色背景，使用亮色线条
-            return Color.white.opacity(opacity * 1.2)
+            return Color.white.opacity(opacity * 1.5)
         } else {
             // 中等亮度，使用半透明黑色或白色
-            return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity)
+            return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity * 1.8)
         }
     }
     
@@ -1473,10 +1486,22 @@ struct SimpleFillamentReel2D: View {
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<5) { i in
                 let radius = 13.0 + CGFloat(i) * 3.0
+                
+                // 阴影线(在下方)增强立体感
                 Circle()
                     .stroke(
-                        getContrastColor(for: color, opacity: 0.1),
-                        lineWidth: 0.5
+                        Color.black.opacity(0.15),
+                        lineWidth: 0.8
+                    )
+                    .frame(width: radius * 2, height: radius * 2)
+                    .offset(x: 0.3, y: 0.3)
+                    .blur(radius: 0.3)
+                
+                // 主线条
+                Circle()
+                    .stroke(
+                        getContrastColor(for: color, opacity: 0.25),
+                        lineWidth: 0.8
                     )
                     .frame(width: radius * 2, height: radius * 2)
             }
@@ -1484,8 +1509,8 @@ struct SimpleFillamentReel2D: View {
             // 中心孔周围的边缘
             Circle()
                 .stroke(
-                    getContrastColor(for: color, opacity: 0.2),
-                    lineWidth: 1.0
+                    getContrastColor(for: color, opacity: 0.35),
+                    lineWidth: 1.5
                 )
                 .frame(width: 16, height: 16)
             
@@ -1493,10 +1518,11 @@ struct SimpleFillamentReel2D: View {
             Circle()
                 .fill(Color.white)
                 .frame(width: 14, height: 14)
+                .shadow(color: Color.black.opacity(0.2), radius: 0.5, x: 0, y: 0.3)
             
             // 内圈轻微阴影 - 增加深度感
             Circle()
-                .fill(getContrastColor(for: color, opacity: 0.1))
+                .fill(getContrastColor(for: color, opacity: 0.15))
                 .frame(width: 14, height: 14)
                 .blur(radius: 1)
                 .mask(
@@ -1509,13 +1535,31 @@ struct SimpleFillamentReel2D: View {
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
-                    Color.white.opacity(0.4),
+                    Color.white.opacity(0.5),
                     style: StrokeStyle(lineWidth: 14, lineCap: .round)
                 )
                 .frame(width: 26, height: 26)
                 .rotationEffect(Angle(degrees: -20))
                 .offset(y: -5)
                 .blur(radius: 3)
+                
+            // 额外添加细微的浮雕效果
+            ForEach([0.8, 1.8, 2.8, 3.8], id: \.self) { i in
+                let embossRadius = 10.0 + i * 6.0
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.white.opacity(0.15),
+                                Color.black.opacity(0.05)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 0.5
+                    )
+                    .frame(width: embossRadius * 2, height: embossRadius * 2)
+            }
         }
     }
     
@@ -1527,13 +1571,13 @@ struct SimpleFillamentReel2D: View {
         // 根据背景色亮度调整线条颜色
         if brightness > 0.7 {
             // 亮色背景，使用深色线条
-            return Color.black.opacity(opacity * 1.5)
+            return Color.black.opacity(opacity * 2.0)
         } else if brightness < 0.3 {
             // 暗色背景，使用亮色线条
-            return Color.white.opacity(opacity * 1.2)
+            return Color.white.opacity(opacity * 1.5)
         } else {
             // 中等亮度，使用半透明黑色或白色
-            return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity)
+            return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity * 1.8)
         }
     }
     
