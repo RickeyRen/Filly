@@ -96,45 +96,42 @@ struct ColorPickerView: View {
                     }
                     .padding()
                 } else {
-                    // 所有颜色列表
-                    List {
-                        ForEach(filteredColors) { colorItem in
-                            HStack(spacing: 16) {
-                                // 使用MiniFilamentReelView替换简单圆形，调整大小和间距
-                                MiniFilamentReelView(color: colorItem.getUIColor())
-                                    .frame(width: 40, height: 40)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                            .frame(width: 44, height: 44)
-                                    )
-                                
-                                Text(colorItem.name)
-                                    .font(.body)
-                                    .padding(.leading, 4)
-                                
-                                Spacer()
-                                
-                                if selectedColorName == colorItem.name {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.blue)
-                                        .font(.system(size: 16, weight: .semibold))
+                    // 所有颜色 - 网格布局替代列表
+                    ScrollView {
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12)
+                            ],
+                            spacing: 16
+                        ) {
+                            ForEach(filteredColors) { colorItem in
+                                ColorGridItem(
+                                    color: colorItem.getUIColor(),
+                                    name: colorItem.name,
+                                    isSelected: selectedColorName == colorItem.name
+                                )
+                                .onTapGesture {
+                                    self.selectedColorName = colorItem.name
+                                    self.selectedColor = colorItem.getUIColor()
+                                    colorLibrary.updateLastUsed(for: colorItem)
+                                    presentationMode.wrappedValue.dismiss()
+                                }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        if let index = filteredColors.firstIndex(where: { $0.id == colorItem.id }) {
+                                            colorLibrary.deleteColor(at: IndexSet(integer: index))
+                                        }
+                                    } label: {
+                                        Label("删除", systemImage: "trash")
+                                    }
                                 }
                             }
-                            .padding(.vertical, 8) // 增加垂直内边距
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                self.selectedColorName = colorItem.name
-                                self.selectedColor = colorItem.getUIColor()
-                                colorLibrary.updateLastUsed(for: colorItem)
-                                presentationMode.wrappedValue.dismiss()
-                            }
                         }
-                        .onDelete { offsets in
-                            colorLibrary.deleteColor(at: offsets)
-                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 20)
                     }
-                    .listStyle(PlainListStyle()) // 使用简单列表样式提高美观度
                 }
             }
             .navigationTitle("选择颜色")
@@ -242,5 +239,40 @@ struct ColorBubble: View {
         }
         .frame(width: 70)
         .padding(.vertical, 4)
+    }
+}
+
+// 添加网格布局项组件
+struct ColorGridItem: View {
+    let color: Color
+    let name: String
+    let isSelected: Bool
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            MiniFilamentReelView(color: color)
+                .frame(width: 50, height: 50)
+                .overlay(
+                    Circle()
+                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1)
+                        .frame(width: 55, height: 55)
+                )
+            
+            HStack {
+                Text(name)
+                    .font(.caption)
+                    .lineLimit(1)
+                    .multilineTextAlignment(.center)
+                
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.blue)
+                        .font(.system(size: 12, weight: .bold))
+                }
+            }
+        }
+        .frame(height: 85)
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
     }
 } 
