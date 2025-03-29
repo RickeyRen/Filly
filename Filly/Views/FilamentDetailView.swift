@@ -1209,18 +1209,18 @@ struct FilamentReelView: View {
                 .blur(radius: 2)
                 .offset(y: 2)
             
-            // 外部圆环 - 使用传入的颜色
+            // 外部圆环 - 使用传入的颜色，直接延伸到边缘
             Circle()
                 .fill(color)
-                .frame(width: 74, height: 74)
+                .frame(width: 76, height: 76)
             
             // 耗材盘最外沿边缘
             Circle()
                 .stroke(
-                    getContrastColor(for: color, opacity: 0.6),
-                    lineWidth: 2.5
+                    getBorderColor(for: color),
+                    lineWidth: 2.0
                 )
-                .frame(width: 74, height: 74)
+                .frame(width: 76, height: 76)
             
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<8) { i in
@@ -1300,6 +1300,20 @@ struct FilamentReelView: View {
         } else {
             // 中等亮度，使用半透明黑色或白色
             return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity * 1.8)
+        }
+    }
+    
+    // 获取边框颜色 - 增强对于各种背景的可见度
+    private func getBorderColor(for backgroundColor: Color) -> Color {
+        let brightness = getColorBrightness(backgroundColor)
+        
+        // 根据耗材颜色的亮度决定使用黑色或白色边框
+        if brightness > 0.6 {
+            // 亮色耗材使用黑色边框
+            return Color.black.opacity(0.7)
+        } else {
+            // 暗色耗材使用白色边框
+            return Color.white.opacity(0.7)
         }
     }
     
@@ -1486,18 +1500,18 @@ struct SimpleFillamentReel2D: View {
                 .blur(radius: 1.5)
                 .offset(y: 1.5)
             
-            // 外部圆环 - 使用传入的颜色
+            // 外部圆环 - 使用传入的颜色，直接延伸到边缘
             Circle()
                 .fill(color)
-                .frame(width: 44, height: 44)
+                .frame(width: 45, height: 45)
                 
             // 耗材盘最外沿边缘
             Circle()
                 .stroke(
-                    getContrastColor(for: color, opacity: 0.6),
-                    lineWidth: 2.0
+                    getBorderColor(for: color),
+                    lineWidth: 1.5
                 )
-                .frame(width: 44, height: 44)
+                .frame(width: 45, height: 45)
             
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
             ForEach(0..<5) { i in
@@ -1594,6 +1608,20 @@ struct SimpleFillamentReel2D: View {
         } else {
             // 中等亮度，使用半透明黑色或白色
             return (brightness > 0.5 ? Color.black : Color.white).opacity(opacity * 1.8)
+        }
+    }
+    
+    // 获取边框颜色 - 增强对于各种背景的可见度
+    private func getBorderColor(for backgroundColor: Color) -> Color {
+        let brightness = getColorBrightness(backgroundColor)
+        
+        // 根据耗材颜色的亮度决定使用黑色或白色边框
+        if brightness > 0.6 {
+            // 亮色耗材使用黑色边框
+            return Color.black.opacity(0.7)
+        } else {
+            // 暗色耗材使用白色边框
+            return Color.white.opacity(0.7)
         }
     }
     
