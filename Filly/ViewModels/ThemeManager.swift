@@ -30,9 +30,11 @@ enum ThemeMode: String, CaseIterable, Identifiable {
 class ThemeManager: ObservableObject {
     @Published var selectedTheme: ThemeMode {
         didSet {
-            UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selectedTheme")
-            // 发布通知，以便UI响应主题变化
-            NotificationCenter.default.post(name: .themeChanged, object: nil)
+            if oldValue != selectedTheme { // 只有当值确实发生变化时才执行
+                UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selectedTheme")
+                // 发布通知，以便UI响应主题变化
+                NotificationCenter.default.post(name: .themeChanged, object: nil)
+            }
         }
     }
     

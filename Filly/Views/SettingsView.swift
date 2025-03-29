@@ -3,6 +3,12 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @State private var showingAbout = false
+    @State private var localThemeSelection: ThemeMode
+    
+    // 在初始化时同步本地选择与全局设置
+    init() {
+        _localThemeSelection = State(initialValue: ThemeMode.system) // 默认值会被覆盖
+    }
     
     var body: some View {
         NavigationView {
@@ -20,6 +26,8 @@ struct SettingsView: View {
                     // 主题选择按钮组
                     ForEach(ThemeMode.allCases) { theme in
                         Button(action: {
+                            // 设置本地状态并更新全局状态
+                            localThemeSelection = theme
                             themeManager.selectedTheme = theme
                         }) {
                             HStack {
@@ -37,6 +45,7 @@ struct SettingsView: View {
                                 }
                             }
                             .contentShape(Rectangle())
+                            .background(themeManager.selectedTheme == theme ? Color.gray.opacity(0.1) : Color.clear)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -71,6 +80,10 @@ struct SettingsView: View {
             .navigationTitle("设置")
             .sheet(isPresented: $showingAbout) {
                 AboutView(isPresented: $showingAbout)
+            }
+            .onAppear {
+                // 在视图出现时同步本地选择与全局设置
+                localThemeSelection = themeManager.selectedTheme
             }
         }
     }

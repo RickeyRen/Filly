@@ -3,7 +3,7 @@ import SwiftUI
 struct MainTabView: View {
     @StateObject private var viewModel = FilamentViewModel()
     @StateObject private var colorLibrary = ColorLibraryViewModel()
-    @StateObject private var themeManager = ThemeManager()
+    @EnvironmentObject var themeManager: ThemeManager // 从环境中获取，而不是创建新实例
     @State private var themeChangeCounter = 0
     
     var body: some View {
@@ -23,7 +23,6 @@ struct MainTabView: View {
                     Label("设置", systemImage: "gear")
                 }
         }
-        .environmentObject(themeManager)
         .preferredColorScheme(themeManager.selectedTheme.colorScheme)
         .id(themeChangeCounter) // 强制UI刷新
         .onReceive(NotificationCenter.default.publisher(for: .themeChanged)) { _ in
