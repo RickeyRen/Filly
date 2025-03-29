@@ -1220,5 +1220,4 @@ struct SpoolStatusItem: View {
         .frame(maxWidth: .infinity)
     }
 } 
-} 
-} } 
+
