@@ -99,26 +99,29 @@ struct ColorPickerView: View {
                     // 所有颜色列表
                     List {
                         ForEach(filteredColors) { colorItem in
-                            HStack {
-                                // 使用MiniFilamentReelView替换简单圆形
+                            HStack(spacing: 16) {
+                                // 使用MiniFilamentReelView替换简单圆形，调整大小和间距
                                 MiniFilamentReelView(color: colorItem.getUIColor())
-                                    .frame(width: 32, height: 32)
+                                    .frame(width: 40, height: 40)
                                     .overlay(
                                         Circle()
                                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                            .frame(width: 36, height: 36)
+                                            .frame(width: 44, height: 44)
                                     )
                                 
                                 Text(colorItem.name)
-                                    .padding(.leading, 8)
+                                    .font(.body)
+                                    .padding(.leading, 4)
                                 
                                 Spacer()
                                 
                                 if selectedColorName == colorItem.name {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.blue)
+                                        .font(.system(size: 16, weight: .semibold))
                                 }
                             }
+                            .padding(.vertical, 8) // 增加垂直内边距
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 self.selectedColorName = colorItem.name
@@ -131,6 +134,7 @@ struct ColorPickerView: View {
                             colorLibrary.deleteColor(at: offsets)
                         }
                     }
+                    .listStyle(PlainListStyle()) // 使用简单列表样式提高美观度
                 }
             }
             .navigationTitle("选择颜色")
