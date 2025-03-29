@@ -24,26 +24,8 @@ struct FilamentDetailView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     // 耗材颜色和基本信息
                     HStack(spacing: 20) {
-                        Circle()
-                            .fill(filament.getColor())
+                        FilamentReelView(color: filament.getColor())
                             .frame(width: 80, height: 80)
-                            // 内部深色阴影，创造凹陷感
-                            .overlay(
-                                Circle()
-                                    .stroke(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                filament.getColor().opacity(0.7),
-                                                filament.getColor().opacity(1.0)
-                                            ]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 6
-                                    )
-                                    .blur(radius: 3)
-                                    .offset(x: 0, y: 1)
-                            )
                         
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
@@ -289,7 +271,9 @@ struct FilamentDetailView: View {
             .padding()
         }
         .navigationTitle("耗材详情")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.large)
+        #endif
         .alert(isPresented: $showingDeleteConfirm) {
             Alert(
                 title: Text("确认删除"),
@@ -716,9 +700,10 @@ struct SpoolItemView: View {
                     print("执行删除操作: filamentId=\(filamentId), spoolId=\(spool.id)")
 
                     // 第一阶段：轻微震动与发光效果
+                    #if os(iOS)
                     let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                    impactFeedback.prepare()
                     impactFeedback.impactOccurred()
+                    #endif
                     
                     // 初始轻微震动
                     withAnimation(.interpolatingSpring(mass: 0.2, stiffness: 170, damping: 8, initialVelocity: 20)) {
@@ -1160,5 +1145,295 @@ struct SpoolStatusItem: View {
             }
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+// 3D线材卷模型 - 优化设计
+struct FilamentReelView: View {
+    let color: Color
+    
+    var body: some View {
+        ZStack {
+            // 外层阴影
+            Circle()
+                .fill(color.opacity(0.3))
+                .frame(width: 78, height: 78)
+                .blur(radius: 2)
+                .offset(y: 2)
+            
+            // 外部圆环 - 使用传入的颜色
+            Circle()
+                .fill(color)
+                .frame(width: 74, height: 74)
+            
+            // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
+            ForEach(0..<8) { i in
+                let radius = 20.0 + CGFloat(i) * 3.0
+                Circle()
+                    .stroke(
+                        Color.black.opacity(0.1),
+                        lineWidth: 0.8
+                    )
+                    .frame(width: radius * 2, height: radius * 2)
+            }
+            
+            // 中心孔周围的边缘
+            Circle()
+                .stroke(
+                    Color.black.opacity(0.2),
+                    lineWidth: 1.5
+                )
+                .frame(width: 27, height: 27)
+            
+            // 中心孔 - 白色
+            Circle()
+                .fill(Color.white)
+                .frame(width: 24, height: 24)
+            
+            // 内圈轻微阴影 - 增加深度感
+            Circle()
+                .fill(Color.black.opacity(0.1))
+                .frame(width: 24, height: 24)
+                .blur(radius: 1.5)
+                .mask(
+                    Circle()
+                        .frame(width: 21, height: 21)
+                        .offset(y: 1)
+                )
+            
+            // 顶部高光 - 塑料质感
+            Circle()
+                .trim(from: 0.0, to: 0.25)
+                .stroke(
+                    Color.white.opacity(0.4),
+                    style: StrokeStyle(lineWidth: 20, lineCap: .round)
+                )
+                .frame(width: 44, height: 44)
+                .rotationEffect(Angle(degrees: -20))
+                .offset(y: -7)
+                .blur(radius: 4)
+        }
+        .frame(width: 85, height: 85)
+    }
+}
+
+// 增强的3D圆柱体
+struct Cylinder3D: View {
+    let color: Color
+    let width: CGFloat
+    let depth: CGFloat
+    let gradientStrength: CGFloat
+    
+    var body: some View {
+        ZStack {
+            // 前面圆形
+            Circle()
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            color,
+                            color.opacity(1.0 - gradientStrength)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: width, height: width)
+                .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 0)
+            
+            // 模拟侧面深度 - 使用多层叠加创造深度感
+            ForEach(0..<Int(depth/2)) { i in
+                let scale = 1.0 - CGFloat(i) * (0.5 / CGFloat(depth))
+                let opacity = 1.0 - CGFloat(i) / CGFloat(depth/2) * 0.8
+                
+                Circle()
+                    .stroke(color.opacity(opacity), lineWidth: 1)
+                    .frame(width: width * scale, height: width * scale)
+                    .offset(x: -CGFloat(i) * 0.5)
+            }
+        }
+    }
+}
+
+// 耗材缠绕效果
+struct FilamentWindings: View {
+    let color: Color
+    let width: CGFloat
+    let depth: CGFloat
+    let windingCount: Int
+    let windingWidth: CGFloat
+    
+    var body: some View {
+        ZStack {
+            // 创建多层次的缠绕线
+            ForEach(0..<windingCount, id: \.self) { i in
+                let offsetZ = CGFloat(i) * (depth / CGFloat(windingCount)) - depth/2
+                let opacity = 0.7 + 0.3 * sin(CGFloat(i) / CGFloat(windingCount) * .pi)
+                
+                Circle()
+                    .stroke(
+                        color.opacity(opacity),
+                        lineWidth: windingWidth
+                    )
+                    .frame(width: width - 8, height: width - 8)
+                    .offset(x: offsetZ)
+                    .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 0)
+            }
+        }
+    }
+}
+
+// 表面反光效果
+struct ReflectionOverlay: View {
+    let width: CGFloat
+    let height: CGFloat
+    let opacity: CGFloat
+    
+    var body: some View {
+        ZStack {
+            // 顶部高光
+            Ellipse()
+                .fill(Color.white)
+                .frame(width: width * 0.4, height: width * 0.2)
+                .offset(x: -width * 0.1, y: -height * 0.2)
+                .blur(radius: 5)
+                .blendMode(.overlay)
+                .opacity(opacity * 1.2)
+            
+            // 侧面光泽
+            Capsule()
+                .fill(Color.white)
+                .frame(width: width * 0.1, height: height * 0.7)
+                .offset(x: width * 0.25, y: 0)
+                .blur(radius: 4)
+                .blendMode(.overlay)
+                .opacity(opacity * 0.8)
+        }
+    }
+}
+
+// 圆柱体效果 - 模拟侧面视图 (保留用于其它组件)
+struct Cylinder: View {
+    let color: Color
+    let width: CGFloat
+    let height: CGFloat
+    
+    var body: some View {
+        ZStack {
+            // 顶部椭圆
+            Ellipse()
+                .fill(color)
+                .frame(width: width, height: width * 0.4)
+                .offset(y: -height/2)
+            
+            // 底部椭圆
+            Ellipse()
+                .fill(color.opacity(0.7))
+                .frame(width: width, height: width * 0.4)
+                .offset(y: height/2)
+            
+            // 连接两个椭圆的矩形
+            Rectangle()
+                .fill(color.opacity(0.85))
+                .frame(width: width, height: height)
+            
+            // 侧面高光
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.4),
+                            Color.white.opacity(0.0),
+                            Color.white.opacity(0.0),
+                            Color.white.opacity(0.4)
+                        ]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(width: width, height: height)
+                .blendMode(.overlay)
+        }
+    }
+}
+
+// 迷你线材卷模型 - 用于颜色选择器和添加耗材视图 (简化2D版本)
+struct MiniFilamentReelView: View {
+    let color: Color
+    
+    var body: some View {
+        ZStack {
+            // 简单耗材盘2D图标
+            SimpleFillamentReel2D(color: color)
+        }
+        .frame(width: 50, height: 50)
+    }
+}
+
+// 简化的2D耗材盘图标 - 更真实的设计
+struct SimpleFillamentReel2D: View {
+    let color: Color
+    
+    var body: some View {
+        ZStack {
+            // 外层阴影
+            Circle()
+                .fill(color.opacity(0.3))
+                .frame(width: 46, height: 46)
+                .blur(radius: 1.5)
+                .offset(y: 1.5)
+            
+            // 外部圆环 - 使用传入的颜色
+            Circle()
+                .fill(color)
+                .frame(width: 44, height: 44)
+            
+            // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线
+            ForEach(0..<5) { i in
+                let radius = 13.0 + CGFloat(i) * 3.0
+                Circle()
+                    .stroke(
+                        Color.black.opacity(0.1),
+                        lineWidth: 0.5
+                    )
+                    .frame(width: radius * 2, height: radius * 2)
+            }
+            
+            // 中心孔周围的边缘
+            Circle()
+                .stroke(
+                    Color.black.opacity(0.2),
+                    lineWidth: 1.0
+                )
+                .frame(width: 16, height: 16)
+            
+            // 中心孔 - 白色
+            Circle()
+                .fill(Color.white)
+                .frame(width: 14, height: 14)
+            
+            // 内圈轻微阴影 - 增加深度感
+            Circle()
+                .fill(Color.black.opacity(0.1))
+                .frame(width: 14, height: 14)
+                .blur(radius: 1)
+                .mask(
+                    Circle()
+                        .frame(width: 12, height: 12)
+                        .offset(y: 0.5)
+                )
+            
+            // 顶部高光 - 塑料质感
+            Circle()
+                .trim(from: 0.0, to: 0.3)
+                .stroke(
+                    Color.white.opacity(0.4),
+                    style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                )
+                .frame(width: 26, height: 26)
+                .rotationEffect(Angle(degrees: -20))
+                .offset(y: -5)
+                .blur(radius: 3)
+        }
     }
 } 

@@ -68,13 +68,8 @@ struct AddFilamentView: View {
                             Spacer()
                             
                             if !color.isEmpty {
-                                Circle()
-                                    .fill(selectedColor)
-                                    .frame(width: 20, height: 20)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                    )
+                                MiniFilamentReelView(color: selectedColor)
+                                    .frame(width: 30, height: 30)
                                 
                                 Text(color)
                                     .foregroundColor(.secondary)
@@ -345,13 +340,8 @@ struct EditFilamentView: View {
                             Spacer()
                             
                             if !color.isEmpty {
-                                Circle()
-                                    .fill(selectedColor)
-                                    .frame(width: 20, height: 20)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                    )
+                                MiniFilamentReelView(color: selectedColor)
+                                    .frame(width: 30, height: 30)
                                 
                                 Text(color)
                                     .foregroundColor(.secondary)
