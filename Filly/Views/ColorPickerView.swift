@@ -52,8 +52,9 @@ struct ColorPickerView: View {
                                 }
                             }
                             .padding(.horizontal)
+                            .padding(.vertical, 4)
                         }
-                        .frame(height: 90)
+                        .frame(height: 110)
                     }
                     .padding(.top, 4)
                     .padding(.bottom, 2)
@@ -101,12 +102,12 @@ struct ColorPickerView: View {
                     ScrollView {
                         LazyVGrid(
                             columns: [
-                                GridItem(.flexible(), spacing: 6),
-                                GridItem(.flexible(), spacing: 6),
-                                GridItem(.flexible(), spacing: 6),
-                                GridItem(.flexible(), spacing: 6)
+                                GridItem(.flexible(), spacing: 4),
+                                GridItem(.flexible(), spacing: 4),
+                                GridItem(.flexible(), spacing: 4),
+                                GridItem(.flexible(), spacing: 4)
                             ],
-                            spacing: 6
+                            spacing: 10
                         ) {
                             ForEach(filteredColors) { colorItem in
                                 ColorGridItem(
@@ -222,25 +223,30 @@ struct ColorBubble: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack(spacing: 4) {
-            // 使用MiniFilamentReelView替换原来的圆形
-            MiniFilamentReelView(color: color)
-                .frame(width: 40, height: 40)
-                // 选中状态边框
-                .overlay(
-                    Circle()
-                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2.5 : 0.8)
-                        .frame(width: 42, height: 42)
-                )
+        VStack(spacing: 6) {
+            // 图标容器，固定尺寸并裁剪溢出部分
+            ZStack {
+                MiniFilamentReelView(color: color)
+                    .frame(width: 36, height: 36)
+                    // 选中状态边框
+                    .overlay(
+                        Circle()
+                            .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2.5 : 0.8)
+                            .frame(width: 38, height: 38)
+                    )
+            }
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
             
+            // 文本放在图标下方，清晰分开
             Text(name)
                 .font(.caption2)
                 .lineLimit(1)
-                .frame(width: 60)
+                .frame(width: 58)
                 .multilineTextAlignment(.center)
+                .padding(.top, 2)
         }
-        .frame(width: 60)
-        .padding(.vertical, 2)
+        .frame(width: 58, height: 90)
     }
 }
 
@@ -251,31 +257,37 @@ struct ColorGridItem: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack(spacing: 2) {
-            MiniFilamentReelView(color: color)
-                .frame(width: 38, height: 38)
-                .overlay(
-                    Circle()
-                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
-                        .frame(width: 40, height: 40)
-                )
+        VStack(spacing: 4) {
+            // 图标容器，固定尺寸并裁剪溢出部分
+            ZStack {
+                MiniFilamentReelView(color: color)
+                    .frame(width: 32, height: 32)
+                    .overlay(
+                        Circle()
+                            .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
+                            .frame(width: 34, height: 34)
+                    )
+            }
+            .frame(width: 36, height: 36)
+            .clipShape(Circle())
             
+            // 文本放在图标下方，避免重叠
             HStack(spacing: 1) {
                 Text(name)
-                    .font(.system(size: 10))
+                    .font(.system(size: 9))
                     .lineLimit(1)
                     .multilineTextAlignment(.center)
                 
                 if isSelected {
                     Image(systemName: "checkmark")
                         .foregroundColor(.blue)
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.system(size: 7, weight: .bold))
                 }
             }
+            .padding(.top, 2)
             .frame(maxWidth: .infinity)
         }
-        .frame(height: 60)
-        .padding(.vertical, 2)
+        .frame(height: 72)
         .contentShape(Rectangle())
     }
 } 
