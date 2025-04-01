@@ -105,6 +105,7 @@ struct ColorPickerView: View {
                                 GridItem(.flexible(), spacing: 2),
                                 GridItem(.flexible(), spacing: 2),
                                 GridItem(.flexible(), spacing: 2),
+                                GridItem(.flexible(), spacing: 2),
                                 GridItem(.flexible(), spacing: 2)
                             ],
                             spacing: 8
@@ -261,33 +262,33 @@ struct ColorGridItem: View {
             // 图标容器，固定尺寸并裁剪溢出部分
             ZStack {
                 MiniFilamentReelView(color: color)
-                    .frame(width: 38, height: 38)
+                    .frame(width: 32, height: 32)
                     .overlay(
                         Circle()
                             .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 34, height: 34)
                     )
             }
-            .frame(width: 42, height: 42)
+            .frame(width: 36, height: 36)
             .clipShape(Circle())
             
             // 文本放在图标下方，避免重叠
             HStack(spacing: 1) {
                 Text(name)
-                    .font(.system(size: 9))
+                    .font(.system(size: 8))
                     .lineLimit(1)
                     .multilineTextAlignment(.center)
                 
                 if isSelected {
                     Image(systemName: "checkmark")
                         .foregroundColor(.blue)
-                        .font(.system(size: 7, weight: .bold))
+                        .font(.system(size: 6, weight: .bold))
                 }
             }
             .padding(.top, 2)
             .frame(maxWidth: .infinity)
         }
-        .frame(height: 72)
+        .frame(height: 70)
         .contentShape(Rectangle())
     }
 } 
