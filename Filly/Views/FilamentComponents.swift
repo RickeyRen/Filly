@@ -86,7 +86,7 @@ public struct SimpleFillamentReel2D: View {
                             endRadius: 9
                         )
                     )
-                    .frame(width: 19, height: 19)
+                    .frame(width: 17, height: 17)
                 
                 // 三等分圆环 - 每段80度，间隔40度
                 ForEach(0..<3) { i in
@@ -97,9 +97,9 @@ public struct SimpleFillamentReel2D: View {
                         .trim(from: startAngle / 360, to: endAngle / 360)
                         .stroke(
                             getThreePartRingColor(for: color, index: i),
-                            style: StrokeStyle(lineWidth: 3.5, lineCap: .round)
+                            style: StrokeStyle(lineWidth: 3.0, lineCap: .round)
                         )
-                        .frame(width: 13, height: 13)
+                        .frame(width: 15, height: 15)
                         .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 反向旋转，速度比外层快50%
                 }
             }

@@ -1021,7 +1021,7 @@ struct SpoolModel: View {
                             endRadius: 8
                         )
                     )
-                    .frame(width: 16, height: 16)
+                    .frame(width: 14, height: 14)
                 
                 // 三等分圆环 - 每段80度，间隔40度
                 ForEach(0..<3) { i in
@@ -1032,9 +1032,9 @@ struct SpoolModel: View {
                         .trim(from: startAngle / 360, to: endAngle / 360)
                         .stroke(
                             getThreePartRingColor(for: color, index: i),
-                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+                            style: StrokeStyle(lineWidth: 2.0, lineCap: .round)
                         )
-                        .frame(width: 11, height: 11)
+                        .frame(width: 12, height: 12)
                         .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 反向旋转，速度比外层快50%
                 }
             }
@@ -1497,7 +1497,7 @@ struct FilamentReelView: View {
                 )
                 .frame(width: 27, height: 27)
             
-            // 中心孔 - 替换为三等分的中间有空隙圆环
+            // 中心孔 - 替换为三等分圆环
             ZStack {
                 // 背景圆 - 提供白色背景
                 Circle()
@@ -1512,7 +1512,7 @@ struct FilamentReelView: View {
                             endRadius: 15
                         )
                     )
-                    .frame(width: 28, height: 28)
+                    .frame(width: 25, height: 25)
                 
                 // 三等分圆环 - 每段80度，间隔40度
                 ForEach(0..<3) { i in
@@ -1523,13 +1523,13 @@ struct FilamentReelView: View {
                         .trim(from: startAngle / 360, to: endAngle / 360)
                         .stroke(
                             getThreePartRingColor(for: color, index: i),
-                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+                            style: StrokeStyle(lineWidth: 4.0, lineCap: .round)
                         )
-                        .frame(width: 11, height: 11)
+                        .frame(width: 20, height: 20)
                         .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 反向旋转，速度比外层快50%
                 }
             }
-            .shadow(color: Color.black.opacity(0.15), radius: 1.2, x: 0, y: 0.8)
+            .shadow(color: Color.black.opacity(0.15), radius: 1.0, x: 0, y: 0.5)
             
             // 顶部高光 - 增强塑料质感，改为非对称高光并旋转
             Circle()
