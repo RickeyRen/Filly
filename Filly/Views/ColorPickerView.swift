@@ -37,7 +37,7 @@ struct ColorPickerView: View {
                             .padding(.horizontal)
                         
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 16) {
+                            HStack(spacing: 12) {
                                 ForEach(colorLibrary.recentlyUsedColors()) { colorItem in
                                     ColorBubble(
                                         color: colorItem.getUIColor(),
@@ -53,9 +53,10 @@ struct ColorPickerView: View {
                             }
                             .padding(.horizontal)
                         }
-                        .frame(height: 100)
+                        .frame(height: 90)
                     }
-                    .padding(.vertical, 8)
+                    .padding(.top, 4)
+                    .padding(.bottom, 2)
                 }
                 
                 if isAddingNew {
@@ -100,12 +101,12 @@ struct ColorPickerView: View {
                     ScrollView {
                         LazyVGrid(
                             columns: [
-                                GridItem(.flexible(), spacing: 8),
-                                GridItem(.flexible(), spacing: 8),
-                                GridItem(.flexible(), spacing: 8),
-                                GridItem(.flexible(), spacing: 8)
+                                GridItem(.flexible(), spacing: 6),
+                                GridItem(.flexible(), spacing: 6),
+                                GridItem(.flexible(), spacing: 6),
+                                GridItem(.flexible(), spacing: 6)
                             ],
-                            spacing: 10
+                            spacing: 6
                         ) {
                             ForEach(filteredColors) { colorItem in
                                 ColorGridItem(
@@ -221,25 +222,25 @@ struct ColorBubble: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             // 使用MiniFilamentReelView替换原来的圆形
             MiniFilamentReelView(color: color)
-                .frame(width: 45, height: 45)
+                .frame(width: 40, height: 40)
                 // 选中状态边框
                 .overlay(
                     Circle()
-                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1)
-                        .frame(width: 48, height: 48)
+                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2.5 : 0.8)
+                        .frame(width: 42, height: 42)
                 )
             
             Text(name)
-                .font(.caption)
+                .font(.caption2)
                 .lineLimit(1)
-                .frame(width: 70)
+                .frame(width: 60)
                 .multilineTextAlignment(.center)
         }
-        .frame(width: 70)
-        .padding(.vertical, 4)
+        .frame(width: 60)
+        .padding(.vertical, 2)
     }
 }
 
@@ -250,31 +251,31 @@ struct ColorGridItem: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 2) {
             MiniFilamentReelView(color: color)
-                .frame(width: 40, height: 40)
+                .frame(width: 38, height: 38)
                 .overlay(
                     Circle()
                         .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
-                        .frame(width: 42, height: 42)
+                        .frame(width: 40, height: 40)
                 )
             
-            HStack(spacing: 2) {
+            HStack(spacing: 1) {
                 Text(name)
-                    .font(.caption2)
+                    .font(.system(size: 10))
                     .lineLimit(1)
                     .multilineTextAlignment(.center)
                 
                 if isSelected {
                     Image(systemName: "checkmark")
                         .foregroundColor(.blue)
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 8, weight: .bold))
                 }
             }
             .frame(maxWidth: .infinity)
         }
-        .frame(height: 75)
-        .padding(.vertical, 4)
+        .frame(height: 60)
+        .padding(.vertical, 2)
         .contentShape(Rectangle())
     }
 } 
