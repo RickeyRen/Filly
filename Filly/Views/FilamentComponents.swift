@@ -96,7 +96,7 @@ public struct SimpleFillamentReel2D: View {
                     Circle()
                         .trim(from: startAngle / 360, to: endAngle / 360)
                         .stroke(
-                            getThreePartRingColor(for: color, index: i),
+                            Color.black.opacity(0.8),
                             style: StrokeStyle(lineWidth: 3.0, lineCap: .round)
                         )
                         .frame(width: 15, height: 15)

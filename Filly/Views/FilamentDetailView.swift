@@ -1031,7 +1031,7 @@ struct SpoolModel: View {
                     Circle()
                         .trim(from: startAngle / 360, to: endAngle / 360)
                         .stroke(
-                            getThreePartRingColor(for: color, index: i),
+                            Color.black.opacity(0.8),
                             style: StrokeStyle(lineWidth: 2.0, lineCap: .round)
                         )
                         .frame(width: 12, height: 12)
@@ -1522,7 +1522,7 @@ struct FilamentReelView: View {
                     Circle()
                         .trim(from: startAngle / 360, to: endAngle / 360)
                         .stroke(
-                            getThreePartRingColor(for: color, index: i),
+                            Color.black.opacity(0.8),
                             style: StrokeStyle(lineWidth: 4.0, lineCap: .round)
                         )
                         .frame(width: 20, height: 20)
