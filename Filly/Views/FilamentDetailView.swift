@@ -1434,6 +1434,7 @@ struct SpoolStatusItem: View {
 struct FilamentReelView: View {
     let color: Color
     @State private var rotationDegree: Double = 0
+    @Environment(\.colorScheme) private var colorScheme // 添加环境变量获取当前颜色模式
     
     var body: some View {
         ZStack {
@@ -1442,7 +1443,8 @@ struct FilamentReelView: View {
                 .fill(
                     RadialGradient(
                         gradient: Gradient(colors: [
-                            color.opacity(1.0),
+                            lighten(color, by: 0.1),
+                            color,
                             darken(color, by: 0.2)
                         ]),
                         center: .center,
@@ -1462,7 +1464,9 @@ struct FilamentReelView: View {
                 Circle()
                     .trim(from: i % 3 == 0 ? 0.0 : 0.03, to: i % 4 == 0 ? 0.97 : 1.0) // 添加间隙使旋转更明显
                     .stroke(
-                        getEnhancedContrastColor(for: color, index: i),
+                        i % 2 == 0 ? 
+                            getEnhancedContrastColor(for: color, index: i) : 
+                            (colorScheme == .dark ? Color.white.opacity(0.8) : Color.black.opacity(0.7)), // 根据模式设置虚线颜色
                         style: StrokeStyle(
                             lineWidth: 1.2 + (CGFloat(7-i) * 0.05),
                             lineCap: .round,
@@ -1479,9 +1483,9 @@ struct FilamentReelView: View {
                 let angle = Double(i) * 120.0
                 let radius = 32.0
                 
-                // 小圆点标记
+                // 小圆点标记 - 根据模式调整颜色
                 Circle()
-                    .fill(color == .white ? Color.gray : .white)
+                    .fill(colorScheme == .dark ? Color.white.opacity(0.9) : Color.black.opacity(0.7))
                     .frame(width: 5, height: 5)
                     .offset(
                         x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius),
@@ -1554,7 +1558,11 @@ struct FilamentReelView: View {
         .frame(width: 85, height: 85)
         .modifier(BreathingEffect())
         .onAppear {
-            withAnimation(Animation.linear(duration: 24).repeatForever(autoreverses: false)) {
+            // 使用无限循环动画，避免重新开始感
+            let baseAnimation = Animation.linear(duration: 24)
+            let smoothAnimation = baseAnimation.repeatForever(autoreverses: false)
+            
+            withAnimation(smoothAnimation) {
                 rotationDegree = 360
             }
         }
