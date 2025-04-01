@@ -224,12 +224,12 @@ struct ColorBubble: View {
         VStack(spacing: 8) {
             // 使用MiniFilamentReelView替换原来的圆形
             MiniFilamentReelView(color: color)
-                .frame(width: 50, height: 50)
+                .frame(width: 45, height: 45)
                 // 选中状态边框
                 .overlay(
                     Circle()
                         .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1)
-                        .frame(width: 55, height: 55)
+                        .frame(width: 48, height: 48)
                 )
             
             Text(name)
@@ -252,11 +252,11 @@ struct ColorGridItem: View {
     var body: some View {
         VStack(spacing: 4) {
             MiniFilamentReelView(color: color)
-                .frame(width: 45, height: 45)
+                .frame(width: 40, height: 40)
                 .overlay(
                     Circle()
                         .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
-                        .frame(width: 48, height: 48)
+                        .frame(width: 42, height: 42)
                 )
             
             HStack(spacing: 2) {
