@@ -974,6 +974,7 @@ struct SpoolItemView: View {
 // 3D耗材盘模型
 struct SpoolModel: View {
     let color: Color
+    @State private var rotationDegree: Double = 0
     
     var body: some View {
         ZStack {
@@ -1014,7 +1015,7 @@ struct SpoolModel: View {
                 .frame(width: 10, height: 10)
                 .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
             
-            // 高光效果
+            // 高光效果 - 添加旋转
             Circle()
                 .trim(from: 0, to: 0.4)
                 .stroke(
@@ -1026,7 +1027,12 @@ struct SpoolModel: View {
                     lineWidth: 2
                 )
                 .frame(width: 30, height: 30)
-                .rotationEffect(Angle(degrees: -45))
+                .rotationEffect(Angle(degrees: -45 + rotationDegree))
+        }
+        .onAppear {
+            withAnimation(Animation.linear(duration: 6).repeatForever(autoreverses: false)) {
+                rotationDegree = 360
+            }
         }
     }
 }
@@ -1199,6 +1205,7 @@ struct SpoolStatusItem: View {
 // 3D线材卷模型 - 精细优化设计
 struct FilamentReelView: View {
     let color: Color
+    @State private var rotationDegree: Double = 0
     
     var body: some View {
         ZStack {
@@ -1220,14 +1227,38 @@ struct FilamentReelView: View {
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线 - 增强线条对比度
             ForEach(0..<8) { i in
                 let radius = 20.0 + CGFloat(i) * 3.0
+                let rotationSpeed = i % 2 == 0 ? 1.0 : -0.85
+                let rotationOffset = Double(i) * 45 // 错开初始角度
                 
                 // 主线条 - 增强对比度和可见性
                 Circle()
+                    .trim(from: i % 3 == 0 ? 0.0 : 0.03, to: i % 4 == 0 ? 0.97 : 1.0) // 添加间隙使旋转更明显
                     .stroke(
                         getEnhancedContrastColor(for: color, index: i),
-                        lineWidth: 1.2 + (CGFloat(7-i) * 0.05)
+                        style: StrokeStyle(
+                            lineWidth: 1.2 + (CGFloat(7-i) * 0.05),
+                            lineCap: .round,
+                            lineJoin: .round,
+                            dash: i % 2 == 0 ? [] : [3, 3] // 偶数圆为实线，奇数圆为虚线
+                        )
                     )
                     .frame(width: radius * 2, height: radius * 2)
+                    .rotationEffect(Angle(degrees: rotationOffset + rotationDegree * rotationSpeed))
+            }
+            
+            // 添加非对称标记，使旋转更加明显
+            ForEach(0..<3) { i in
+                let angle = Double(i) * 120.0
+                let radius = 32.0
+                
+                // 小圆点标记
+                Circle()
+                    .fill(color == .white ? Color.gray : .white)
+                    .frame(width: 5, height: 5)
+                    .offset(
+                        x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius),
+                        y: CGFloat(sin(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius)
+                    )
             }
             
             // 中心孔周围的边缘 - 加粗边缘线
@@ -1258,7 +1289,7 @@ struct FilamentReelView: View {
                 )
                 .shadow(color: Color.black.opacity(0.15), radius: 1, x: 0, y: 0.5)
             
-            // 顶部高光 - 增强塑料质感
+            // 顶部高光 - 增强塑料质感，改为非对称高光并旋转
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
@@ -1266,7 +1297,7 @@ struct FilamentReelView: View {
                     style: StrokeStyle(lineWidth: 20, lineCap: .round)
                 )
                 .frame(width: 44, height: 44)
-                .rotationEffect(Angle(degrees: -20))
+                .rotationEffect(Angle(degrees: -20 + rotationDegree * 0.5))
                 .offset(y: -7)
                 .blur(radius: 3)
                 
@@ -1279,6 +1310,12 @@ struct FilamentReelView: View {
                 .frame(width: 76, height: 76)
         }
         .frame(width: 85, height: 85)
+        .modifier(BreathingEffect())
+        .onAppear {
+            withAnimation(Animation.linear(duration: 8).repeatForever(autoreverses: false)) {
+                rotationDegree = 360
+            }
+        }
     }
     
     // 获取与背景色形成明显对比的增强线条颜色
@@ -1469,6 +1506,7 @@ struct Cylinder3D: View {
     let depth: CGFloat
     let gradientStrength: CGFloat
     
+    
     var body: some View {
         ZStack {
             // 前面圆形
@@ -1487,7 +1525,8 @@ struct Cylinder3D: View {
                 .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 0)
             
             // 模拟侧面深度 - 使用多层叠加创造深度感
-            ForEach(0..<Int(depth/2)) { i in
+            let depthLayers = Int(depth/2)
+            ForEach(0..<depthLayers, id: \.self) { i in
                 let scale = 1.0 - CGFloat(i) * (0.5 / CGFloat(depth))
                 let opacity = 1.0 - CGFloat(i) / CGFloat(depth/2) * 0.8
                 
@@ -1618,6 +1657,7 @@ struct MiniFilamentReelView: View {
 // 简化的2D耗材盘图标 - 精细优化设计
 struct SimpleFillamentReel2D: View {
     let color: Color
+    @State private var rotationDegree: Double = 0
     
     var body: some View {
         ZStack {
@@ -1639,14 +1679,38 @@ struct SimpleFillamentReel2D: View {
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线 - 增强线条可见性
             ForEach(0..<5) { i in
                 let radius = 13.0 + CGFloat(i) * 3.0
+                let rotationSpeed = i % 2 == 0 ? 1.0 : -0.85
+                let rotationOffset = Double(i) * 72 // 错开初始角度
                 
                 // 主线条 - 增强对比度和可见性
                 Circle()
+                    .trim(from: i % 2 == 0 ? 0.0 : 0.05, to: i % 3 == 0 ? 0.95 : 1.0) // 添加间隙使旋转更明显
                     .stroke(
                         getEnhancedContrastColor(for: color, index: i),
-                        lineWidth: 1.0 + (CGFloat(4-i) * 0.05)
+                        style: StrokeStyle(
+                            lineWidth: 1.0 + (CGFloat(4-i) * 0.05),
+                            lineCap: .round,
+                            lineJoin: .round,
+                            dash: i % 2 == 0 ? [] : [2, 2] // 偶数圆为实线，奇数圆为虚线
+                        )
                     )
                     .frame(width: radius * 2, height: radius * 2)
+                    .rotationEffect(Angle(degrees: rotationOffset + rotationDegree * rotationSpeed))
+            }
+            
+            // 添加非对称标记，使旋转更加明显
+            ForEach(0..<2) { i in
+                let angle = Double(i) * 180.0
+                let radius = 18.0
+                
+                // 小圆点标记
+                Circle()
+                    .fill(color == .white ? Color.gray : .white)
+                    .frame(width: 3, height: 3)
+                    .offset(
+                        x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius),
+                        y: CGFloat(sin(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius)
+                    )
             }
             
             // 中心孔周围的边缘 - 加粗边缘线
@@ -1677,7 +1741,7 @@ struct SimpleFillamentReel2D: View {
                 )
                 .shadow(color: Color.black.opacity(0.15), radius: 0.5, x: 0, y: 0.3)
             
-            // 顶部高光 - 增强塑料质感
+            // 顶部高光 - 增强塑料质感，改为非对称高光并旋转
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
@@ -1685,7 +1749,7 @@ struct SimpleFillamentReel2D: View {
                     style: StrokeStyle(lineWidth: 14, lineCap: .round)
                 )
                 .frame(width: 26, height: 26)
-                .rotationEffect(Angle(degrees: -20))
+                .rotationEffect(Angle(degrees: -20 + rotationDegree * 0.5))
                 .offset(y: -5)
                 .blur(radius: 2.5)
                 
@@ -1696,6 +1760,12 @@ struct SimpleFillamentReel2D: View {
                     lineWidth: 1.0
                 )
                 .frame(width: 45, height: 45)
+        }
+        .modifier(BreathingEffect())
+        .onAppear {
+            withAnimation(Animation.linear(duration: 8).repeatForever(autoreverses: false)) {
+                rotationDegree = 360
+            }
         }
     }
     
@@ -1837,4 +1907,20 @@ struct SimpleFillamentReel2D: View {
         // 使用亮度公式: 0.299R + 0.587G + 0.114B
         return 0.299 * red + 0.587 * green + 0.114 * blue
     }
-} 
+}
+
+// 呼吸效果修饰器 - 用于添加微妙的缩放动画
+struct BreathingEffect: ViewModifier {
+    @State private var scale: CGFloat = 1.0
+    
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(scale)
+            .onAppear {
+                withAnimation(Animation.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
+                    scale = 1.03
+                }
+            }
+    }
+}
+ 
