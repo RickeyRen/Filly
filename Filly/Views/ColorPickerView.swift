@@ -102,13 +102,13 @@ struct ColorPickerView: View {
                     ScrollView {
                         LazyVGrid(
                             columns: [
-                                GridItem(.flexible(), spacing: 2),
-                                GridItem(.flexible(), spacing: 2),
-                                GridItem(.flexible(), spacing: 2),
-                                GridItem(.flexible(), spacing: 2),
-                                GridItem(.flexible(), spacing: 2)
+                                GridItem(.flexible(), spacing: 0),
+                                GridItem(.flexible(), spacing: 0),
+                                GridItem(.flexible(), spacing: 0),
+                                GridItem(.flexible(), spacing: 0),
+                                GridItem(.flexible(), spacing: 0)
                             ],
-                            spacing: 8
+                            spacing: 5
                         ) {
                             ForEach(filteredColors) { colorItem in
                                 ColorGridItem(
@@ -133,7 +133,7 @@ struct ColorPickerView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, 5)
                         .padding(.bottom, 20)
                     }
                 }
@@ -258,18 +258,18 @@ struct ColorGridItem: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 2) {
             // 图标容器，固定尺寸并裁剪溢出部分
             ZStack {
                 MiniFilamentReelView(color: color)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 40, height: 40)
                     .overlay(
                         Circle()
                             .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
-                            .frame(width: 34, height: 34)
+                            .frame(width: 42, height: 42)
                     )
             }
-            .frame(width: 36, height: 36)
+            .frame(width: 44, height: 44)
             .clipShape(Circle())
             
             // 文本放在图标下方，避免重叠
@@ -285,10 +285,11 @@ struct ColorGridItem: View {
                         .font(.system(size: 6, weight: .bold))
                 }
             }
-            .padding(.top, 2)
+            .padding(.top, 1)
             .frame(maxWidth: .infinity)
         }
-        .frame(height: 70)
+        .frame(height: 68)
         .contentShape(Rectangle())
+        .padding(.horizontal, 2)
     }
 } 
