@@ -1,5 +1,8 @@
 import SwiftUI
 
+// 导入动态图标组件
+// import Foundation
+
 struct FilamentListView: View {
     @ObservedObject var viewModel: FilamentViewModel
     @ObservedObject var colorLibrary: ColorLibraryViewModel
@@ -67,13 +70,9 @@ struct FilamentRowView: View {
     
     var body: some View {
         HStack(spacing: 15) {
-            Circle()
-                .fill(filament.getColor())
+            SimpleFillamentReel2D(color: filament.getColor())
                 .frame(width: 30, height: 30)
-                .overlay(
-                    Circle()
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                )
+                .scaleEffect(30/45)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(filament.brand)
