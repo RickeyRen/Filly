@@ -71,25 +71,39 @@ public struct SimpleFillamentReel2D: View {
                 )
                 .frame(width: 21, height: 21)
             
-            // 中心孔 - 白色，增加微妙阴影和内边缘
-            Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            Color.white,
-                            Color.white.opacity(0.95)
-                        ]),
-                        center: .center,
-                        startRadius: 3,
-                        endRadius: 9
+            // 中心孔 - 替换为三等分的中间有空隙圆环
+            ZStack {
+                // 背景圆 - 提供白色背景
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color.white,
+                                Color.white.opacity(0.95)
+                            ]),
+                            center: .center,
+                            startRadius: 3,
+                            endRadius: 9
+                        )
                     )
-                )
-                .frame(width: 19, height: 19)
-                .overlay(
+                    .frame(width: 19, height: 19)
+                
+                // 三等分圆环 - 每段100度，间隔20度
+                ForEach(0..<3) { i in
+                    let startAngle = Double(i) * 120 + 10 // 起始角度，加上10度偏移
+                    let endAngle = startAngle + 100 // 结束角度，覆盖100度
+                    
                     Circle()
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1.0)
-                )
-                .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.5)
+                        .trim(from: startAngle / 360, to: endAngle / 360)
+                        .stroke(
+                            getThreePartRingColor(for: color, index: i),
+                            style: StrokeStyle(lineWidth: 3.5, lineCap: .round)
+                        )
+                        .frame(width: 13, height: 13)
+                        .rotationEffect(Angle(degrees: -90)) // 调整起始位置
+                }
+            }
+            .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.5)
             
             // 顶部高光 - 增强塑料质感，改为非对称高光并旋转
             Circle()
@@ -172,6 +186,29 @@ public struct SimpleFillamentReel2D: View {
         } else {
             // 非常暗的背景
             return lighten(backgroundColor, by: 0.8).opacity(0.9)
+        }
+    }
+    
+    // 获取三等分圆环的颜色
+    private func getThreePartRingColor(for backgroundColor: Color, index: Int) -> Color {
+        let brightness = getColorBrightness(backgroundColor)
+        
+        // 根据背景亮度和部分索引选择不同的颜色
+        switch index {
+        case 0: // 第一部分
+            return brightness > 0.5 ? 
+                darken(backgroundColor, by: 0.4).opacity(0.9) : 
+                lighten(backgroundColor, by: 0.5).opacity(0.9)
+        case 1: // 第二部分
+            return brightness > 0.5 ? 
+                darken(backgroundColor, by: 0.6).opacity(0.9) : 
+                lighten(backgroundColor, by: 0.7).opacity(0.9)
+        case 2: // 第三部分
+            return brightness > 0.5 ? 
+                darken(backgroundColor, by: 0.5).opacity(0.9) : 
+                lighten(backgroundColor, by: 0.6).opacity(0.9)
+        default:
+            return Color.gray
         }
     }
     
