@@ -323,9 +323,9 @@ public struct MiniFilamentReelView: View {
         ZStack {
             // 简单耗材盘2D图标
             SimpleFillamentReel2D(color: color)
-                .scaleEffect(0.92)  // 稍微缩小以确保呼吸动画效果不会溢出
+                .scaleEffect(0.95)  // 稍微缩小以确保呼吸动画效果不会溢出
         }
-        .frame(width: 50, height: 50)
+        .frame(width: 55, height: 55)
         .clipShape(Circle())  // 确保内容不会溢出边界
     }
 }

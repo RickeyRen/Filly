@@ -37,7 +37,7 @@ struct ColorPickerView: View {
                             .padding(.horizontal)
                         
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
+                            HStack(spacing: 8) {
                                 ForEach(colorLibrary.recentlyUsedColors()) { colorItem in
                                     ColorBubble(
                                         color: colorItem.getUIColor(),
@@ -102,12 +102,12 @@ struct ColorPickerView: View {
                     ScrollView {
                         LazyVGrid(
                             columns: [
-                                GridItem(.flexible(), spacing: 4),
-                                GridItem(.flexible(), spacing: 4),
-                                GridItem(.flexible(), spacing: 4),
-                                GridItem(.flexible(), spacing: 4)
+                                GridItem(.flexible(), spacing: 2),
+                                GridItem(.flexible(), spacing: 2),
+                                GridItem(.flexible(), spacing: 2),
+                                GridItem(.flexible(), spacing: 2)
                             ],
-                            spacing: 10
+                            spacing: 8
                         ) {
                             ForEach(filteredColors) { colorItem in
                                 ColorGridItem(
@@ -227,26 +227,26 @@ struct ColorBubble: View {
             // 图标容器，固定尺寸并裁剪溢出部分
             ZStack {
                 MiniFilamentReelView(color: color)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 42, height: 42)
                     // 选中状态边框
                     .overlay(
                         Circle()
                             .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2.5 : 0.8)
-                            .frame(width: 38, height: 38)
+                            .frame(width: 44, height: 44)
                     )
             }
-            .frame(width: 40, height: 40)
+            .frame(width: 46, height: 46)
             .clipShape(Circle())
             
             // 文本放在图标下方，清晰分开
             Text(name)
                 .font(.caption2)
                 .lineLimit(1)
-                .frame(width: 58)
+                .frame(width: 60)
                 .multilineTextAlignment(.center)
                 .padding(.top, 2)
         }
-        .frame(width: 58, height: 90)
+        .frame(width: 60, height: 90)
     }
 }
 
@@ -261,14 +261,14 @@ struct ColorGridItem: View {
             // 图标容器，固定尺寸并裁剪溢出部分
             ZStack {
                 MiniFilamentReelView(color: color)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 38, height: 38)
                     .overlay(
                         Circle()
                             .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
-                            .frame(width: 34, height: 34)
+                            .frame(width: 40, height: 40)
                     )
             }
-            .frame(width: 36, height: 36)
+            .frame(width: 42, height: 42)
             .clipShape(Circle())
             
             // 文本放在图标下方，避免重叠
