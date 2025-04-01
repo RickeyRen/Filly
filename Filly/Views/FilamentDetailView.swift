@@ -926,7 +926,7 @@ struct SpoolItemView: View {
         backgroundSaturation = 0.0
         
         // 2. 第一阶段动画：弹出和旋转
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
+        withAnimation(.spring(response: 1.5, dampingFraction: 0.7, blendDuration: 0.9)) {
             animatedScale = 1.05
             animatedRotation = 5
             shadowRadius = 12
@@ -936,8 +936,8 @@ struct SpoolItemView: View {
         }
         
         // 3. 第二阶段：稳定动画
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.65, blendDuration: 0.3)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation(.spring(response: 1.2, dampingFraction: 0.65, blendDuration: 0.9)) {
                 animatedScale = 1.02
                 animatedRotation = 0
                 shadowRadius = 8
@@ -947,8 +947,8 @@ struct SpoolItemView: View {
         }
         
         // 4. 第三阶段：脉冲光晕效果
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
-            withAnimation(.easeInOut(duration: 1.2).repeatCount(3, autoreverses: true)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.7) {
+            withAnimation(.easeInOut(duration: 3.6).repeatCount(3, autoreverses: true)) {
                 glowOpacity = 0.4
                 highlightOpacity = 1.0
             }
@@ -1033,7 +1033,7 @@ struct SpoolModel: View {
                 .rotationEffect(Angle(degrees: -45 + rotationDegree))
         }
         .onAppear {
-            withAnimation(Animation.linear(duration: 6).repeatForever(autoreverses: false)) {
+            withAnimation(Animation.linear(duration: 24).repeatForever(autoreverses: false)) {
                 rotationDegree = 360
             }
         }
@@ -1315,7 +1315,7 @@ struct FilamentReelView: View {
         .frame(width: 85, height: 85)
         .modifier(BreathingEffect())
         .onAppear {
-            withAnimation(Animation.linear(duration: 8).repeatForever(autoreverses: false)) {
+            withAnimation(Animation.linear(duration: 24).repeatForever(autoreverses: false)) {
                 rotationDegree = 360
             }
         }

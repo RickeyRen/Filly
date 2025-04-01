@@ -113,7 +113,7 @@ public struct SimpleFillamentReel2D: View {
         }
         .modifier(BreathingEffect())
         .onAppear {
-            withAnimation(Animation.linear(duration: 8).repeatForever(autoreverses: false)) {
+            withAnimation(Animation.linear(duration: 24).repeatForever(autoreverses: false)) {
                 rotationDegree = 360
             }
         }
@@ -267,7 +267,7 @@ struct BreathingEffect: ViewModifier {
         content
             .scaleEffect(scale)
             .onAppear {
-                withAnimation(Animation.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
+                withAnimation(Animation.easeInOut(duration: 12.0).repeatForever(autoreverses: true)) {
                     scale = 1.03
                 }
             }
