@@ -127,7 +127,11 @@ public struct SimpleFillamentReel2D: View {
         }
         .modifier(BreathingEffect())
         .onAppear {
-            withAnimation(Animation.linear(duration: 24).repeatForever(autoreverses: false)) {
+            // 使用无限循环动画，避免重新开始感
+            let baseAnimation = Animation.linear(duration: 24)
+            let smoothAnimation = baseAnimation.repeatForever(autoreverses: false)
+            
+            withAnimation(smoothAnimation) {
                 rotationDegree = 360
             }
         }
@@ -298,16 +302,47 @@ public struct SimpleFillamentReel2D: View {
 
 // 呼吸效果修饰器 - 用于添加微妙的缩放动画
 struct BreathingEffect: ViewModifier {
-    @State private var scale: CGFloat = 1.0
+    // 使用多个状态变量来创建更平滑的循环
+    @State private var scale1: CGFloat = 1.0
+    @State private var scale2: CGFloat = 1.015
+    @State private var currentScale: CGFloat = 1.0
+    @State private var animationPhase = 0
     
     func body(content: Content) -> some View {
         content
-            .scaleEffect(scale)
+            .scaleEffect(currentScale)
             .onAppear {
-                withAnimation(Animation.easeInOut(duration: 12.0).repeatForever(autoreverses: true)) {
-                    scale = 1.03
-                }
+                // 初始化状态
+                currentScale = scale1
+                
+                // 启动第一阶段动画
+                startNextAnimationPhase()
             }
+    }
+    
+    private func startNextAnimationPhase() {
+        let duration = 6.0 // 每阶段的持续时间
+        
+        // 根据当前阶段决定动画目标
+        switch animationPhase {
+        case 0:
+            withAnimation(Animation.easeInOut(duration: duration)) {
+                currentScale = scale2
+            }
+        case 1:
+            withAnimation(Animation.easeInOut(duration: duration)) {
+                currentScale = scale1
+            }
+        default:
+            break
+        }
+        
+        // 安排下一阶段
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration - 0.05) {
+            // 在当前动画即将完成时启动下一阶段，以实现无缝过渡
+            animationPhase = (animationPhase + 1) % 2
+            startNextAnimationPhase()
+        }
     }
 }
 
