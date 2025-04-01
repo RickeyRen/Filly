@@ -21,14 +21,14 @@ public struct SimpleFillamentReel2D: View {
                         ]),
                         center: .center,
                         startRadius: 0,
-                        endRadius: 22.5
+                        endRadius: 30
                     )
                 )
-                .frame(width: 45, height: 45)
+                .frame(width: 60, height: 60)
             
             // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线 - 增强线条可见性
             ForEach(0..<5) { i in
-                let radius = 13.0 + CGFloat(i) * 3.0
+                let radius = 17.0 + CGFloat(i) * 4.0
                 let rotationSpeed = i % 2 == 0 ? 1.0 : -0.85
                 let rotationOffset = Double(i) * 72 // 错开初始角度
                 
@@ -38,10 +38,10 @@ public struct SimpleFillamentReel2D: View {
                     .stroke(
                         getEnhancedContrastColor(for: color, index: i),
                         style: StrokeStyle(
-                            lineWidth: 1.0 + (CGFloat(4-i) * 0.05),
+                            lineWidth: 1.5 + (CGFloat(4-i) * 0.1),
                             lineCap: .round,
                             lineJoin: .round,
-                            dash: i % 2 == 0 ? [] : [2, 2] // 偶数圆为实线，奇数圆为虚线
+                            dash: i % 2 == 0 ? [] : [3, 3] // 偶数圆为实线，奇数圆为虚线
                         )
                     )
                     .frame(width: radius * 2, height: radius * 2)
@@ -51,12 +51,12 @@ public struct SimpleFillamentReel2D: View {
             // 添加非对称标记，使旋转更加明显
             ForEach(0..<2) { i in
                 let angle = Double(i) * 180.0
-                let radius = 18.0
+                let radius = 24.0
                 
                 // 小圆点标记
                 Circle()
                     .fill(color == .white ? Color.gray : .white)
-                    .frame(width: 3, height: 3)
+                    .frame(width: 4, height: 4)
                     .offset(
                         x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius),
                         y: CGFloat(sin(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius)
@@ -67,9 +67,9 @@ public struct SimpleFillamentReel2D: View {
             Circle()
                 .stroke(
                     getStrongContrastColor(for: color),
-                    lineWidth: 1.6
+                    lineWidth: 2.0
                 )
-                .frame(width: 16, height: 16)
+                .frame(width: 21, height: 21)
             
             // 中心孔 - 白色，增加微妙阴影和内边缘
             Circle()
@@ -80,36 +80,36 @@ public struct SimpleFillamentReel2D: View {
                             Color.white.opacity(0.95)
                         ]),
                         center: .center,
-                        startRadius: 2,
-                        endRadius: 7
+                        startRadius: 3,
+                        endRadius: 9
                     )
                 )
-                .frame(width: 14, height: 14)
+                .frame(width: 19, height: 19)
                 .overlay(
                     Circle()
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 0.7)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1.0)
                 )
-                .shadow(color: Color.black.opacity(0.15), radius: 0.5, x: 0, y: 0.3)
+                .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.5)
             
             // 顶部高光 - 增强塑料质感，改为非对称高光并旋转
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
                     Color.white.opacity(0.5),
-                    style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                    style: StrokeStyle(lineWidth: 18, lineCap: .round)
                 )
-                .frame(width: 26, height: 26)
+                .frame(width: 35, height: 35)
                 .rotationEffect(Angle(degrees: -20 + rotationDegree * 0.5))
-                .offset(y: -5)
-                .blur(radius: 2.5)
+                .offset(y: -7)
+                .blur(radius: 3.5)
                 
             // 最外侧边框 - 使用更清晰的边框
             Circle()
                 .stroke(
                     getStrongBorderColor(for: color),
-                    lineWidth: 1.0
+                    lineWidth: 1.2
                 )
-                .frame(width: 45, height: 45)
+                .frame(width: 60, height: 60)
         }
         .modifier(BreathingEffect())
         .onAppear {
@@ -287,6 +287,6 @@ public struct MiniFilamentReelView: View {
             // 简单耗材盘2D图标
             SimpleFillamentReel2D(color: color)
         }
-        .frame(width: 50, height: 50)
+        .frame(width: 66, height: 66)
     }
 }
