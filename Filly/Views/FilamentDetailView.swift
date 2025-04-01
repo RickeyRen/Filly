@@ -1023,10 +1023,10 @@ struct SpoolModel: View {
                     )
                     .frame(width: 16, height: 16)
                 
-                // 三等分圆环 - 每段100度，间隔20度
+                // 三等分圆环 - 每段80度，间隔40度
                 ForEach(0..<3) { i in
-                    let startAngle = Double(i) * 120 + 10 // 起始角度，加上10度偏移
-                    let endAngle = startAngle + 100 // 结束角度，覆盖100度
+                    let startAngle = Double(i) * 120 + 20 // 起始角度，加上20度偏移
+                    let endAngle = startAngle + 80 // 结束角度，覆盖80度
                     
                     Circle()
                         .trim(from: startAngle / 360, to: endAngle / 360)
@@ -1035,7 +1035,7 @@ struct SpoolModel: View {
                             style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
                         )
                         .frame(width: 11, height: 11)
-                        .rotationEffect(Angle(degrees: -90)) // 调整起始位置
+                        .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 反向旋转，速度比外层快50%
                 }
             }
             .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.5)
@@ -1514,19 +1514,19 @@ struct FilamentReelView: View {
                     )
                     .frame(width: 28, height: 28)
                 
-                // 三等分圆环 - 每段100度，间隔20度
+                // 三等分圆环 - 每段80度，间隔40度
                 ForEach(0..<3) { i in
-                    let startAngle = Double(i) * 120 + 10 // 起始角度，加上10度偏移
-                    let endAngle = startAngle + 100 // 结束角度，覆盖100度
+                    let startAngle = Double(i) * 120 + 20 // 起始角度，加上20度偏移
+                    let endAngle = startAngle + 80 // 结束角度，覆盖80度
                     
                     Circle()
                         .trim(from: startAngle / 360, to: endAngle / 360)
                         .stroke(
                             getThreePartRingColor(for: color, index: i),
-                            style: StrokeStyle(lineWidth: 5.0, lineCap: .round)
+                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
                         )
-                        .frame(width: 20, height: 20)
-                        .rotationEffect(Angle(degrees: -90)) // 调整起始位置
+                        .frame(width: 11, height: 11)
+                        .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 反向旋转，速度比外层快50%
                 }
             }
             .shadow(color: Color.black.opacity(0.15), radius: 1.2, x: 0, y: 0.8)

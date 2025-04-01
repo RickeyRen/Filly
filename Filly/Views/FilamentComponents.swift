@@ -88,10 +88,10 @@ public struct SimpleFillamentReel2D: View {
                     )
                     .frame(width: 19, height: 19)
                 
-                // 三等分圆环 - 每段100度，间隔20度
+                // 三等分圆环 - 每段80度，间隔40度
                 ForEach(0..<3) { i in
-                    let startAngle = Double(i) * 120 + 10 // 起始角度，加上10度偏移
-                    let endAngle = startAngle + 100 // 结束角度，覆盖100度
+                    let startAngle = Double(i) * 120 + 20 // 起始角度，加上20度偏移
+                    let endAngle = startAngle + 80 // 结束角度，覆盖80度
                     
                     Circle()
                         .trim(from: startAngle / 360, to: endAngle / 360)
@@ -100,7 +100,7 @@ public struct SimpleFillamentReel2D: View {
                             style: StrokeStyle(lineWidth: 3.5, lineCap: .round)
                         )
                         .frame(width: 13, height: 13)
-                        .rotationEffect(Angle(degrees: -90)) // 调整起始位置
+                        .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 反向旋转，速度比外层快50%
                 }
             }
             .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.5)
