@@ -50,7 +50,7 @@ struct FilamentDetailView: View {
                                 }
                             }
                             
-                            Text(filament.type.rawValue)
+                            Text(filament.type)
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                             
