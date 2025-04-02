@@ -348,7 +348,7 @@ struct ColorPickerView: View {
                                 Button(action: {
                                     colorLibrary.addAllTinzhuPLABasicColors()
                                 }) {
-                                    Label("添加拓竹所有颜色", systemImage: "plus.circle")
+                                    Label("添加拓竹PLA Basic颜色", systemImage: "plus.circle")
                                 }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
@@ -396,7 +396,7 @@ struct ColorPickerView: View {
                                 Button(action: {
                                     colorLibrary.addAllTinzhuPLABasicColors()
                                 }) {
-                                    Label("添加拓竹所有颜色", systemImage: "plus.circle")
+                                    Label("添加拓竹PLA Basic颜色", systemImage: "plus.circle")
                                 }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
