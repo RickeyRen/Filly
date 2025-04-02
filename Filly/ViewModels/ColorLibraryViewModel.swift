@@ -217,7 +217,6 @@ class ColorLibraryViewModel: ObservableObject {
             colors.append(color)
         }
         saveColors()
-        updateFilteredColors()
         #if DEBUG
         print("已重置为 \(colors.count) 个预设颜色")
         #endif
