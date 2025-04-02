@@ -3,6 +3,9 @@ import Combine
 
 class ColorLibraryViewModel: ObservableObject {
     @Published var colors: [FilamentColor] = []
+    @Published var selectedBrand: String = ""
+    @Published var selectedMaterialType: String = ""
+    
     private let saveKey = "savedColors"
     
     init() {
@@ -27,6 +30,13 @@ class ColorLibraryViewModel: ObservableObject {
         }
         
         saveColors()
+    }
+    
+    // 批量添加颜色
+    func addColors(_ newColors: [FilamentColor]) {
+        for color in newColors {
+            addColor(color)
+        }
     }
     
     // 更新颜色的最后使用时间
@@ -66,10 +76,69 @@ class ColorLibraryViewModel: ObservableObject {
     // 根据名称搜索颜色
     func searchColors(query: String) -> [FilamentColor] {
         if query.isEmpty {
-            return colors
+            return filteredColors()
         }
         
-        return colors.filter { $0.name.lowercased().contains(query.lowercased()) }
+        return filteredColors().filter { $0.name.lowercased().contains(query.lowercased()) }
+    }
+    
+    // 获取所有可用的品牌
+    var availableBrands: [String] {
+        var brands = Set<String>()
+        for color in colors {
+            if !color.brand.isEmpty {
+                brands.insert(color.brand)
+            }
+        }
+        return Array(brands).sorted()
+    }
+    
+    // 获取所有可用的材料类型
+    var availableMaterialTypes: [String] {
+        var types = Set<String>()
+        for color in colors {
+            if !color.materialType.isEmpty {
+                types.insert(color.materialType)
+            }
+        }
+        return Array(types).sorted()
+    }
+    
+    // 根据所选品牌和材料类型过滤颜色
+    func filteredColors() -> [FilamentColor] {
+        var filteredColors = colors
+        
+        if !selectedBrand.isEmpty {
+            filteredColors = filteredColors.filter { $0.brand == selectedBrand }
+        }
+        
+        if !selectedMaterialType.isEmpty {
+            filteredColors = filteredColors.filter { $0.materialType == selectedMaterialType }
+        }
+        
+        return filteredColors
+    }
+    
+    // 根据品牌获取颜色
+    func colorsForBrand(_ brand: String) -> [FilamentColor] {
+        return colors.filter { $0.brand == brand }
+    }
+    
+    // 根据材料类型获取颜色
+    func colorsForMaterialType(_ materialType: String) -> [FilamentColor] {
+        return colors.filter { $0.materialType == materialType }
+    }
+    
+    // 重置所有颜色为预设颜色
+    func resetToDefaults() {
+        colors = FilamentColor.presets
+        saveColors()
+    }
+    
+    // 添加特定品牌的所有颜色
+    func addAllColorsForBrand(_ brand: String) {
+        let brandColors = FilamentColor.colorsForBrand(brand)
+        addColors(brandColors)
     }
     
     // 保存颜色库

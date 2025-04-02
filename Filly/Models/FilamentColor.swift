@@ -12,11 +12,15 @@ struct FilamentColor: Identifiable, Codable, Equatable {
     var name: String
     var colorData: ColorData
     var lastUsed: Date
+    var brand: String
+    var materialType: String
     
-    init(name: String, color: Color) {
+    init(name: String, color: Color, brand: String = "", materialType: String = "") {
         self.name = name
         self.colorData = ColorData(from: color)
         self.lastUsed = Date()
+        self.brand = brand
+        self.materialType = materialType
     }
     
     func getUIColor() -> Color {
@@ -27,8 +31,8 @@ struct FilamentColor: Identifiable, Codable, Equatable {
         return lhs.id == rhs.id
     }
     
-    // 预设颜色
-    static let presets: [FilamentColor] = [
+    // 基础预设颜色
+    static let basicPresets: [FilamentColor] = [
         FilamentColor(name: "黑色", color: .black),
         FilamentColor(name: "白色", color: .white),
         FilamentColor(name: "红色", color: .red),
@@ -41,6 +45,98 @@ struct FilamentColor: Identifiable, Codable, Equatable {
         FilamentColor(name: "灰色", color: .gray),
         FilamentColor(name: "透明", color: Color(white: 0.9, opacity: 0.5))
     ]
+    
+    // 天瑞 PETG-ECO 颜色预设
+    static let tianruiPETGColors: [FilamentColor] = [
+        FilamentColor(name: "亮丽黄", color: Color(red: 1.0, green: 0.9, blue: 0.2), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "咖啡色", color: Color(red: 0.6, green: 0.4, blue: 0.2), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "透明", color: Color(white: 0.95, opacity: 0.5), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "荧光绿", color: Color(red: 0.4, green: 1.0, blue: 0.4), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "荧光黄", color: Color(red: 1.0, green: 1.0, blue: 0.4), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "红色", color: .red, brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "绿色", color: .green, brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "灰色", color: .gray, brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "杏色", color: Color(red: 0.98, green: 0.84, blue: 0.65), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "黑色", color: .black, brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "冷白", color: Color(white: 0.95), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "奶白色", color: Color(red: 1.0, green: 0.98, blue: 0.94), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "米宝白", color: Color(red: 1.0, green: 0.95, blue: 0.9), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "肤色", color: Color(red: 1.0, green: 0.87, blue: 0.73), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "淡灰色", color: Color(white: 0.8), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "夜光绿", color: Color(red: 0.7, green: 1.0, blue: 0.7), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "橙色", color: .orange, brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "樱花粉", color: Color(red: 1.0, green: 0.7, blue: 0.8), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "粉色", color: .pink, brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "长春花蓝", color: Color(red: 0.0, green: 0.5, blue: 1.0), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "薄荷绿", color: Color(red: 0.6, green: 1.0, blue: 0.8), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "卡特黄", color: Color(red: 1.0, green: 0.85, blue: 0.0), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "天空蓝", color: Color(red: 0.4, green: 0.7, blue: 1.0), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "橄榄绿", color: Color(red: 0.5, green: 0.6, blue: 0.3), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "透明蓝", color: Color(red: 0.6, green: 0.8, blue: 1.0, opacity: 0.7), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "透明绿", color: Color(red: 0.6, green: 1.0, blue: 0.8, opacity: 0.7), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "透明红", color: Color(red: 1.0, green: 0.6, blue: 0.6, opacity: 0.7), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "荧光玫红", color: Color(red: 1.0, green: 0.4, blue: 0.8), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "荧光紫红", color: Color(red: 0.8, green: 0.4, blue: 1.0), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "克莱因蓝", color: Color(red: 0.0, green: 0.2, blue: 0.6), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属紫", color: Color(red: 0.5, green: 0.0, blue: 0.5), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属香槟金", color: Color(red: 0.9, green: 0.8, blue: 0.6), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属午夜绿", color: Color(red: 0.0, green: 0.3, blue: 0.3), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属银", color: Color(red: 0.75, green: 0.75, blue: 0.75), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属太空灰", color: Color(red: 0.5, green: 0.5, blue: 0.55), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属铜", color: Color(red: 0.85, green: 0.53, blue: 0.1), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属绿", color: Color(red: 0.0, green: 0.5, blue: 0.0), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属珠光蓝", color: Color(red: 0.0, green: 0.5, blue: 0.8), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "金属玫瑰金", color: Color(red: 0.9, green: 0.6, blue: 0.5), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "PETG碳纤维黑色", color: .black, brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "PETG碳纤维大理石灰", color: Color(white: 0.7), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "PETG碳纤维咖啡色", color: Color(red: 0.55, green: 0.35, blue: 0.15), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "高速Petg薰衣草紫", color: Color(red: 0.7, green: 0.5, blue: 0.9), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "高速Petg桃红", color: Color(red: 1.0, green: 0.4, blue: 0.6), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "高速Petg黑色", color: .black, brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "高速Petg浅蓝", color: Color(red: 0.6, green: 0.8, blue: 1.0), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "高速Petg冷白", color: Color(white: 0.95), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "Petg大理石花岗岩", color: Color(red: 0.7, green: 0.7, blue: 0.7), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "大理石魔幻棕", color: Color(red: 0.65, green: 0.45, blue: 0.25), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "大理石浅灰", color: Color(white: 0.8), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "大理石白", color: Color(white: 0.9), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "PETG大理石魔幻紫", color: Color(red: 0.6, green: 0.4, blue: 0.8), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "PETG大理石魔幻蓝", color: Color(red: 0.4, green: 0.5, blue: 0.8), brand: "天瑞 Tinmorry", materialType: "PETG-ECO"),
+        FilamentColor(name: "PETG大理石魔幻绿", color: Color(red: 0.4, green: 0.7, blue: 0.5), brand: "天瑞 Tinmorry", materialType: "PETG-ECO")
+    ]
+    
+    // 合并所有预设颜色
+    static var presets: [FilamentColor] {
+        var allPresets = basicPresets
+        allPresets.append(contentsOf: tianruiPETGColors)
+        return allPresets
+    }
+    
+    // 获取所有品牌列表
+    static var allBrands: [String] {
+        var brands = Set<String>()
+        for color in presets {
+            if !color.brand.isEmpty {
+                brands.insert(color.brand)
+            }
+        }
+        return Array(brands).sorted()
+    }
+    
+    // 获取特定品牌的所有颜色
+    static func colorsForBrand(_ brand: String) -> [FilamentColor] {
+        return presets.filter { $0.brand == brand }
+    }
+    
+    // 获取所有材料类型
+    static var allMaterialTypes: [String] {
+        var types = Set<String>()
+        for color in presets {
+            if !color.materialType.isEmpty {
+                types.insert(color.materialType)
+            }
+        }
+        return Array(types).sorted()
+    }
 }
 
 // 由于SwiftUI的Color不符合Codable，我们需要创建一个可编码的颜色数据结构
