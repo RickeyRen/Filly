@@ -90,6 +90,7 @@ struct Filament: Identifiable, Codable {
 // 耗材类型
 enum FilamentType: String, Codable, CaseIterable, Identifiable {
     case pla = "PLA"
+    case plaLite = "PLA Lite"
     case abs = "ABS"
     case petg = "PETG"
     case tpu = "TPU"

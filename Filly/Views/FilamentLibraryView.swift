@@ -565,33 +565,16 @@ struct AddLegacyFilamentSheet: View {
 
     // Update addFilamentToInventory to use data from the item
     private func addFilamentToInventory() {
-        // 材料类型映射，处理特殊情况如 "PLA Lite" -> "PLA"
-        let mappedTypeName: String
-        
-        // 处理特殊的材料类型名称
-        if item.materialTypeName.contains("PLA") {
-            // 所有包含 "PLA" 的变种（如 PLA Lite, PLA+等）都映射到标准 "PLA"
-            mappedTypeName = "PLA"
-        } else if item.materialTypeName.contains("ABS") {
-            mappedTypeName = "ABS"
-        } else if item.materialTypeName.contains("PETG") {
-            mappedTypeName = "PETG"
-        } else if item.materialTypeName.contains("TPU") {
-            mappedTypeName = "TPU"
-        } else {
-            // 如果没有特殊处理的映射，就保留原始名称
-            mappedTypeName = item.materialTypeName
-        }
-        
-        // 现在使用映射后的类型名称
-        guard let inventoryType = FilamentType(rawValue: mappedTypeName) else {
-            addErrorMessage = "无法识别的材料类型: \(item.materialTypeName)"
+        // 直接尝试从 item.materialTypeName 创建 FilamentType
+        // 不再做特殊类型映射，因为我们已经在 FilamentType 枚举中添加了所有支持的类型
+        guard let inventoryType = FilamentType(rawValue: item.materialTypeName) else {
+            addErrorMessage = "无法识别的材料类型: \(item.materialTypeName)，请先在 FilamentType 枚举中添加此类型"
             showingAddError = true
             print("错误：无法将库材料类型映射到 FilamentType: \(item.materialTypeName)")
             return
         }
         
-        // 创建Filament对象并添加到库存
+        // 创建 Filament 对象并添加到库存
         let newFilament = Filament(
             brand: item.brandName,
             type: inventoryType,
