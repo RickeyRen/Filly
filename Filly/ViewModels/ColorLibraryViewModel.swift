@@ -23,8 +23,12 @@ class ColorLibraryViewModel: ObservableObject {
     
     // 添加所有预设颜色
     func addAllPredefinedColors() {
-        colors = FilamentColor.presets
-        saveColors()
+        if colors.isEmpty {
+            // 添加预设颜色到颜色库
+            for color in FilamentColor.presets {
+                addColor(color)
+            }
+        }
     }
     
     // 确保所有品牌的颜色都存在
@@ -39,7 +43,7 @@ class ColorLibraryViewModel: ObservableObject {
         
         // 如果没有拓竹PLA Basic颜色，添加它们
         if !hasTinzhuBasicColors {
-            addColors(FilamentColor.tinzhuPLABasicColors)
+            addAllTinzhuPLABasicColors()
         }
         
         // 如果没有拓竹PLA Lite颜色，添加它们
@@ -70,24 +74,35 @@ class ColorLibraryViewModel: ObservableObject {
     
     // 添加拓竹 PLA Lite 所有颜色
     func addAllTinzhuPLALiteColors() {
-        let tinzhuPLALiteColors: [FilamentColor] = [
-            FilamentColor(name: "黑色 16100 【无料盘】", color: Color("#000000"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "天蓝色 16600【无料盘】", color: Color("#87CEEB"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "黄色 16400【无料盘】", color: Color("#FFFF00"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "白色 16103【无料盘】", color: Color("#FFFFFF"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "红色 16200【无料盘】", color: Color("#FF0000"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "灰色 16101【无料盘】", color: Color("#808080"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+        // 添加 拓竹 PLA Lite 颜色
+        let plaliteColors = [
+            ("幻彩蓝 50600【含料盘】", Color(red: 0.0, green: 0.5, blue: 1.0)),
+            ("幻彩绿 50500【含料盘】", Color(red: 0.0, green: 0.8, blue: 0.4)),
+            ("幻彩红 50200【含料盘】", Color(red: 1.0, green: 0.2, blue: 0.2)),
+            ("幻彩橙 50300【含料盘】", Color(red: 1.0, green: 0.6, blue: 0.0)),
+            ("幻彩黄 50400【含料盘】", Color(red: 1.0, green: 0.9, blue: 0.0)),
+            ("幻彩紫 50700【含料盘】", Color(red: 0.7, green: 0.1, blue: 0.9)),
+            ("幻彩粉 50201【含料盘】", Color(red: 1.0, green: 0.4, blue: 0.8)),
+            ("幻彩银 50100【含料盘】", Color(red: 0.8, green: 0.8, blue: 0.8)),
             
-            FilamentColor(name: "黑色 16100 【含料盘】", color: Color("#000000"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "天蓝色 16600【含料盘】", color: Color("#87CEEB"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "黄色 16400【含料盘】", color: Color("#FFFF00"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "红色 16200【含料盘】", color: Color("#FF0000"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "白色 16103【含料盘】", color: Color("#FFFFFF"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "灰色 16101【含料盘】", color: Color("#808080"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite")
+            ("幻彩蓝 50600【无料盘】", Color(red: 0.0, green: 0.5, blue: 1.0)),
+            ("幻彩绿 50500【无料盘】", Color(red: 0.0, green: 0.8, blue: 0.4)),
+            ("幻彩红 50200【无料盘】", Color(red: 1.0, green: 0.2, blue: 0.2)),
+            ("幻彩橙 50300【无料盘】", Color(red: 1.0, green: 0.6, blue: 0.0)),
+            ("幻彩黄 50400【无料盘】", Color(red: 1.0, green: 0.9, blue: 0.0)),
+            ("幻彩紫 50700【无料盘】", Color(red: 0.7, green: 0.1, blue: 0.9)),
+            ("幻彩粉 50201【无料盘】", Color(red: 1.0, green: 0.4, blue: 0.8)),
+            ("幻彩银 50100【无料盘】", Color(red: 0.8, green: 0.8, blue: 0.8))
         ]
         
-        // 添加颜色到库中
-        addColors(tinzhuPLALiteColors)
+        for (name, color) in plaliteColors {
+            // 检查颜色是否已存在
+            let exists = colors.contains { $0.name == name && $0.brand == "拓竹 Bambu Lab" && $0.materialType == "PLA Lite" }
+            if !exists {
+                let filamentColor = FilamentColor(name: name, color: color, brand: "拓竹 Bambu Lab", materialType: "PLA Lite")
+                addColor(filamentColor)
+            }
+        }
     }
     
     // 添加拓竹 PLA Matte 所有颜色
@@ -255,6 +270,16 @@ class ColorLibraryViewModel: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: saveKey),
            let decoded = try? JSONDecoder().decode([FilamentColor].self, from: data) {
             colors = decoded
+        }
+    }
+    
+    func addAllTinzhuPLABasicColors() {
+        for color in FilamentColor.tinzhuPLABasicColors {
+            // 检查颜色是否已存在
+            let exists = colors.contains { $0.name == color.name && $0.brand == color.brand && $0.materialType == color.materialType }
+            if !exists {
+                addColor(color)
+            }
         }
     }
 } 
