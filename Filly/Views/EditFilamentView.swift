@@ -99,8 +99,9 @@ struct EditFilamentView: View {
                     
                     Button(action: {
                         showingColorPicker = true
-                        // 在此处设置筛选条件为当前选择的品牌
+                        // 在此处设置筛选条件为当前选择的品牌和材料类型
                         colorLibrary.selectedBrand = brand
+                        colorLibrary.selectedMaterialType = selectedType
                     }) {
                         HStack {
                             Text("颜色")
