@@ -20,6 +20,7 @@ struct FillyApp: App {
     
     // 模型容器配置
     @State private var container: ModelContainer? = nil
+    @State private var isLoading = true
     
     init() {
         // 设置初始颜色方案
@@ -31,7 +32,17 @@ struct FillyApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
-                if let modelContainer = container {
+                if isLoading {
+                    // 加载容器时显示加载中
+                    SplashScreen(message: "正在准备数据...") {
+                        // 加载完成后的回调
+                        self.isLoading = false
+                    }
+                    .onAppear {
+                        // 确保在出现时设置模型容器
+                        setupModelContainer()
+                    }
+                } else if let modelContainer = container {
                     ContentView()
                         .environmentObject(themeManager)
                         .environmentObject(filamentViewModel)
@@ -50,11 +61,19 @@ struct FillyApp: App {
                             // 收到通知后，此视图不做任何特殊处理
                         }
                 } else {
-                    // 加载容器时显示加载中
-                    SplashScreen(message: "正在准备数据...")
-                        .onAppear {
+                    // 显示错误界面
+                    VStack {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 50))
+                            .foregroundColor(.orange)
+                        Text("数据加载失败")
+                            .font(.title)
+                        Button("重试") {
                             setupModelContainer()
                         }
+                        .padding()
+                        .buttonStyle(.bordered)
+                    }
                 }
             }
         }
@@ -71,8 +90,13 @@ struct FillyApp: App {
             
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             container = try ModelContainer(for: schema, configurations: [config])
+            
+            // 数据容器初始化成功后不要立即切换到内容视图
+            // 让SplashScreen完成它的动画
         } catch {
             print("设置SwiftData容器时出错: \(error)")
+            // 出错时也保持加载状态为true，显示错误视图
+            container = nil
         }
     }
 }
