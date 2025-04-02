@@ -39,7 +39,31 @@ struct AddFilamentView: View {
         let uniqueTypes = Array(Set(types)).filter { !$0.isEmpty }.sorted()
         
         // 如果没有找到该品牌的任何材料类型，返回默认的所有类型
-        return uniqueTypes.isEmpty ? FilamentType.allCases.map { $0.rawValue } : uniqueTypes
+        if uniqueTypes.isEmpty {
+            return FilamentType.allCases.map { $0.rawValue }
+        }
+        
+        // 确保所有获取到的类型都能映射到FilamentType
+        var validTypes: [String] = []
+        for type in uniqueTypes {
+            // 检查是否能直接转成FilamentType
+            if FilamentType.allCases.contains(where: { $0.rawValue == type }) {
+                validTypes.append(type)
+            } else {
+                // 尝试映射自定义类型到FilamentType类型
+                if type == "PLA Basic" || type == "PLA Lite" {
+                    validTypes.append("PLA") // 映射到PLA
+                } else if type == "PETG-ECO" {
+                    validTypes.append("PETG") // 映射到PETG
+                } else {
+                    // 其他未知类型映射到"其他"
+                    validTypes.append("其他")
+                }
+            }
+        }
+        
+        // 如果映射后没有有效类型，返回默认的所有类型
+        return validTypes.isEmpty ? FilamentType.allCases.map { $0.rawValue } : validTypes
     }
     
     var body: some View {
