@@ -58,7 +58,7 @@ struct FilamentListView: View {
         } else {
             return viewModel.filaments.filter { filament in
                 filament.brand.localizedCaseInsensitiveContains(searchText) ||
-                filament.type.rawValue.localizedCaseInsensitiveContains(searchText) ||
+                filament.type.localizedCaseInsensitiveContains(searchText) ||
                 filament.color.localizedCaseInsensitiveContains(searchText)
             }
         }
@@ -78,7 +78,7 @@ struct FilamentRowView: View {
                     .font(.headline)
                 
                 HStack {
-                    Text(filament.type.rawValue)
+                    Text(filament.type)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     
