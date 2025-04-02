@@ -9,7 +9,15 @@ struct SettingsView: View {
         NavigationView {
             List {
                 Section(header: Text("应用设置")) {
-                    ThemeSelectionItem(themeManager: themeManager)
+                    Picker("主题", selection: $themeManager.selectedTheme) {
+                        ForEach(ThemeMode.allCases) { theme in
+                            HStack {
+                                Image(systemName: theme.iconName)
+                                Text(theme.rawValue)
+                            }
+                            .tag(theme)
+                        }
+                    }
                 }
                 
                 Section(header: Text("耗材管理")) {
@@ -42,22 +50,5 @@ struct SettingsView: View {
                 MaterialTypeManagerView(viewModel: typeViewModel)
             }
         }
-    }
-}
-
-struct ThemeSelectionItem: View {
-    @ObservedObject var themeManager: ThemeManager
-    
-    var body: some View {
-        Picker("主题", selection: $themeManager.selectedTheme) {
-            ForEach(Theme.allCases) { theme in
-                HStack {
-                    Image(systemName: theme.iconName)
-                    Text(theme.displayName)
-                }
-                .tag(theme)
-            }
-        }
-        .pickerStyle(NavigationLinkPickerStyle())
     }
 } 
