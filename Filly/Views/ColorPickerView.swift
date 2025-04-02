@@ -42,7 +42,7 @@ struct ColorPickerView: View {
                         .padding(.vertical, 8)
                         .background(SystemColorCompatibility.tertiarySystemBackground)
                         .cornerRadius(10)
-                        .onChange(of: searchText) { _ in
+                        .onChange(of: searchText) { oldValue, newValue in
                             updateFilteredColors()
                         }
                 }
