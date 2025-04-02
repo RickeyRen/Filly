@@ -1,7 +1,7 @@
 import SwiftUI
 
 // 3D线材卷模型 - 精细优化设计
-public struct FilamentReelView: View {
+public struct Filament3DReelView: View {
     let color: Color
     @State private var rotationDegree: Double = 0
     @Environment(\.colorScheme) private var colorScheme // 添加环境变量获取当前颜色模式
@@ -280,16 +280,24 @@ func darken(_ color: Color, by percentage: Double) -> Color {
 // 迷你线材卷模型 - 用于颜色选择器和添加耗材视图
 public struct MiniFilamentReelView: View {
     let color: Color
+    let gradient: Gradient?
+    let gradientType: Int
     
-    public init(color: Color) {
+    public init(color: Color, gradient: Gradient? = nil, gradientType: Int = 0) {
         self.color = color
+        self.gradient = gradient
+        self.gradientType = gradientType
     }
     
     public var body: some View {
         ZStack {
-            // 使用FilamentReelView替代SimpleFillamentReel2D
-            FilamentReelView(color: color)
-                .scaleEffect(0.7)  // 缩小到适合UI的大小
+            // 使用新的FilamentReelView组件
+            FilamentReelView(
+                color: color,
+                gradient: gradient,
+                gradientType: gradientType
+            )
+            .scaleEffect(0.7)  // 缩小到适合UI的大小
         }
         .frame(width: 55, height: 55)
         .clipShape(Circle())  // 确保内容不会溢出边界

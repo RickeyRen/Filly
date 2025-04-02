@@ -752,7 +752,7 @@ struct AddLegacyFilamentSheet: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("选中的耗材库颜色").font(.caption).foregroundStyle(.secondary).padding(.bottom, 4)
                         HStack(spacing: 15) {
-                            MiniFilamentReelView(color: item.swiftUIColor) // Use color from item
+                            MiniFilamentReelView(color: item.swiftUIColor)
                                 .frame(width: 50, height: 50).scaleEffect(0.7)
                                 .background(Color(.systemGray6)).clipShape(Circle())
                             VStack(alignment: .leading) {

@@ -21,8 +21,18 @@ struct FilamentDetailView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     // 耗材颜色和基本信息
                     HStack(spacing: 20) {
-                        FilamentReelView(color: filament.getColor())
+                        // 使用新的FilamentReelView，支持渐变
+                        if filament.isGradient, let gradient = filament.getGradient() {
+                            FilamentReelView(
+                                color: filament.getColor(),
+                                gradient: gradient,
+                                gradientType: filament.gradientType
+                            )
                             .frame(width: 80, height: 80)
+                        } else {
+                            FilamentReelView(color: filament.getColor())
+                                .frame(width: 80, height: 80)
+                        }
                         
                         VStack(alignment: .leading, spacing: 6) {
                             Text(filament.brand)
