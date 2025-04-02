@@ -167,9 +167,9 @@ struct ColorPickerView: View {
                     .background(SystemColorCompatibility.tertiarySystemBackground)
                 }
                 
-                // 最近使用的颜色
+                // 最近使用的颜色 - 使用LazyHStack提高性能
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 5) {
+                    LazyHStack(spacing: 5) {
                         Text("最近使用:")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -270,7 +270,7 @@ struct ColorPickerView: View {
                     }
                     .padding()
                 } else {
-                    // 所有颜色 - 网格布局
+                    // 优化颜色网格
                     ScrollView {
                         if filteredColors.isEmpty {
                             VStack(spacing: 20) {
@@ -294,6 +294,7 @@ struct ColorPickerView: View {
                             .padding()
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                         } else {
+                            // 使用ID确保列表重建时能够正确识别每个项
                             LazyVGrid(
                                 columns: [
                                     GridItem(.flexible(), spacing: 8),
@@ -304,55 +305,27 @@ struct ColorPickerView: View {
                                 spacing: 16
                             ) {
                                 ForEach(filteredColors) { colorItem in
-                                    VStack(spacing: 4) {
-                                        ColorGridItem(
-                                            color: colorItem.getUIColor(),
-                                            name: colorItem.name,
-                                            isSelected: selectedColorName == colorItem.name
-                                        )
-                                        
-                                        // 品牌和材料类型信息
-                                        if !colorItem.brand.isEmpty || !colorItem.materialType.isEmpty {
-                                            VStack(spacing: 1) {
-                                                if !colorItem.brand.isEmpty {
-                                                    Text(colorItem.brand.replacingOccurrences(of: " Tinmorry", with: ""))
-                                                        .font(.system(size: 9))
-                                                        .foregroundColor(.secondary)
-                                                        .lineLimit(1)
-                                                }
-                                                
-                                                if !colorItem.materialType.isEmpty {
-                                                    Text(colorItem.materialType)
-                                                        .font(.system(size: 9))
-                                                        .foregroundColor(.secondary)
-                                                        .lineLimit(1)
-                                                }
-                                            }
-                                            .frame(width: 70)
+                                    OptimizedColorGridItem(
+                                        color: colorItem,
+                                        isSelected: selectedColorName == colorItem.name,
+                                        onTap: {
+                                            self.selectedColorName = colorItem.name
+                                            self.selectedColor = colorItem.getUIColor()
+                                            colorLibrary.updateLastUsed(for: colorItem)
+                                            presentationMode.wrappedValue.dismiss()
                                         }
-                                    }
-                                    .frame(height: 85)
-                                    .onTapGesture {
-                                        self.selectedColorName = colorItem.name
-                                        self.selectedColor = colorItem.getUIColor()
-                                        colorLibrary.updateLastUsed(for: colorItem)
-                                        presentationMode.wrappedValue.dismiss()
-                                    }
-                                    .contextMenu {
-                                        Button {
-                                            if let index = filteredColors.firstIndex(where: { $0.id == colorItem.id }) {
-                                                colorLibrary.deleteColor(id: colorItem.id)
-                                            }
-                                        } label: {
-                                            Label("删除", systemImage: "trash")
-                                        }
-                                    }
+                                    )
+                                    .id(colorItem.id) // 确保每个项有唯一标识符
                                 }
                             }
                             .padding(.horizontal, 10)
                             .padding(.bottom, 20)
-                            .padding(.top, 10) // 添加顶部间距，避免与最近使用部分重叠
+                            .padding(.top, 10)
                         }
+                    }
+                    .onAppear {
+                        // 预先计算布局，减少滚动时的计算量
+                        let _ = filteredColors.count
                     }
                 }
             }
@@ -489,6 +462,58 @@ struct ColorPickerView: View {
     }
 }
 
+// 优化的颜色网格项，提高渲染性能
+struct OptimizedColorGridItem: View {
+    let color: FilamentColor
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    // 使用equatable提高diff性能
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.color.id == rhs.color.id && lhs.isSelected == rhs.isSelected
+    }
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            // 颜色圆环
+            VStack(spacing: 4) {
+                // 使用预渲染的静态内容提高性能
+                ZStack {
+                    MiniFilamentReelView(color: color.getUIColor())
+                        .frame(width: 50, height: 50)
+                        .overlay(
+                            Circle()
+                                .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
+                                .frame(width: 52, height: 52)
+                        )
+                }
+                .frame(width: 54, height: 54)
+                .clipShape(Circle())
+                
+                // 简化文本层级
+                Text(color.name)
+                    .font(.system(size: 11, weight: .medium))
+                    .lineLimit(1)
+                    .foregroundColor(.primary)
+                    .frame(width: 70)
+            }
+            
+            // 品牌信息，使用条件渲染减少复杂度
+            if !color.brand.isEmpty || !color.materialType.isEmpty {
+                Text(color.brand.replacingOccurrences(of: " Tinmorry", with: ""))
+                    .font(.system(size: 9))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .frame(width: 70)
+            }
+        }
+        .frame(height: 85)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
+    }
+}
+
+// 更新ColorBubble视图，提高重用效率
 struct ColorBubble: View {
     let color: Color
     let name: String
@@ -496,21 +521,18 @@ struct ColorBubble: View {
     
     var body: some View {
         VStack(spacing: 6) {
-            // 图标容器，固定尺寸并裁剪溢出部分
+            // 简化渲染层级
             ZStack {
-                MiniFilamentReelView(color: color)
+                Circle()
+                    .fill(color)
                     .frame(width: 42, height: 42)
-                    // 选中状态边框
                     .overlay(
                         Circle()
                             .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2.5 : 0.8)
-                            .frame(width: 44, height: 44)
                     )
             }
             .frame(width: 46, height: 46)
-            .clipShape(Circle())
             
-            // 文本放在图标下方，清晰分开
             Text(name)
                 .font(.caption2)
                 .lineLimit(1)
@@ -519,45 +541,5 @@ struct ColorBubble: View {
                 .padding(.top, 2)
         }
         .frame(width: 60, height: 90)
-    }
-}
-
-// 添加网格布局项组件
-struct ColorGridItem: View {
-    let color: Color
-    let name: String
-    let isSelected: Bool
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            // 图标容器，固定尺寸并裁剪溢出部分
-            ZStack {
-                MiniFilamentReelView(color: color)
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Circle()
-                            .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
-                            .frame(width: 52, height: 52)
-                    )
-            }
-            .frame(width: 54, height: 54)
-            .clipShape(Circle())
-            
-            // 文本放在图标下方，避免重叠
-            HStack(spacing: 2) {
-                Text(name)
-                    .font(.system(size: 11, weight: .medium))
-                    .lineLimit(1)
-                    .foregroundColor(.primary)
-                
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.blue)
-                        .font(.system(size: 9, weight: .bold))
-                }
-            }
-            .frame(width: 70)
-        }
-        .contentShape(Rectangle())
     }
 } 

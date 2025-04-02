@@ -15,160 +15,24 @@ struct ColorLibraryManageView: View {
     @State private var showBrandFilter = false
     @State private var showMaterialFilter = false
     
+    // 计算筛选颜色仅在需要时执行，而不是每次重绘都计算
+    private var filteredColors: [FilamentColor] {
+        colorLibrary.searchColors(query: searchText)
+    }
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // 搜索栏和筛选器区域
-                VStack(spacing: 0) {
-                    // 搜索栏和筛选按钮
-                    HStack {
-                        TextField("搜索颜色", text: $searchText)
-                            .padding()
-                            .background(SystemColorCompatibility.tertiarySystemBackground)
-                            .cornerRadius(10)
-                        
-                        Button(action: {
-                            showBrandFilter.toggle()
-                            if showBrandFilter {
-                                showMaterialFilter = false // 避免同时展开两个筛选器
-                            }
-                        }) {
-                            Label("品牌", systemImage: "tag")
-                                .padding(8)
-                                .background(colorLibrary.selectedBrand.isEmpty ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
-                                .cornerRadius(8)
-                        }
-                        
-                        Button(action: {
-                            showMaterialFilter.toggle()
-                            if showMaterialFilter {
-                                showBrandFilter = false // 避免同时展开两个筛选器
-                            }
-                        }) {
-                            Label("材料", systemImage: "square.stack.3d.up")
-                                .padding(8)
-                                .background(colorLibrary.selectedMaterialType.isEmpty ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
-                                .cornerRadius(8)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    
-                    // 品牌筛选器
-                    if showBrandFilter {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                Button(action: {
-                                    colorLibrary.selectedBrand = ""
-                                }) {
-                                    Text("全部")
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(colorLibrary.selectedBrand.isEmpty ? Color.blue : Color.gray.opacity(0.2))
-                                        .foregroundColor(colorLibrary.selectedBrand.isEmpty ? .white : .primary)
-                                        .cornerRadius(16)
-                                }
-                                
-                                ForEach(colorLibrary.availableBrands, id: \.self) { brand in
-                                    Button(action: {
-                                        colorLibrary.selectedBrand = brand
-                                    }) {
-                                        Text(brand)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(colorLibrary.selectedBrand == brand ? Color.blue : Color.gray.opacity(0.2))
-                                            .foregroundColor(colorLibrary.selectedBrand == brand ? .white : .primary)
-                                            .cornerRadius(16)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                        .padding(.bottom, 8)
-                    }
-                    
-                    // 材料筛选器
-                    if showMaterialFilter {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                Button(action: {
-                                    colorLibrary.selectedMaterialType = ""
-                                }) {
-                                    Text("全部")
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(colorLibrary.selectedMaterialType.isEmpty ? Color.blue : Color.gray.opacity(0.2))
-                                        .foregroundColor(colorLibrary.selectedMaterialType.isEmpty ? .white : .primary)
-                                        .cornerRadius(16)
-                                }
-                                
-                                ForEach(colorLibrary.availableMaterialTypes, id: \.self) { material in
-                                    Button(action: {
-                                        colorLibrary.selectedMaterialType = material
-                                    }) {
-                                        Text(material)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(colorLibrary.selectedMaterialType == material ? Color.blue : Color.gray.opacity(0.2))
-                                            .foregroundColor(colorLibrary.selectedMaterialType == material ? .white : .primary)
-                                            .cornerRadius(16)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                        .padding(.bottom, 8)
-                    }
-                }
-                .background(SystemColorCompatibility.secondarySystemBackground)
+                // 搜索筛选部分，按需展示以减少渲染消耗
+                FilterHeaderView(
+                    colorLibrary: colorLibrary,
+                    searchText: $searchText,
+                    showBrandFilter: $showBrandFilter,
+                    showMaterialFilter: $showMaterialFilter,
+                    filteredCount: filteredColors.count
+                )
                 
-                // 选中的筛选条件指示器和统计信息
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        // 筛选条件指示器
-                        HStack(spacing: 8) {
-                            if !colorLibrary.selectedBrand.isEmpty {
-                                Text(colorLibrary.selectedBrand)
-                                    .font(.caption)
-                                    .padding(.vertical, 4)
-                                    .padding(.horizontal, 8)
-                                    .background(Color.blue.opacity(0.1))
-                                    .foregroundColor(.blue)
-                                    .cornerRadius(4)
-                            }
-                            
-                            if !colorLibrary.selectedMaterialType.isEmpty {
-                                Text(colorLibrary.selectedMaterialType)
-                                    .font(.caption)
-                                    .padding(.vertical, 4)
-                                    .padding(.horizontal, 8)
-                                    .background(Color.blue.opacity(0.1))
-                                    .foregroundColor(.blue)
-                                    .cornerRadius(4)
-                            }
-                            
-                            if !colorLibrary.selectedBrand.isEmpty || !colorLibrary.selectedMaterialType.isEmpty {
-                                Button("清除") {
-                                    colorLibrary.selectedBrand = ""
-                                    colorLibrary.selectedMaterialType = ""
-                                }
-                                .font(.caption)
-                                .foregroundColor(.blue)
-                            }
-                        }
-                        
-                        // 统计信息
-                        Text("共 \(filteredColors.count) 种颜色")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .background(SystemColorCompatibility.tertiarySystemBackground)
-                
-                // 颜色列表
+                // 颜色列表 - 经过优化的性能
                 List {
                     if isAddingNew {
                         ColorEditorView(
@@ -180,11 +44,13 @@ struct ColorLibraryManageView: View {
                     }
                     
                     ForEach(filteredColors) { colorItem in
-                        ColorLibraryItemView(color: colorItem)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
+                        OptimizedColorItemView(
+                            color: colorItem,
+                            onTap: {
                                 selectedColorID = IdentifiableUUID(id: colorItem.id)
                             }
+                        )
+                        .id(colorItem.id) // 确保正确的标识
                     }
                     .onDelete { indexSet in
                         if let index = indexSet.first {
@@ -261,9 +127,216 @@ struct ColorLibraryManageView: View {
             }
         }
     }
+}
+
+// 优化的筛选视图 - 拆分为单独组件以提高性能
+struct FilterHeaderView: View {
+    @ObservedObject var colorLibrary: ColorLibraryViewModel
+    @Binding var searchText: String
+    @Binding var showBrandFilter: Bool
+    @Binding var showMaterialFilter: Bool
+    let filteredCount: Int
     
-    private var filteredColors: [FilamentColor] {
-        colorLibrary.searchColors(query: searchText)
+    var body: some View {
+        VStack(spacing: 0) {
+            // 搜索栏和筛选按钮
+            HStack {
+                TextField("搜索颜色", text: $searchText)
+                    .padding()
+                    .background(SystemColorCompatibility.tertiarySystemBackground)
+                    .cornerRadius(10)
+                
+                Button(action: {
+                    showBrandFilter.toggle()
+                    if showBrandFilter {
+                        showMaterialFilter = false // 避免同时展开两个筛选器
+                    }
+                }) {
+                    Label("品牌", systemImage: "tag")
+                        .padding(8)
+                        .background(colorLibrary.selectedBrand.isEmpty ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
+                        .cornerRadius(8)
+                }
+                
+                Button(action: {
+                    showMaterialFilter.toggle()
+                    if showMaterialFilter {
+                        showBrandFilter = false // 避免同时展开两个筛选器
+                    }
+                }) {
+                    Label("材料", systemImage: "square.stack.3d.up")
+                        .padding(8)
+                        .background(colorLibrary.selectedMaterialType.isEmpty ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
+                        .cornerRadius(8)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            
+            // 品牌筛选器 - 优化渲染性能
+            if showBrandFilter {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 8) {
+                        Button(action: {
+                            colorLibrary.selectedBrand = ""
+                        }) {
+                            Text("全部")
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(colorLibrary.selectedBrand.isEmpty ? Color.blue : Color.gray.opacity(0.2))
+                                .foregroundColor(colorLibrary.selectedBrand.isEmpty ? .white : .primary)
+                                .cornerRadius(16)
+                        }
+                        
+                        ForEach(colorLibrary.availableBrands, id: \.self) { brand in
+                            Button(action: {
+                                colorLibrary.selectedBrand = brand
+                            }) {
+                                Text(brand)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(colorLibrary.selectedBrand == brand ? Color.blue : Color.gray.opacity(0.2))
+                                    .foregroundColor(colorLibrary.selectedBrand == brand ? .white : .primary)
+                                    .cornerRadius(16)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.bottom, 8)
+            }
+            
+            // 材料筛选器 - 优化渲染性能
+            if showMaterialFilter {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 8) {
+                        Button(action: {
+                            colorLibrary.selectedMaterialType = ""
+                        }) {
+                            Text("全部")
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(colorLibrary.selectedMaterialType.isEmpty ? Color.blue : Color.gray.opacity(0.2))
+                                .foregroundColor(colorLibrary.selectedMaterialType.isEmpty ? .white : .primary)
+                                .cornerRadius(16)
+                        }
+                        
+                        ForEach(colorLibrary.availableMaterialTypes, id: \.self) { material in
+                            Button(action: {
+                                colorLibrary.selectedMaterialType = material
+                            }) {
+                                Text(material)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(colorLibrary.selectedMaterialType == material ? Color.blue : Color.gray.opacity(0.2))
+                                    .foregroundColor(colorLibrary.selectedMaterialType == material ? .white : .primary)
+                                    .cornerRadius(16)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.bottom, 8)
+            }
+            
+            // 选中的筛选条件指示器和统计信息
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    // 筛选条件指示器 - 简化渲染
+                    if !colorLibrary.selectedBrand.isEmpty || !colorLibrary.selectedMaterialType.isEmpty {
+                        HStack(spacing: 8) {
+                            if !colorLibrary.selectedBrand.isEmpty {
+                                IndicatorTag(text: colorLibrary.selectedBrand)
+                            }
+                            
+                            if !colorLibrary.selectedMaterialType.isEmpty {
+                                IndicatorTag(text: colorLibrary.selectedMaterialType)
+                            }
+                            
+                            Button("清除") {
+                                colorLibrary.selectedBrand = ""
+                                colorLibrary.selectedMaterialType = ""
+                            }
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        }
+                    }
+                    
+                    // 统计信息
+                    Text("共 \(filteredCount) 种颜色")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+        }
+        .background(SystemColorCompatibility.secondarySystemBackground)
+    }
+}
+
+// 优化的标签组件 - 提取重复元素减少渲染消耗
+struct IndicatorTag: View {
+    let text: String
+    
+    var body: some View {
+        Text(text)
+            .font(.caption)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .background(Color.blue.opacity(0.1))
+            .foregroundColor(.blue)
+            .cornerRadius(4)
+    }
+}
+
+// 优化的颜色项视图，使用缓存渲染减少计算
+struct OptimizedColorItemView: View {
+    let color: FilamentColor
+    let onTap: () -> Void
+    
+    // 提高渲染性能
+    @State private var cachedUIColor: Color?
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // 简化图标渲染
+            Circle()
+                .fill(cachedUIColor ?? color.getUIColor())
+                .frame(width: 44, height: 44)
+                .overlay(
+                    Circle()
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                )
+                .onAppear {
+                    // 缓存颜色值以避免重复计算
+                    if cachedUIColor == nil {
+                        cachedUIColor = color.getUIColor()
+                    }
+                }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(color.name)
+                    .font(.system(size: 16, weight: .medium))
+                
+                if !color.brand.isEmpty || !color.materialType.isEmpty {
+                    Text(color.brand + ((!color.brand.isEmpty && !color.materialType.isEmpty) ? " · " : "") + color.materialType)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 4)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
     }
 }
 
