@@ -206,7 +206,7 @@ struct ColorPickerView: View {
                     .padding(.vertical, 8)
                 }
                 .frame(height: 70)
-                .background(SystemColorCompatibility.tertiarySystemBackground)
+                .background(Color.black)
                 
                 // 添加新颜色的视图或颜色网格
                 if isAddingNew {
