@@ -21,6 +21,9 @@ struct FillyApp: App {
     // 模型容器配置
     @State private var container: ModelContainer? = nil
     
+    // 添加天瑞耗材标志，避免重复添加
+    @AppStorage("addedTianruiPETGECO") var addedTianruiPETGECO: Bool = false
+    
     init() {
         // 设置初始颜色方案
         let theme = ThemeManager().selectedTheme
@@ -48,6 +51,14 @@ struct FillyApp: App {
                         // 响应预备主题变更通知
                         .onReceive(NotificationCenter.default.publisher(for: .prepareForThemeChange)) { _ in
                             // 收到通知后，此视图不做任何特殊处理
+                        }
+                        // 检查是否需要添加天瑞PETG-ECO系列颜色
+                        .onAppear {
+                            if !addedTianruiPETGECO, let modelContainer = container {
+                                // 添加天瑞PETG-ECO系列颜色
+                                filamentLibraryViewModel.addTianruiPETGECOColors(context: modelContainer.mainContext)
+                                addedTianruiPETGECO = true
+                            }
                         }
                 } else {
                     // 加载容器时显示加载中
