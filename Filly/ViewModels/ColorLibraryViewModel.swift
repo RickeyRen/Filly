@@ -32,6 +32,9 @@ class ColorLibraryViewModel: ObservableObject {
         // 检查是否已经存在拓竹的颜色
         let hasTinzhuBasicColors = colors.contains { $0.brand == "拓竹 Bambu Lab" && $0.materialType == "PLA Basic" }
         let hasTinzhuLiteColors = colors.contains { $0.brand == "拓竹 Bambu Lab" && $0.materialType == "PLA Lite" }
+        let hasTinzhuMatteColors = colors.contains { $0.brand == "拓竹 Bambu Lab" && $0.materialType == "PLA Matte" }
+        let hasTinzhuSparkleColors = colors.contains { $0.brand == "拓竹 Bambu Lab" && $0.materialType == "PLA Sparkle" }
+        let hasTinzhuMarbleColors = colors.contains { $0.brand == "拓竹 Bambu Lab" && $0.materialType == "PLA Marble" }
         let hasTinmorryColors = colors.contains { $0.brand == "天瑞 Tinmorry" }
         
         // 如果没有拓竹PLA Basic颜色，添加它们
@@ -42,6 +45,21 @@ class ColorLibraryViewModel: ObservableObject {
         // 如果没有拓竹PLA Lite颜色，添加它们
         if !hasTinzhuLiteColors {
             addAllTinzhuPLALiteColors()
+        }
+        
+        // 如果没有拓竹PLA Matte颜色，添加它们
+        if !hasTinzhuMatteColors {
+            addAllTinzhuPLAMatteColors()
+        }
+        
+        // 如果没有拓竹PLA Sparkle颜色，添加它们
+        if !hasTinzhuSparkleColors {
+            addAllTinzhuPLASparkleColors()
+        }
+        
+        // 如果没有拓竹PLA Marble颜色，添加它们
+        if !hasTinzhuMarbleColors {
+            addAllTinzhuPLAMarbleColors()
         }
         
         // 如果没有天瑞颜色，添加它们
@@ -70,6 +88,24 @@ class ColorLibraryViewModel: ObservableObject {
         
         // 添加颜色到库中
         addColors(tinzhuPLALiteColors)
+    }
+    
+    // 添加拓竹 PLA Matte 所有颜色
+    func addAllTinzhuPLAMatteColors() {
+        // 直接使用模型中定义的颜色列表
+        addColors(FilamentColor.tinzhuPLAMatteColors)
+    }
+    
+    // 添加拓竹 PLA Sparkle 所有颜色
+    func addAllTinzhuPLASparkleColors() {
+        // 直接使用模型中定义的颜色列表
+        addColors(FilamentColor.tinzhuPLASparkleColors)
+    }
+    
+    // 添加拓竹 PLA Marble 所有颜色
+    func addAllTinzhuPLAMarbleColors() {
+        // 直接使用模型中定义的颜色列表
+        addColors(FilamentColor.tinzhuPLAMarbleColors)
     }
     
     // 添加新颜色

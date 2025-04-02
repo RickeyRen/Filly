@@ -172,11 +172,67 @@ struct FilamentColor: Identifiable, Codable, Equatable {
         FilamentColor(name: "黑色10101【无料盘】", color: Color("#000000"), brand: "拓竹 Bambu Lab", materialType: "PLA Basic")
     ]
     
+    // 拓竹 PLA Matte 颜色预设
+    static let tinzhuPLAMatteColors: [FilamentColor] = [
+        FilamentColor(name: "哑光黑色 20101【含料盘】", color: Color("#0A0A0A"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光白色 20100【含料盘】", color: Color("#F0F0F0"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光灰色 20102【含料盘】", color: Color("#808080"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光红色 20200【含料盘】", color: Color("#E60000"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光粉色 20201【含料盘】", color: Color("#FFC0CB"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光橙色 20300【含料盘】", color: Color("#FFA500"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光黄色 20400【含料盘】", color: Color("#FFFF00"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光绿色 20500【含料盘】", color: Color("#2E8B57"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光蓝色 20600【含料盘】", color: Color("#1E90FF"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光紫色 20700【含料盘】", color: Color("#800080"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        
+        FilamentColor(name: "哑光黑色 20101【无料盘】", color: Color("#0A0A0A"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光白色 20100【无料盘】", color: Color("#F0F0F0"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光灰色 20102【无料盘】", color: Color("#808080"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光红色 20200【无料盘】", color: Color("#E60000"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光粉色 20201【无料盘】", color: Color("#FFC0CB"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光橙色 20300【无料盘】", color: Color("#FFA500"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光黄色 20400【无料盘】", color: Color("#FFFF00"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光绿色 20500【无料盘】", color: Color("#2E8B57"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光蓝色 20600【无料盘】", color: Color("#1E90FF"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte"),
+        FilamentColor(name: "哑光紫色 20700【无料盘】", color: Color("#800080"), brand: "拓竹 Bambu Lab", materialType: "PLA Matte")
+    ]
+    
+    // 拓竹 PLA Sparkle 颜色预设
+    static let tinzhuPLASparkleColors: [FilamentColor] = [
+        FilamentColor(name: "星空黑 40101【含料盘】", color: Color("#101010"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空银 40102【含料盘】", color: Color("#C0C0C0"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空金 40400【含料盘】", color: Color("#FFD700"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空红 40200【含料盘】", color: Color("#B22222"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空蓝 40600【含料盘】", color: Color("#4169E1"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空绿 40500【含料盘】", color: Color("#2E8B57"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        
+        FilamentColor(name: "星空黑 40101【无料盘】", color: Color("#101010"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空银 40102【无料盘】", color: Color("#C0C0C0"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空金 40400【无料盘】", color: Color("#FFD700"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空红 40200【无料盘】", color: Color("#B22222"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空蓝 40600【无料盘】", color: Color("#4169E1"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle"),
+        FilamentColor(name: "星空绿 40500【无料盘】", color: Color("#2E8B57"), brand: "拓竹 Bambu Lab", materialType: "PLA Sparkle")
+    ]
+    
+    // 拓竹 PLA Marble 颜色预设
+    static let tinzhuPLAMarbleColors: [FilamentColor] = [
+        FilamentColor(name: "大理石白 14100【含料盘】", color: Color("#F5F5F5"), brand: "拓竹 Bambu Lab", materialType: "PLA Marble"),
+        FilamentColor(name: "大理石灰 14101【含料盘】", color: Color("#D3D3D3"), brand: "拓竹 Bambu Lab", materialType: "PLA Marble"),
+        FilamentColor(name: "大理石黑 14102【含料盘】", color: Color("#333333"), brand: "拓竹 Bambu Lab", materialType: "PLA Marble"),
+        
+        FilamentColor(name: "大理石白 14100【无料盘】", color: Color("#F5F5F5"), brand: "拓竹 Bambu Lab", materialType: "PLA Marble"),
+        FilamentColor(name: "大理石灰 14101【无料盘】", color: Color("#D3D3D3"), brand: "拓竹 Bambu Lab", materialType: "PLA Marble"),
+        FilamentColor(name: "大理石黑 14102【无料盘】", color: Color("#333333"), brand: "拓竹 Bambu Lab", materialType: "PLA Marble")
+    ]
+    
     // 合并所有预设颜色
     static var presets: [FilamentColor] {
         var allPresets = basicPresets
         allPresets.append(contentsOf: tianruiPETGColors)
         allPresets.append(contentsOf: tinzhuPLABasicColors)
+        allPresets.append(contentsOf: tinzhuPLAMatteColors)
+        allPresets.append(contentsOf: tinzhuPLASparkleColors)
+        allPresets.append(contentsOf: tinzhuPLAMarbleColors)
         return allPresets
     }
     
