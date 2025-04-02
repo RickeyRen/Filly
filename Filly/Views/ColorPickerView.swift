@@ -78,6 +78,30 @@ struct ColorPickerView: View {
                         Label("添加", systemImage: "plus")
                     }
                 }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Button(action: {
+                            colorLibrary.addAllTinzhuPLALiteColors()
+                            updateFilteredColors()
+                            alertMessage = "已添加拓竹 PLA Lite 所有颜色"
+                            showingAlert = true
+                        }) {
+                            Label("添加拓竹PLA Lite颜色", systemImage: "paintpalette")
+                        }
+                        
+                        Button(action: {
+                            colorLibrary.addAllColorsForBrand("拓竹 Bambu Lab")
+                            updateFilteredColors()
+                            alertMessage = "已添加拓竹所有颜色"
+                            showingAlert = true
+                        }) {
+                            Label("添加拓竹所有颜色", systemImage: "paintpalette.fill")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                }
             }
             .sheet(isPresented: $isAddingNew) {
                 ColorEditorView(
