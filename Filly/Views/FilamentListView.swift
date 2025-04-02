@@ -167,14 +167,14 @@ struct SelectFromFilamentLibraryView: View {
                     )
                 } else if let brand = selectedBrand, let materialType = selectedMaterialType {
                     ColorGridView(
-                        materialType: materialType,
+                        materialTypeId: materialType.id,
                         viewModel: filamentLibraryViewModel,
                         onSelectColor: { color in addFilament(from: color) },
                         context: modelContext
                     )
                 } else if let brand = selectedBrand {
                     MaterialTypeListView(
-                        brand: brand,
+                        brandId: brand.id,
                         selectedMaterialTypeId: $selectedMaterialTypeId,
                         viewModel: filamentLibraryViewModel,
                         context: modelContext
