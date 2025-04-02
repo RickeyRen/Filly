@@ -180,7 +180,229 @@ struct PresetFilamentData {
             ]
         ),
         
+        // 易生 eSUN
+        Brand(
+            name: "易生 eSUN",
+            materialTypes: [
+                MaterialType(
+                    name: "PLA仿丝绸",
+                    colors: [
+                        // 双色丝绸系列
+                        ColorProperties(
+                            name: "双色丝绸 金银色",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("银")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 红蓝色",
+                            hasSpool: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("蓝")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 蓝绿色",
+                            hasSpool: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("绿")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 红金色",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("金")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 黑金色",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("金")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 黑红色",
+                            hasSpool: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("红")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 黑绿色",
+                            hasSpool: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("绿")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 紫金色",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("金")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 红绿色",
+                            hasSpool: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("绿")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 蓝银色",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("银")]
+                        ),
+                        ColorProperties(
+                            name: "双色丝绸 黑紫色",
+                            hasSpool: true,
+                            gradientType: .horizontal,
+                            additionalColors: [PresetFilamentData.getColor("紫")]
+                        ),
+                        
+                        // 三色丝绸系列
+                        ColorProperties(
+                            name: "三色丝绸 金红绿",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("红"), 
+                                PresetFilamentData.getColor("绿")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 铜紫绿",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("紫"), 
+                                PresetFilamentData.getColor("绿")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 金绿黑",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("绿"), 
+                                PresetFilamentData.getColor("黑")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 蓝橙绿",
+                            hasSpool: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("橙"), 
+                                PresetFilamentData.getColor("绿")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 金银铜",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("银"), 
+                                PresetFilamentData.getColor("铜")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 红黄蓝",
+                            hasSpool: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("黄"), 
+                                PresetFilamentData.getColor("蓝")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 红金紫",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("金"), 
+                                PresetFilamentData.getColor("紫")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 黑红金",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("红"), 
+                                PresetFilamentData.getColor("金")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 红绿蓝",
+                            hasSpool: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("绿"), 
+                                PresetFilamentData.getColor("蓝")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 蓝红紫",
+                            hasSpool: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("红"), 
+                                PresetFilamentData.getColor("紫")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 金绿紫",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("绿"), 
+                                PresetFilamentData.getColor("紫")
+                            ]
+                        ),
+                        ColorProperties(
+                            name: "三色丝绸 金蓝紫",
+                            hasSpool: true,
+                            isMetallic: true,
+                            gradientType: .multiColor,
+                            additionalColors: [
+                                PresetFilamentData.getColor("蓝"), 
+                                PresetFilamentData.getColor("紫")
+                            ]
+                        )
+                    ]
+                )
+            ]
+        ),
+        
         // 这里可以添加更多品牌...
         // 例如：易生、Polymaker等
     ]
+}
+
+// 颜色辅助函数 - 根据常见颜色名提供标准色值
+extension PresetFilamentData {
+    // 获取标准颜色
+    static func getColor(_ name: String) -> Color {
+        let lowerName = name.lowercased()
+        if lowerName.contains("黑") { return .black }
+        if lowerName.contains("白") { return .white }
+        if lowerName.contains("红") { return .red }
+        if lowerName.contains("蓝") { return .blue }
+        if lowerName.contains("绿") { return .green }
+        if lowerName.contains("黄") { return .yellow }
+        if lowerName.contains("紫") { return .purple }
+        if lowerName.contains("橙") { return .orange }
+        if lowerName.contains("金") { return Color(red: 1.0, green: 0.84, blue: 0.0) }
+        if lowerName.contains("银") { return Color(white: 0.85) }
+        if lowerName.contains("铜") { return Color(red: 0.8, green: 0.5, blue: 0.2) }
+        return .gray
+    }
 } 
