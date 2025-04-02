@@ -21,33 +21,41 @@ struct FillyApp: App {
     // 模型容器配置
     @State private var container: ModelContainer? = nil
     
-    var body: some View {
-        // 创建SwiftData容器
-        Group {
-            if let modelContainer = container {
-                ContentView()
-                    .environmentObject(themeManager)
-                    .environmentObject(filamentViewModel)
-                    .environmentObject(filamentLibraryViewModel)
-                    .modelContainer(modelContainer)
-                    // 应用主题
-                    .preferredColorScheme(themeManager.selectedTheme.colorScheme)
-                    // 监听主题变更通知
-                    .onReceive(NotificationCenter.default.publisher(for: .themeChanged)) { notification in
-                        if let theme = notification.object as? ThemeMode {
-                            activeColorScheme = theme.colorScheme
+    init() {
+        // 设置初始颜色方案
+        let theme = ThemeManager().selectedTheme
+        let _activeColorScheme = theme.colorScheme
+        self._activeColorScheme = State(initialValue: _activeColorScheme)
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            ZStack {
+                if let modelContainer = container {
+                    ContentView()
+                        .environmentObject(themeManager)
+                        .environmentObject(filamentViewModel)
+                        .environmentObject(filamentLibraryViewModel)
+                        .modelContainer(modelContainer)
+                        // 应用主题
+                        .preferredColorSchemeIfAvailable(activeColorScheme)
+                        // 监听主题变更通知
+                        .onReceive(NotificationCenter.default.publisher(for: .themeChanged)) { notification in
+                            if let theme = notification.object as? ThemeMode {
+                                activeColorScheme = theme.colorScheme
+                            }
                         }
-                    }
-                    // 响应预备主题变更通知
-                    .onReceive(NotificationCenter.default.publisher(for: .prepareForThemeChange)) { _ in
-                        // 收到通知后，此视图不做任何特殊处理
-                    }
-            } else {
-                // 加载容器时显示加载中
-                SplashScreen(message: "正在准备数据...")
-                    .onAppear {
-                        setupModelContainer()
-                    }
+                        // 响应预备主题变更通知
+                        .onReceive(NotificationCenter.default.publisher(for: .prepareForThemeChange)) { _ in
+                            // 收到通知后，此视图不做任何特殊处理
+                        }
+                } else {
+                    // 加载容器时显示加载中
+                    SplashScreen(message: "正在准备数据...")
+                        .onAppear {
+                            setupModelContainer()
+                        }
+                }
             }
         }
     }

@@ -27,6 +27,6 @@ struct MainTabView: View {
                     Label("设置", systemImage: "gear")
                 }
         }
-        .preferredColorScheme(themeManager.selectedTheme.colorScheme)
+        .preferredColorSchemeIfAvailable(themeManager.selectedTheme.colorScheme)
     }
 } 
