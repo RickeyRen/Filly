@@ -6,9 +6,6 @@ import UIKit
 import AppKit
 #endif
 
-// 从EditFilamentView.swift中导入共享的函数
-@_implementationOnly import EditFilamentView
-
 struct AddFilamentView: View {
     @ObservedObject var viewModel: FilamentViewModel
     @ObservedObject var colorLibrary: ColorLibraryViewModel
