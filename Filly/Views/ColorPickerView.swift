@@ -340,9 +340,7 @@ struct ColorPickerView: View {
                                     }
                                     .contextMenu {
                                         Button {
-                                            if let index = filteredColors.firstIndex(where: { $0.id == colorItem.id }) {
-                                                colorLibrary.deleteColor(id: colorItem.id)
-                                            }
+                                            colorLibrary.deleteColor(id: colorItem.id)
                                         } label: {
                                             Label("删除", systemImage: "trash")
                                         }
