@@ -208,6 +208,236 @@ class FilamentLibraryViewModel: ObservableObject {
         saveContext(context)
     }
     
+    // 为天瑞添加PETG-ECO系列颜色
+    func addTianruiPETGECOColors(context: ModelContext) {
+        // 查找天瑞品牌
+        let descriptor = FetchDescriptor<SwiftDataBrand>(predicate: #Predicate { $0.name.contains("天瑞") })
+        
+        do {
+            let brands = try context.fetch(descriptor)
+            guard let tianrui = brands.first else {
+                print("未找到天瑞品牌，创建新品牌")
+                let tianrui = SwiftDataBrand(name: "天瑞 Tinmorry")
+                context.insert(tianrui)
+                addPETGECOToTianrui(tianrui, context: context)
+                return
+            }
+            
+            // 找到现有品牌，添加材料类型和颜色
+            addPETGECOToTianrui(tianrui, context: context)
+            
+        } catch {
+            print("查找天瑞品牌失败: \(error)")
+        }
+    }
+    
+    private func addPETGECOToTianrui(_ tianrui: SwiftDataBrand, context: ModelContext) {
+        // 检查是否已存在PETG-ECO材料类型
+        let materialDescriptor = FetchDescriptor<SwiftDataMaterialType>(
+            predicate: #Predicate { $0.name == "PETG-ECO" && $0.brand?.id == tianrui.id }
+        )
+        
+        let petgEco: SwiftDataMaterialType
+        
+        do {
+            let types = try context.fetch(materialDescriptor)
+            if let existingType = types.first {
+                petgEco = existingType
+                print("找到现有PETG-ECO材料类型")
+            } else {
+                // 创建新材料类型
+                petgEco = SwiftDataMaterialType(name: "PETG-ECO", brand: tianrui)
+                context.insert(petgEco)
+                tianrui.materialTypes.append(petgEco)
+                print("创建新PETG-ECO材料类型")
+            }
+            
+            // 添加所有颜色
+            addTianruiColorsToPETGECO(petgEco, context: context)
+            
+            try context.save()
+            print("成功添加天瑞PETG-ECO系列颜色")
+            
+        } catch {
+            print("添加PETG-ECO材料类型失败: \(error)")
+        }
+    }
+    
+    private func addTianruiColorsToPETGECO(_ petgEco: SwiftDataMaterialType, context: ModelContext) {
+        // 定义所有颜色
+        let colors: [(name: String, isTransparent: Bool, isMetallic: Bool)] = [
+            ("亮丽黄", false, false),
+            ("咖啡色", false, false),
+            ("透明", true, false),
+            ("荧光绿", false, false),
+            ("荧光黄", false, false),
+            ("红色", false, false),
+            ("绿色", false, false),
+            ("灰色", false, false),
+            ("杏色", false, false),
+            ("黑色", false, false),
+            ("冷白", false, false),
+            ("奶白色", false, false),
+            ("米宝白", false, false),
+            ("肤色", false, false),
+            ("淡灰色", false, false),
+            ("夜光绿", false, false),
+            ("橙色", false, false),
+            ("樱花粉", false, false),
+            ("粉色", false, false),
+            ("长春花蓝", false, false),
+            ("薄荷绿", false, false),
+            ("卡特黄", false, false),
+            ("天空蓝", false, false),
+            ("橄榄绿", false, false),
+            ("透明蓝", true, false),
+            ("透明绿", true, false),
+            ("透明红", true, false),
+            ("荧光玫红", false, false),
+            ("荧光紫红", false, false),
+            ("克莱因蓝", false, false),
+            ("金属紫", false, true),
+            ("金属香槟金", false, true),
+            ("金属午夜绿", false, true),
+            ("金属银", false, true),
+            ("金属太空灰", false, true),
+            ("金属铜", false, true),
+            ("金属绿", false, true),
+            ("金属珠光蓝", false, true),
+            ("金属玫瑰金", false, true),
+            ("petg碳纤维黑色", false, false),
+            ("PETG碳纤维大理石灰", false, false),
+            ("PETG碳纤维咖啡色", false, false),
+            ("高速Petg薰衣草紫", false, false),
+            ("高速Petg桃红", false, false),
+            ("高速Petg黑色", false, false),
+            ("高速Petg浅蓝", false, false),
+            ("高速Petg冷白", false, false),
+            ("Petg大理石花岗岩", false, false),
+            ("大理石魔幻棕", false, false),
+            ("大理石浅灰", false, false),
+            ("大理石白", false, false),
+            ("petg大理石魔幻紫", false, false),
+            ("petg大理石魔幻蓝", false, false),
+            ("Petg大理石魔幻绿", false, false)
+        ]
+        
+        // 为每种颜色添加含料盘和不含料盘两种版本
+        for (colorName, isTransparent, isMetallic) in colors {
+            // 根据颜色名称获取合适的颜色
+            let swiftUIColor = intelligentColorMapping(for: colorName)
+            
+            // 添加含料盘版本
+            let colorWithSpool = "\(colorName) (含料盘)"
+            let colorDataWithSpool = SwiftDataColorData(from: swiftUIColor)
+            
+            let filamentColorWithSpool = SwiftDataFilamentColor(
+                name: colorWithSpool,
+                colorData: colorDataWithSpool,
+                isTransparent: isTransparent,
+                isMetallic: isMetallic,
+                hasSpool: true,
+                materialType: petgEco
+            )
+            context.insert(filamentColorWithSpool)
+            petgEco.colors.append(filamentColorWithSpool)
+            
+            // 添加不含料盘版本
+            let colorWithoutSpool = "\(colorName) (无料盘)"
+            let colorDataWithoutSpool = SwiftDataColorData(from: swiftUIColor)
+            
+            let filamentColorWithoutSpool = SwiftDataFilamentColor(
+                name: colorWithoutSpool,
+                colorData: colorDataWithoutSpool,
+                isTransparent: isTransparent,
+                isMetallic: isMetallic,
+                hasSpool: false,
+                materialType: petgEco
+            )
+            context.insert(filamentColorWithoutSpool)
+            petgEco.colors.append(filamentColorWithoutSpool)
+        }
+    }
+    
+    // 根据颜色名称智能映射到颜色
+    private func intelligentColorMapping(for name: String) -> Color {
+        let lowercaseName = name.lowercased()
+        
+        // 基本颜色
+        if lowercaseName.contains("黑色") { return .black }
+        if lowercaseName.contains("冷白") || lowercaseName.contains("白") { return .white }
+        if lowercaseName.contains("红色") || lowercaseName.contains("玫红") { return .red }
+        if lowercaseName.contains("蓝色") || lowercaseName.contains("天空蓝") { return Color(red: 0.0, green: 0.5, blue: 1.0) }
+        if lowercaseName.contains("绿色") { return .green }
+        if lowercaseName.contains("黄色") || lowercaseName.contains("亮丽黄") { return .yellow }
+        if lowercaseName.contains("橙色") { return .orange }
+        if lowercaseName.contains("紫色") || lowercaseName.contains("紫红") { return .purple }
+        if lowercaseName.contains("粉色") || lowercaseName.contains("樱花粉") { return .pink }
+        if lowercaseName.contains("灰色") || lowercaseName.contains("太空灰") { return .gray }
+        
+        // 特殊颜色
+        if lowercaseName.contains("透明") { 
+            if lowercaseName.contains("蓝") { return Color(red: 0.7, green: 0.8, blue: 1.0, opacity: 0.7) }
+            if lowercaseName.contains("绿") { return Color(red: 0.7, green: 1.0, blue: 0.8, opacity: 0.7) }
+            if lowercaseName.contains("红") { return Color(red: 1.0, green: 0.7, blue: 0.7, opacity: 0.7) }
+            return Color(white: 0.9, opacity: 0.5) 
+        }
+        
+        if lowercaseName.contains("咖啡") { return Color(red: 0.6, green: 0.4, blue: 0.2) }
+        if lowercaseName.contains("荧光绿") { return Color(red: 0.4, green: 1.0, blue: 0.4) }
+        if lowercaseName.contains("荧光黄") { return Color(red: 1.0, green: 1.0, blue: 0.4) }
+        if lowercaseName.contains("杏色") { return Color(red: 1.0, green: 0.8, blue: 0.6) }
+        if lowercaseName.contains("奶白") { return Color(white: 0.95) }
+        if lowercaseName.contains("米宝白") { return Color(red: 0.98, green: 0.98, blue: 0.94) }
+        if lowercaseName.contains("肤色") { return Color(red: 1.0, green: 0.87, blue: 0.73) }
+        if lowercaseName.contains("淡灰") { return Color(white: 0.85) }
+        if lowercaseName.contains("夜光绿") { return Color(red: 0.6, green: 1.0, blue: 0.6) }
+        if lowercaseName.contains("薄荷绿") { return Color(red: 0.6, green: 1.0, blue: 0.8) }
+        if lowercaseName.contains("卡特黄") { return Color(red: 1.0, green: 0.9, blue: 0.5) }
+        if lowercaseName.contains("橄榄绿") { return Color(red: 0.5, green: 0.6, blue: 0.3) }
+        if lowercaseName.contains("克莱因蓝") { return Color(red: 0.0, green: 0.3, blue: 0.7) }
+        
+        // 金属色
+        if lowercaseName.contains("金属") {
+            if lowercaseName.contains("紫") { return Color(red: 0.5, green: 0.3, blue: 0.7) }
+            if lowercaseName.contains("香槟金") { return Color(red: 0.9, green: 0.8, blue: 0.6) }
+            if lowercaseName.contains("午夜绿") { return Color(red: 0.2, green: 0.3, blue: 0.3) }
+            if lowercaseName.contains("银") { return Color(white: 0.8) }
+            if lowercaseName.contains("铜") { return Color(red: 0.7, green: 0.5, blue: 0.3) }
+            if lowercaseName.contains("绿") { return Color(red: 0.3, green: 0.5, blue: 0.4) }
+            if lowercaseName.contains("珠光蓝") { return Color(red: 0.4, green: 0.5, blue: 0.7) }
+            if lowercaseName.contains("玫瑰金") { return Color(red: 0.9, green: 0.7, blue: 0.6) }
+        }
+        
+        // 碳纤维
+        if lowercaseName.contains("碳纤维") {
+            if lowercaseName.contains("大理石灰") { return Color(white: 0.7) }
+            if lowercaseName.contains("咖啡") { return Color(red: 0.4, green: 0.3, blue: 0.2) }
+            return Color(white: 0.3) // 碳纤维黑色
+        }
+        
+        // 高速系列
+        if lowercaseName.contains("高速") {
+            if lowercaseName.contains("薰衣草紫") { return Color(red: 0.8, green: 0.7, blue: 1.0) }
+            if lowercaseName.contains("桃红") { return Color(red: 1.0, green: 0.5, blue: 0.7) }
+            if lowercaseName.contains("浅蓝") { return Color(red: 0.7, green: 0.8, blue: 1.0) }
+        }
+        
+        // 大理石系列
+        if lowercaseName.contains("大理石") {
+            if lowercaseName.contains("魔幻紫") { return Color(red: 0.6, green: 0.4, blue: 0.7) }
+            if lowercaseName.contains("魔幻蓝") { return Color(red: 0.4, green: 0.5, blue: 0.7) }
+            if lowercaseName.contains("魔幻绿") { return Color(red: 0.4, green: 0.7, blue: 0.5) }
+            if lowercaseName.contains("魔幻棕") { return Color(red: 0.6, green: 0.4, blue: 0.3) }
+            if lowercaseName.contains("浅灰") { return Color(white: 0.8) }
+            if lowercaseName.contains("白") { return Color(white: 0.95) }
+            return Color(white: 0.7) // 默认大理石色
+        }
+        
+        // 默认颜色
+        return .gray
+    }
+    
     private func saveContext(_ context: ModelContext) {
         do {
             try context.save()
