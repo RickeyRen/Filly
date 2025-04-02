@@ -88,8 +88,31 @@ struct FillyApp: App {
                 SwiftDataFilamentColor.self
             ])
             
-            let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-            container = try ModelContainer(for: schema, configurations: [config])
+            // 创建更宽容的配置，设置迁移选项
+            let config = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                allowsSave: true,
+                migrations: nil // 不提供显式迁移策略
+            )
+            
+            // 处理可能的迁移错误
+            do {
+                container = try ModelContainer(for: schema, configurations: [config])
+            } catch {
+                print("尝试正常加载失败，错误: \(error)")
+                print("尝试删除现有数据库并重新创建...")
+                
+                // 删除现有数据库并创建新的
+                if let storeURL = NSPersistentStoreDescription.defaultURL {
+                    try? FileManager.default.removeItem(at: storeURL)
+                    print("已删除旧数据库: \(storeURL.path)")
+                }
+                
+                // 重新创建数据库
+                container = try ModelContainer(for: schema, configurations: [config])
+                print("成功创建新的数据库")
+            }
             
             // 数据容器初始化成功后不要立即切换到内容视图
             // 让SplashScreen完成它的动画
