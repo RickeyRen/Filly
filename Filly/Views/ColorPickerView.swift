@@ -29,9 +29,10 @@ struct ColorPickerView: View {
                 // 搜索栏和筛选器区域
                 VStack(spacing: 0) {
                     // 搜索栏和筛选按钮
-                    HStack {
+                    HStack(spacing: 10) {
                         TextField("搜索颜色", text: $searchText)
-                            .padding()
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
                             .background(SystemColorCompatibility.tertiarySystemBackground)
                             .cornerRadius(10)
                         
@@ -42,7 +43,8 @@ struct ColorPickerView: View {
                             }
                         }) {
                             Label("品牌", systemImage: "tag")
-                                .padding(8)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
                                 .background(colorLibrary.selectedBrand.isEmpty ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
                                 .cornerRadius(8)
                         }
@@ -54,13 +56,14 @@ struct ColorPickerView: View {
                             }
                         }) {
                             Label("材料", systemImage: "square.stack.3d.up")
-                                .padding(8)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
                                 .background(colorLibrary.selectedMaterialType.isEmpty ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
                                 .cornerRadius(8)
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.top, 8)
+                    .padding(.vertical, 8)
                     
                     // 品牌筛选器
                     if showBrandFilter {
