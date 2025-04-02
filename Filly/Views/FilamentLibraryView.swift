@@ -433,6 +433,11 @@ struct AddLegacyFilamentSheet: View {
     // Accept the prepared Item struct instead of the full SwiftData object
     let item: FilamentSheetItem 
     @ObservedObject var filamentViewModel: FilamentViewModel
+    
+    // 直接使用filamentViewModel中的typeViewModel
+    private var typeViewModel: FilamentTypeViewModel {
+        filamentViewModel.typeViewModel
+    }
 
     // State remains the same
     @State private var weight: Double = 1000.0
