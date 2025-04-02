@@ -16,6 +16,7 @@ struct AddFilamentView: View {
     @State private var selectedType = "PLA"  // 改为字符串，默认为PLA
     @State private var color = ""
     @State private var selectedColor = Color.blue
+    @State private var selectedFilamentColor: FilamentColor?
     @State private var weight = 1000.0
     @State private var selectedDiameter = FilamentDiameter.mm175
     @State private var notes = ""
@@ -229,7 +230,10 @@ struct AddFilamentView: View {
                 ColorPickerView(
                     colorLibrary: colorLibrary,
                     selectedColorName: $color, 
-                    selectedColor: $selectedColor
+                    selectedColor: $selectedFilamentColor,
+                    onSelect: { filamentColor in
+                        self.selectedColor = filamentColor.getUIColor()
+                    }
                 )
             }
         }
@@ -249,6 +253,7 @@ struct AddFilamentView: View {
             if let firstColor = colorLibrary.colors.first {
                 color = firstColor.name
                 selectedColor = firstColor.getUIColor()
+                selectedFilamentColor = firstColor
             }
             
             // 初始化耗材盘数据
@@ -274,10 +279,14 @@ struct AddFilamentView: View {
         if let colorItem = colorLibrary.colors.first(where: { $0.name == color }) {
             colorData = colorItem.colorData
             colorLibrary.updateLastUsed(for: colorItem)
+            // 更新selectedFilamentColor
+            selectedFilamentColor = colorItem
         } else if !color.isEmpty {
             colorData = ColorData(from: selectedColor)
             let newColor = FilamentColor(name: color, color: selectedColor)
             colorLibrary.addColor(newColor)
+            // 更新selectedFilamentColor
+            selectedFilamentColor = newColor
         }
         
         let newFilament = Filament(
