@@ -211,11 +211,14 @@ class FilamentLibraryViewModel: ObservableObject {
     // 为天瑞添加PETG-ECO系列颜色
     func addTianruiPETGECOColors(context: ModelContext) {
         // 查找天瑞品牌
-        let descriptor = FetchDescriptor<SwiftDataBrand>(predicate: #Predicate { $0.name.contains("天瑞") })
+        let descriptor = FetchDescriptor<SwiftDataBrand>()
         
         do {
             let brands = try context.fetch(descriptor)
-            guard let tianrui = brands.first else {
+            // 在内存中过滤，避免复杂的Predicate表达式
+            let tianruiBrands = brands.filter { $0.name.contains("天瑞") }
+            
+            guard let tianrui = tianruiBrands.first else {
                 print("未找到天瑞品牌，创建新品牌")
                 let tianrui = SwiftDataBrand(name: "天瑞 Tinmorry")
                 context.insert(tianrui)
@@ -233,33 +236,30 @@ class FilamentLibraryViewModel: ObservableObject {
     
     private func addPETGECOToTianrui(_ tianrui: SwiftDataBrand, context: ModelContext) {
         // 检查是否已存在PETG-ECO材料类型
-        let materialDescriptor = FetchDescriptor<SwiftDataMaterialType>(
-            predicate: #Predicate { $0.name == "PETG-ECO" && $0.brand?.id == tianrui.id }
-        )
+        // 使用简化的predicate避免复杂的可选类型比较
+        let materialTypes = tianrui.materialTypes.filter { $0.name == "PETG-ECO" }
         
         let petgEco: SwiftDataMaterialType
         
+        if let existingType = materialTypes.first {
+            petgEco = existingType
+            print("找到现有PETG-ECO材料类型")
+        } else {
+            // 创建新材料类型
+            petgEco = SwiftDataMaterialType(name: "PETG-ECO", brand: tianrui)
+            context.insert(petgEco)
+            tianrui.materialTypes.append(petgEco)
+            print("创建新PETG-ECO材料类型")
+        }
+        
+        // 添加所有颜色
+        addTianruiColorsToPETGECO(petgEco, context: context)
+        
         do {
-            let types = try context.fetch(materialDescriptor)
-            if let existingType = types.first {
-                petgEco = existingType
-                print("找到现有PETG-ECO材料类型")
-            } else {
-                // 创建新材料类型
-                petgEco = SwiftDataMaterialType(name: "PETG-ECO", brand: tianrui)
-                context.insert(petgEco)
-                tianrui.materialTypes.append(petgEco)
-                print("创建新PETG-ECO材料类型")
-            }
-            
-            // 添加所有颜色
-            addTianruiColorsToPETGECO(petgEco, context: context)
-            
             try context.save()
             print("成功添加天瑞PETG-ECO系列颜色")
-            
         } catch {
-            print("添加PETG-ECO材料类型失败: \(error)")
+            print("保存PETG-ECO材料类型失败: \(error)")
         }
     }
     
