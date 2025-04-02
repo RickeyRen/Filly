@@ -4,7 +4,7 @@ import SwiftUI
 struct Filament: Identifiable, Codable {
     var id = UUID()
     var brand: String
-    var type: FilamentType
+    var type: String  // 改为直接使用字符串存储材料类型
     var color: String // 颜色名称
     var colorData: ColorData? // 颜色数据
     var weight: Double // 以克为单位
@@ -14,7 +14,7 @@ struct Filament: Identifiable, Codable {
     var notes: String
     
     // 自定义初始化方法
-    init(brand: String, type: FilamentType, color: String, 
+    init(brand: String, type: String, color: String, 
          colorData: ColorData? = nil,
          weight: Double = 1000, diameter: FilamentDiameter = .mm175, 
          spools: [FilamentSpool] = [FilamentSpool()], notes: String = "") {

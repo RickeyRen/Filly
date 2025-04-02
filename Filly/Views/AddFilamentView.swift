@@ -13,7 +13,7 @@ struct AddFilamentView: View {
     
     @State private var brand = ""
     @State private var customBrand = ""
-    @State private var selectedType = FilamentType.pla
+    @State private var selectedType = "PLA"  // 改为字符串，默认为PLA
     @State private var color = ""
     @State private var selectedColor = Color.blue
     @State private var weight = 1000.0
@@ -28,7 +28,7 @@ struct AddFilamentView: View {
     private func getAvailableMaterialTypes(for brand: String) -> [String] {
         if brand.isEmpty {
             // 如果没有选择品牌，返回默认的所有类型
-            return FilamentType.allCases.map { $0.rawValue }
+            return ["PLA", "ABS", "PETG", "TPU", "PC", "ASA", "PVA", "HIPS", "尼龙", "其他"]
         }
         
         // 从颜色库中获取该品牌的材料类型
@@ -39,31 +39,7 @@ struct AddFilamentView: View {
         let uniqueTypes = Array(Set(types)).filter { !$0.isEmpty }.sorted()
         
         // 如果没有找到该品牌的任何材料类型，返回默认的所有类型
-        if uniqueTypes.isEmpty {
-            return FilamentType.allCases.map { $0.rawValue }
-        }
-        
-        // 确保所有获取到的类型都能映射到FilamentType
-        var validTypes: [String] = []
-        for type in uniqueTypes {
-            // 检查是否能直接转成FilamentType
-            if FilamentType.allCases.contains(where: { $0.rawValue == type }) {
-                validTypes.append(type)
-            } else {
-                // 尝试映射自定义类型到FilamentType类型
-                if type == "PLA Basic" || type == "PLA Lite" {
-                    validTypes.append("PLA") // 映射到PLA
-                } else if type == "PETG-ECO" {
-                    validTypes.append("PETG") // 映射到PETG
-                } else {
-                    // 其他未知类型映射到"其他"
-                    validTypes.append("其他")
-                }
-            }
-        }
-        
-        // 如果映射后没有有效类型，返回默认的所有类型
-        return validTypes.isEmpty ? FilamentType.allCases.map { $0.rawValue } : validTypes
+        return uniqueTypes.isEmpty ? ["PLA", "ABS", "PETG", "TPU", "PC", "ASA", "PVA", "HIPS", "尼龙", "其他"] : uniqueTypes
     }
     
     var body: some View {
@@ -94,22 +70,21 @@ struct AddFilamentView: View {
                         }
                     }
                     
+                    // 使用let绑定计算一次材料类型，避免重复计算
+                    let availableTypes = getAvailableMaterialTypes(for: brand)
                     Picker("类型", selection: $selectedType) {
                         // 根据选择的品牌动态显示材料类型
-                        let availableTypes = getAvailableMaterialTypes(for: brand)
                         ForEach(availableTypes, id: \.self) { typeString in
-                            if let type = FilamentType(rawValue: typeString) {
-                                Text(type.rawValue).tag(type)
-                            }
+                            Text(typeString).tag(typeString)
                         }
                     }
                     .onChange(of: brand) { oldValue, newValue in
                         // 当品牌变化时，检查当前选择的类型是否在新品牌的可用类型中
                         let types = getAvailableMaterialTypes(for: newValue)
-                        if !types.isEmpty && !types.contains(selectedType.rawValue) {
+                        if !types.isEmpty && !types.contains(selectedType) {
                             // 如果不在，则选择该品牌的第一个可用类型
-                            if let firstType = types.first, let type = FilamentType(rawValue: firstType) {
-                                selectedType = type
+                            if let firstType = types.first {
+                                selectedType = firstType
                             }
                         }
                     }
@@ -261,6 +236,12 @@ struct AddFilamentView: View {
             // 设置默认选中的品牌
             if !PresetBrands.brands.isEmpty {
                 brand = PresetBrands.brands.first!
+                
+                // 获取并设置第一个可用的材料类型
+                let availableTypes = getAvailableMaterialTypes(for: brand)
+                if !availableTypes.isEmpty {
+                    selectedType = availableTypes.first!
+                }
             }
             
             // 设置默认颜色
