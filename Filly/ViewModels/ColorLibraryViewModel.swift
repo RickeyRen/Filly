@@ -53,19 +53,19 @@ class ColorLibraryViewModel: ObservableObject {
     // 添加拓竹 PLA Lite 所有颜色
     func addAllTinzhuPLALiteColors() {
         let tinzhuPLALiteColors: [FilamentColor] = [
-            FilamentColor(name: "黑色 16100 【无料盘】", color: Color.black, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "天蓝色 16600【无料盘】", color: Color(red: 0.53, green: 0.81, blue: 0.98), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "黄色 16400【无料盘】", color: Color.yellow, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "白色 16103【无料盘】", color: Color.white, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "红色 16200【无料盘】", color: Color.red, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "灰色 16101【无料盘】", color: Color.gray, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "黑色 16100 【无料盘】", color: Color("#000000"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "天蓝色 16600【无料盘】", color: Color("#87CEEB"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "黄色 16400【无料盘】", color: Color("#FFFF00"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "白色 16103【无料盘】", color: Color("#FFFFFF"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "红色 16200【无料盘】", color: Color("#FF0000"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "灰色 16101【无料盘】", color: Color("#808080"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
             
-            FilamentColor(name: "黑色 16100 【含料盘】", color: Color.black, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "天蓝色 16600【含料盘】", color: Color(red: 0.53, green: 0.81, blue: 0.98), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "黄色 16400【含料盘】", color: Color.yellow, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "红色 16200【含料盘】", color: Color.red, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "白色 16103【含料盘】", color: Color.white, brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
-            FilamentColor(name: "灰色 16101【含料盘】", color: Color.gray, brand: "拓竹 Bambu Lab", materialType: "PLA Lite")
+            FilamentColor(name: "黑色 16100 【含料盘】", color: Color("#000000"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "天蓝色 16600【含料盘】", color: Color("#87CEEB"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "黄色 16400【含料盘】", color: Color("#FFFF00"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "红色 16200【含料盘】", color: Color("#FF0000"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "白色 16103【含料盘】", color: Color("#FFFFFF"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite"),
+            FilamentColor(name: "灰色 16101【含料盘】", color: Color("#808080"), brand: "拓竹 Bambu Lab", materialType: "PLA Lite")
         ]
         
         // 添加颜色到库中
