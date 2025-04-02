@@ -51,7 +51,7 @@ final class SwiftDataFilamentColor {
     var hasSpool: Bool // To distinguish spool/no-spool variants
     
     // 新增渐变相关字段
-    @Attribute(.default(0)) var gradientType: Int // 使用Int而非enum以便SwiftData兼容，0=none, 1=horizontal, 2=vertical等
+    var gradientType: Int = 0 // 使用Int而非enum以便SwiftData兼容，0=none, 1=horizontal, 2=vertical等
     var additionalColorsData: [SwiftDataColorData]? // 其他颜色（用于渐变）
     
     // Relationship to MaterialType
