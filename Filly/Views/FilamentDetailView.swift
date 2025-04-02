@@ -818,7 +818,7 @@ struct SpoolItemView: View {
 // 3D耗材盘模型 - 用于耗材盘视图
 struct SpoolModel: View {
     let color: Color
-    // 恢复动画，但降低频率
+    // 恢复动画，采用更快的速度
     @State private var rotationDegree: Double = 0
     
     var body: some View {
@@ -848,7 +848,7 @@ struct SpoolModel: View {
                 )
                 .frame(width: 22, height: 22)
             
-            // 中心孔 - 简化的旋转动画
+            // 中心孔 - 快速旋转动画
             ZStack {
                 // 背景圆 - 提供白色背景
                 Circle()
@@ -865,7 +865,7 @@ struct SpoolModel: View {
                     )
                     .frame(width: 14, height: 14)
                 
-                // 三等分圆环 - 低频率动画
+                // 三等分圆环 - 高速动画
                 ForEach(0..<3) { i in
                     let startAngle = Double(i) * 120 + 20 // 起始角度，加上20度偏移
                     let endAngle = startAngle + 80 // 结束角度，覆盖80度
@@ -877,12 +877,12 @@ struct SpoolModel: View {
                             style: StrokeStyle(lineWidth: 2.0, lineCap: .round)
                         )
                         .frame(width: 12, height: 12)
-                        .rotationEffect(Angle(degrees: -90 - rotationDegree * 0.7)) // 降低旋转速度
+                        .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 提高旋转速度
                 }
             }
             .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.5)
             
-            // 高光效果 - 简化动画
+            // 高光效果 - 快速动画
             Circle()
                 .trim(from: 0, to: 0.4)
                 .stroke(
@@ -894,11 +894,11 @@ struct SpoolModel: View {
                     lineWidth: 2
                 )
                 .frame(width: 30, height: 30)
-                .rotationEffect(Angle(degrees: -45 + rotationDegree * 0.25))
+                .rotationEffect(Angle(degrees: -45 + rotationDegree * 0.5))
         }
         .onAppear {
-            // 使用更长的动画周期减少动画计算频率
-            let baseAnimation = Animation.linear(duration: 60) // 大幅延长动画周期
+            // 使用较短的动画周期提高旋转速度
+            let baseAnimation = Animation.linear(duration: 20) // 缩短动画周期
             let smoothAnimation = baseAnimation.repeatForever(autoreverses: false)
             
             withAnimation(smoothAnimation) {
@@ -1168,7 +1168,7 @@ struct SpoolStatusItem: View {
 // 3D线材卷模型 - 优化性能
 struct FilamentReelView: View {
     let color: Color
-    // 恢复动画状态，但降低动画频率和复杂度
+    // 恢复动画状态，提高动画速度
     @State private var rotationDegree: Double = 0
     @Environment(\.colorScheme) private var colorScheme
     
@@ -1257,7 +1257,7 @@ struct FilamentReelView: View {
                 )
                 .frame(width: 76, height: 76)
             
-            // 耗材线材质感 - 优化渲染
+            // 耗材线材质感 - 提高旋转速度
             OptimizedCircleWindings(
                 colorScheme: colorScheme,
                 rotationDegree: rotationDegree,
@@ -1273,8 +1273,8 @@ struct FilamentReelView: View {
                     .fill(colorScheme == .dark ? Color.white.opacity(0.9) : Color.black.opacity(0.7))
                     .frame(width: 5, height: 5)
                     .offset(
-                        x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 0.6).radians) * radius),
-                        y: CGFloat(sin(Angle(degrees: angle + rotationDegree * 0.6).radians) * radius)
+                        x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 1.0).radians) * radius),
+                        y: CGFloat(sin(Angle(degrees: angle + rotationDegree * 1.0).radians) * radius)
                     )
             }
             
@@ -1283,10 +1283,10 @@ struct FilamentReelView: View {
                 .stroke(cachedColors.centerContrastColor, lineWidth: 2.0)
                 .frame(width: 27, height: 27)
             
-            // 中心孔 - 优化动画
+            // 中心孔 - 提高旋转速度
             OptimizedCenterHole(rotationDegree: rotationDegree)
             
-            // 顶部高光 - 简化动画
+            // 顶部高光 - 提高旋转速度
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
@@ -1294,7 +1294,7 @@ struct FilamentReelView: View {
                     style: StrokeStyle(lineWidth: 20, lineCap: .round)
                 )
                 .frame(width: 44, height: 44)
-                .rotationEffect(Angle(degrees: -20 + rotationDegree * 0.25))
+                .rotationEffect(Angle(degrees: -20 + rotationDegree * 0.5))
                 .offset(y: -7)
                 .blur(radius: 3)
                 
@@ -1305,8 +1305,8 @@ struct FilamentReelView: View {
         }
         .frame(width: 85, height: 85)
         .onAppear {
-            // 使用更长的动画周期减少动画计算频率
-            let baseAnimation = Animation.linear(duration: 60) // 大幅延长动画周期
+            // 使用较短的动画周期提高动画速度
+            let baseAnimation = Animation.linear(duration: 20) // 缩短动画周期
             let smoothAnimation = baseAnimation.repeatForever(autoreverses: false)
             
             withAnimation(smoothAnimation) {
@@ -1396,7 +1396,7 @@ private struct OptimizedCircleWindings: View {
             // 增加间隔减少视觉复杂度
             if i % 2 == 0 || i == 1 {
                 let radius = 20.0 + CGFloat(i) * 3.5
-                let rotationSpeed = i % 2 == 0 ? 0.5 : -0.4 // 降低旋转速度
+                let rotationSpeed = i % 2 == 0 ? 1.0 : -0.8 // 提高旋转速度
                 let rotationOffset = Double(i) * 60
                 
                 Circle()
@@ -1440,7 +1440,7 @@ private struct OptimizedCenterHole: View {
                 )
                 .frame(width: 25, height: 25)
             
-            // 三段圆环，使用更慢的旋转速度
+            // 三段圆环，提高旋转速度
             ForEach(0..<3) { i in
                 let startAngle = Double(i) * 120 + 20 // 起始角度，每段相隔120度
                 let endAngle = startAngle + 80 // 结束角度，每段覆盖80度
@@ -1452,7 +1452,7 @@ private struct OptimizedCenterHole: View {
                         style: StrokeStyle(lineWidth: 4.0, lineCap: .round)
                     )
                     .frame(width: 20, height: 20)
-                    .rotationEffect(Angle(degrees: -90 - rotationDegree * 0.7)) // 降低旋转速度
+                    .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 提高旋转速度
             }
         }
         .shadow(color: Color.black.opacity(0.15), radius: 1.0, x: 0, y: 0.5)

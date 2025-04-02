@@ -456,7 +456,8 @@ struct OptimizedColorGridItem: View {
             VStack(spacing: 4) {
                 // 使用预渲染的静态内容提高性能
                 ZStack {
-                    MiniFilamentReelView(color: color.getUIColor())
+                    // 在颜色选择页面使用静态版本，不使用动画
+                    StaticFilamentReelView(color: color.getUIColor())
                         .frame(width: 50, height: 50)
                         .overlay(
                             Circle()
@@ -487,6 +488,147 @@ struct OptimizedColorGridItem: View {
         .frame(height: 85)
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
+    }
+}
+
+// 完全静态的耗材盘模型 - 仅用于颜色选择界面
+struct StaticFilamentReelView: View {
+    let color: Color
+    @Environment(\.colorScheme) private var colorScheme
+    
+    private let cachedColors: SimpleFillamentReel2D.CachedColors
+    
+    init(color: Color) {
+        self.color = color
+        self.cachedColors = SimpleFillamentReel2D.CachedColors(baseColor: color)
+    }
+    
+    var body: some View {
+        ZStack {
+            // 背景圆 - 使用缓存的渐变颜色
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            cachedColors.lightenedColor,
+                            color,
+                            cachedColors.darkenedColor
+                        ]),
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 25
+                    )
+                )
+                .frame(width: 50, height: 50)
+            
+            // 使用较少的同心圆减少渲染负担 - 固定位置不旋转
+            StaticCircleWindings(colorScheme: colorScheme, contrastColors: cachedColors.contrastColors)
+            
+            // 添加两个标记点，完全静态
+            ForEach(0..<2) { i in
+                let angle = Double(i) * 180.0 + 30.0
+                let radius = 20.0
+                
+                // 小圆点标记
+                Circle()
+                    .fill(colorScheme == .dark ? Color.white.opacity(0.9) : Color.black.opacity(0.7))
+                    .frame(width: 3, height: 3)
+                    .offset(
+                        x: CGFloat(cos(Angle(degrees: angle).radians) * radius),
+                        y: CGFloat(sin(Angle(degrees: angle).radians) * radius)
+                    )
+            }
+            
+            // 中心孔周围的边缘
+            Circle()
+                .stroke(cachedColors.centerContrastColor, lineWidth: 1.5)
+                .frame(width: 18, height: 18)
+            
+            // 简化的中心孔 - 完全静态
+            StaticCenterHole()
+            
+            // 顶部高光 - 固定位置
+            Circle()
+                .trim(from: 0.0, to: 0.3)
+                .stroke(Color.white.opacity(0.5), style: StrokeStyle(lineWidth: 15, lineCap: .round))
+                .frame(width: 30, height: 30)
+                .rotationEffect(Angle(degrees: -20))
+                .offset(y: -6)
+                .blur(radius: 3.0)
+                
+            // 最外侧边框
+            Circle()
+                .stroke(cachedColors.borderColor, lineWidth: 1.0)
+                .frame(width: 50, height: 50)
+        }
+    }
+}
+
+// 静态同心圆组件
+private struct StaticCircleWindings: View {
+    let colorScheme: ColorScheme
+    let contrastColors: [Color]
+    
+    var body: some View {
+        // 减少圆圈数量以提高性能
+        ForEach(0..<3) { i in
+            let radius = 14.0 + CGFloat(i) * 4.5
+            let rotationOffset = Double(i) * 72
+            
+            Circle()
+                .trim(from: i % 2 == 0 ? 0.0 : 0.05, to: i % 3 == 0 ? 0.95 : 1.0)
+                .stroke(
+                    i % 2 == 0 ? 
+                        contrastColors[i % contrastColors.count] :
+                        (colorScheme == .dark ? Color.white.opacity(0.8) : Color.black.opacity(0.7)),
+                    style: StrokeStyle(
+                        lineWidth: 1.2,
+                        lineCap: .round,
+                        lineJoin: .round,
+                        dash: i % 2 == 0 ? [] : [3, 3]
+                    )
+                )
+                .frame(width: radius * 2, height: radius * 2)
+                .rotationEffect(Angle(degrees: rotationOffset))
+        }
+    }
+}
+
+// 静态中心孔组件
+private struct StaticCenterHole: View {
+    var body: some View {
+        ZStack {
+            // 背景圆
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color.white,
+                            Color.white.opacity(0.95)
+                        ]),
+                        center: .center,
+                        startRadius: 2,
+                        endRadius: 7
+                    )
+                )
+                .frame(width: 15, height: 15)
+            
+            // 三段圆环 - 固定位置
+            ForEach(0..<3) { i in
+                let startAngle = Double(i) * 120 + 20
+                let endAngle = startAngle + 80
+                
+                Circle()
+                    .trim(from: startAngle / 360, to: endAngle / 360)
+                    .stroke(
+                        Color.black.opacity(0.8),
+                        style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+                    )
+                    .frame(width: 12, height: 12)
+                    .rotationEffect(Angle(degrees: -90))
+            }
+        }
+        .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.4)
     }
 }
 
