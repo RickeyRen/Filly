@@ -160,7 +160,7 @@ struct ColorItemView: View {
     var body: some View {
         VStack {
             Button(action: action) {
-                MiniFilamentReelView(color: color.getUIColor())
+                MiniFilamentReelView(color: color.getAccurateUIColor(), colorName: color.name)
                     .frame(width: 60, height: 60)
                     .overlay(
                         Circle()
@@ -173,6 +173,11 @@ struct ColorItemView: View {
                     .onHover { hovering in
                         isHovering = hovering
                     }
+                    .onAppear {
+                        #if DEBUG
+                        print(color.debugColorInfo())
+                        #endif
+                    }
             }
             .buttonStyle(PlainButtonStyle())
             
@@ -184,7 +189,7 @@ struct ColorItemView: View {
                 .truncationMode(.tail)
             
             if !color.brand.isEmpty {
-                Text(color.brand)
+                Text("\(color.brand) \(color.materialType)")
                     .font(.caption2)
                     .foregroundColor(.gray)
                     .lineLimit(1)

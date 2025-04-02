@@ -33,7 +33,17 @@ struct FilamentColor: Identifiable, Codable, Equatable {
     }
     
     func getUIColor() -> Color {
-        return Color(red: colorData.red, green: colorData.green, blue: colorData.blue, opacity: colorData.alpha)
+        let color = Color(red: colorData.red, green: colorData.green, blue: colorData.blue, opacity: colorData.alpha)
+        #if DEBUG
+        // 打印颜色信息以便调试
+        print("颜色 \(name): RGB(\(colorData.red), \(colorData.green), \(colorData.blue))")
+        #endif
+        return color
+    }
+    
+    // 添加调试用的颜色信息函数
+    func debugColorInfo() -> String {
+        return "颜色 \(name): RGB(\(colorData.red), \(colorData.green), \(colorData.blue)), Alpha: \(colorData.alpha), Brand: \(brand), Material: \(materialType)"
     }
     
     static func ==(lhs: FilamentColor, rhs: FilamentColor) -> Bool {
@@ -239,31 +249,86 @@ struct ColorData: Codable {
         var green: CGFloat = 0
         var blue: CGFloat = 0
         var alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        self.red = Double(red)
-        self.green = Double(green)
-        self.blue = Double(blue)
-        self.alpha = Double(alpha)
-        #elseif os(macOS)
-        let nsColor = NSColor(color)
-        // 确保转换为RGB颜色空间
-        if let rgbColor = nsColor.usingColorSpace(.sRGB) {
-            var red: CGFloat = 0
-            var green: CGFloat = 0
-            var blue: CGFloat = 0
-            var alpha: CGFloat = 0
-            rgbColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
             self.red = Double(red)
             self.green = Double(green)
             self.blue = Double(blue)
             self.alpha = Double(alpha)
+            #if DEBUG
+            print("颜色数据转换成功: RGB(\(red), \(green), \(blue))")
+            #endif
         } else {
-            // 如果无法转换，则使用默认值
+            // 如果无法获取RGB值，使用更通用的方法
+            var hue: CGFloat = 0
+            var saturation: CGFloat = 0
+            var brightness: CGFloat = 0
+            
+            if uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+                // 将HSB转换为RGB
+                let c = brightness * saturation
+                let x = c * (1 - abs(fmod(hue * 6, 2) - 1))
+                let m = brightness - c
+                
+                var r: CGFloat = 0
+                var g: CGFloat = 0
+                var b: CGFloat = 0
+                
+                if hue < 1/6 {
+                    r = c; g = x; b = 0
+                } else if hue < 2/6 {
+                    r = x; g = c; b = 0
+                } else if hue < 3/6 {
+                    r = 0; g = c; b = x
+                } else if hue < 4/6 {
+                    r = 0; g = x; b = c
+                } else if hue < 5/6 {
+                    r = x; g = 0; b = c
+                } else {
+                    r = c; g = 0; b = x
+                }
+                
+                self.red = Double(r + m)
+                self.green = Double(g + m)
+                self.blue = Double(b + m)
+                self.alpha = Double(alpha)
+                #if DEBUG
+                print("颜色数据通过HSB转换: RGB(\(self.red), \(self.green), \(self.blue))")
+                #endif
+            } else {
+                // 最后的备选方案
+                self.red = 0.5
+                self.green = 0.5
+                self.blue = 0.5
+                self.alpha = 1.0
+                #if DEBUG
+                print("警告: 无法提取颜色RGB值，使用默认灰色")
+                #endif
+            }
+        }
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        
+        // 确保使用正确的颜色空间
+        guard let rgbColor = nsColor.usingColorSpace(.sRGB) else {
             self.red = 0.5
             self.green = 0.5
             self.blue = 0.5
             self.alpha = 1.0
+            #if DEBUG
+            print("警告: 无法转换到sRGB颜色空间，使用默认灰色")
+            #endif
+            return
         }
+        
+        self.red = Double(rgbColor.redComponent)
+        self.green = Double(rgbColor.greenComponent)
+        self.blue = Double(rgbColor.blueComponent)
+        self.alpha = Double(rgbColor.alphaComponent)
+        
+        #if DEBUG
+        print("macOS颜色数据转换: RGB(\(self.red), \(self.green), \(self.blue))")
+        #endif
         #endif
     }
     
