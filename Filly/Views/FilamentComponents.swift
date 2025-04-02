@@ -25,59 +25,61 @@ public struct SimpleFillamentReel2D: View {
         public let centerContrastColor: Color
         
         public init(baseColor: Color) {
+            // 确保颜色值有效
             let brightness = SimpleFillamentReel2D.getColorBrightness(baseColor)
             
-            self.lightenedColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.1)
-            self.darkenedColor = SimpleFillamentReel2D.darken(baseColor, by: 0.2)
+            // 使用更明确的颜色亮化和暗化值，确保有足够的对比度
+            self.lightenedColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.15)  // 增加亮化值
+            self.darkenedColor = SimpleFillamentReel2D.darken(baseColor, by: 0.25)    // 增加暗化值
             
-            // 预计算边框颜色
+            // 预计算边框颜色 - 增强边框可见性
             if brightness > 0.8 {
-                self.borderColor = SimpleFillamentReel2D.darken(baseColor, by: 0.7).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.darken(baseColor, by: 0.7).opacity(0.95)
             } else if brightness > 0.6 {
-                self.borderColor = SimpleFillamentReel2D.darken(baseColor, by: 0.5).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.darken(baseColor, by: 0.5).opacity(0.95)
             } else if brightness > 0.4 {
-                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.4).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.4).opacity(0.95)
             } else if brightness > 0.2 {
-                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.6).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.6).opacity(0.95)
             } else {
-                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.8).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.8).opacity(0.95)
             }
             
-            // 预计算线条对比色
+            // 预计算线条对比色 - 确保有足够的对比度
             var colors: [Color] = []
             for i in 0..<3 {  // 减少预计算的颜色数量
                 if i % 2 == 0 {
                     if brightness > 0.7 {
-                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.5).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.5).opacity(0.95))
                     } else if brightness > 0.4 {
-                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.35).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.4).opacity(0.95))
                     } else {
-                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.6).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.7).opacity(0.95))
                     }
                 } else {
                     if brightness > 0.7 {
-                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.3).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.4).opacity(0.95))
                     } else if brightness > 0.4 {
-                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.25).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.3).opacity(0.95))
                     } else {
-                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.4).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.5).opacity(0.95))
                     }
                 }
             }
             self.contrastColors = colors
             
-            // 预计算中心对比色
+            // 预计算中心对比色 - 增强对比度
             if brightness > 0.5 {
-                self.centerContrastColor = SimpleFillamentReel2D.darken(baseColor, by: 0.6).opacity(0.9)
+                self.centerContrastColor = SimpleFillamentReel2D.darken(baseColor, by: 0.6).opacity(0.95)
             } else {
-                self.centerContrastColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.7).opacity(0.9)
+                self.centerContrastColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.7).opacity(0.95)
             }
         }
     }
     
     public var body: some View {
         ZStack {
-            // 背景圆 - 使用缓存的渐变颜色
+            // 增加颜色显示的强度
             Circle()
                 .fill(
                     RadialGradient(
@@ -128,9 +130,9 @@ public struct SimpleFillamentReel2D: View {
                 .offset(y: -6)
                 .blur(radius: 3.0)
                 
-            // 最外侧边框
+            // 最外侧边框 - 增强边框可见性
             Circle()
-                .stroke(cachedColors.borderColor, lineWidth: 1.0)
+                .stroke(cachedColors.borderColor, lineWidth: 1.5)  // 增加线宽
                 .frame(width: 50, height: 50)
         }
         .onAppear {
@@ -149,25 +151,38 @@ public struct SimpleFillamentReel2D: View {
         #if os(iOS)
         let uiColor = UIColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         
-        return Color(UIColor(
-            red: min(1, red + amount),
-            green: min(1, green + amount),
-            blue: min(1, blue + amount),
-            alpha: alpha
-        ))
+        if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return Color(UIColor(
+                red: min(1, red + amount),
+                green: min(1, green + amount),
+                blue: min(1, blue + amount),
+                alpha: alpha
+            ))
+        } else {
+            // 如果无法获取RGB值，使用更通用的方法
+            return Color(UIColor(hue: 0, saturation: 0, brightness: 0.8, alpha: 1.0))
+        }
         #elseif os(macOS)
         let nsColor = NSColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         
-        return Color(NSColor(
-            red: min(1, red + amount),
-            green: min(1, green + amount),
-            blue: min(1, blue + amount),
-            alpha: alpha
-        ))
+        guard let rgbColor = nsColor.usingColorSpace(.sRGB) else {
+            // 如果无法获取RGB值，使用更通用的方法
+            return Color(NSColor(calibratedHue: 0, saturation: 0, brightness: 0.8, alpha: 1.0))
+        }
+        
+        if rgbColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return Color(NSColor(
+                red: min(1, red + amount),
+                green: min(1, green + amount),
+                blue: min(1, blue + amount),
+                alpha: alpha
+            ))
+        } else {
+            // 如果无法获取RGB值，使用更通用的方法
+            return Color(NSColor(calibratedHue: 0, saturation: 0, brightness: 0.8, alpha: 1.0))
+        }
         #endif
     }
     
@@ -175,25 +190,38 @@ public struct SimpleFillamentReel2D: View {
         #if os(iOS)
         let uiColor = UIColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         
-        return Color(UIColor(
-            red: max(0, red - amount),
-            green: max(0, green - amount),
-            blue: max(0, blue - amount),
-            alpha: alpha
-        ))
+        if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return Color(UIColor(
+                red: max(0, red - amount),
+                green: max(0, green - amount),
+                blue: max(0, blue - amount),
+                alpha: alpha
+            ))
+        } else {
+            // 如果无法获取RGB值，使用更通用的方法
+            return Color(UIColor(hue: 0, saturation: 0, brightness: 0.3, alpha: 1.0))
+        }
         #elseif os(macOS)
         let nsColor = NSColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         
-        return Color(NSColor(
-            red: max(0, red - amount),
-            green: max(0, green - amount),
-            blue: max(0, blue - amount),
-            alpha: alpha
-        ))
+        guard let rgbColor = nsColor.usingColorSpace(.sRGB) else {
+            // 如果无法获取RGB值，使用更通用的方法
+            return Color(NSColor(calibratedHue: 0, saturation: 0, brightness: 0.3, alpha: 1.0))
+        }
+        
+        if rgbColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return Color(NSColor(
+                red: max(0, red - amount),
+                green: max(0, green - amount),
+                blue: max(0, blue - amount),
+                alpha: alpha
+            ))
+        } else {
+            // 如果无法获取RGB值，使用更通用的方法
+            return Color(NSColor(calibratedHue: 0, saturation: 0, brightness: 0.3, alpha: 1.0))
+        }
         #endif
     }
     
@@ -201,14 +229,29 @@ public struct SimpleFillamentReel2D: View {
         #if os(iOS)
         let uiColor = UIColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return 0.299 * red + 0.587 * green + 0.114 * blue
+        } else {
+            // 如果无法获取RGB值，返回中等亮度
+            return 0.5
+        }
         #elseif os(macOS)
         let nsColor = NSColor(color)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        #endif
         
-        return 0.299 * red + 0.587 * green + 0.114 * blue
+        guard let rgbColor = nsColor.usingColorSpace(.sRGB) else {
+            // 如果无法获取RGB值，返回中等亮度
+            return 0.5
+        }
+        
+        if rgbColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return 0.299 * red + 0.587 * green + 0.114 * blue
+        } else {
+            // 如果无法获取RGB值，返回中等亮度
+            return 0.5
+        }
+        #endif
     }
 }
 
