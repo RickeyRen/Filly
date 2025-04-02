@@ -25,174 +25,105 @@ class FilamentLibraryViewModel: ObservableObject {
         
         print("正在初始化耗材库预设数据...")
         
-        // 添加所有预设数据
-        // 1. 添加拓竹 Bambu Lab
-        addBambuLabPresets(context: context)
-        
-        // 2. 添加天瑞 Tinmorry
-        addTinmorryPresets(context: context)
-        
-        // 如果需要，可以在这里添加更多品牌预设
-        // addMoreBrandPresets(context: context)
+        // 从预设数据文件加载所有品牌和颜色
+        initializeFromPresetData(context: context)
         
         print("耗材库预设数据初始化完成。")
     }
     
-    // 添加拓竹Bambu Lab预设数据
-    private func addBambuLabPresets(context: ModelContext) {
-        // --- 拓竹 Bambu Lab ---
-        let bambuLab = SwiftDataBrand(name: "拓竹 Bambu Lab")
-        context.insert(bambuLab)
-        
-        // PLA Lite for Bambu Lab
-        let plaLite = SwiftDataMaterialType(name: "PLA Lite", brand: bambuLab)
-        context.insert(plaLite)
-        bambuLab.materialTypes.append(plaLite)
-        
-        // Define color data including name, code, and spool status
-        let bambuColors: [(name: String, code: String, hasSpool: Bool)] = [
-            ("黑色",   "16100", true), ("黑色",   "16100", false),
-            ("天蓝色", "16600", true), ("天蓝色", "16600", false),
-            ("黄色",   "16400", true), ("黄色",   "16400", false),
-            ("白色",   "16103", true), ("白色",   "16103", false),
-            ("红色",   "16200", true), ("红色",   "16200", false),
-            ("灰色",   "16101", true), ("灰色",   "16101", false)
-        ]
-        
-        for (colorName, productCode, hasSpool) in bambuColors {
-            let suffix = hasSpool ? " (含料盘)" : " (无料盘)" // Correct suffix is used
-            let fullName = colorName + suffix
-            let swiftUIColor = colorMapping(for: colorName)
-            let colorData = SwiftDataColorData(from: swiftUIColor)
+    // 从预设数据文件加载所有品牌和颜色
+    private func initializeFromPresetData(context: ModelContext) {
+        // 遍历所有预设品牌
+        for brandData in PresetFilamentData.brands {
+            // 创建品牌
+            let brand = SwiftDataBrand(name: brandData.name)
+            context.insert(brand)
             
-            let filamentColor = SwiftDataFilamentColor(
-                name: fullName,
-                code: productCode, // Pass the product code here
-                colorData: colorData,
-                hasSpool: hasSpool,
-                materialType: plaLite
-            )
-            context.insert(filamentColor)
-            plaLite.colors.append(filamentColor)
+            // 为每个品牌添加材料类型
+            for materialTypeData in brandData.materialTypes {
+                let materialType = SwiftDataMaterialType(name: materialTypeData.name, brand: brand)
+                context.insert(materialType)
+                brand.materialTypes.append(materialType)
+                
+                // 为每个材料类型添加颜色
+                for colorData in materialTypeData.colors {
+                    // 处理含料盘和不含料盘版本
+                    addColorFromPreset(
+                        colorData: colorData,
+                        materialType: materialType,
+                        context: context
+                    )
+                    
+                    // 如果每个颜色只定义了一次，这里需要添加其对应的料盘版本
+                    if !isWholeSpoolDefinedSeparately(in: materialTypeData.colors) {
+                        // 添加对应的不含料盘版本
+                        if colorData.hasSpool {
+                            var noSpoolColor = colorData
+                            noSpoolColor = ColorProperties(
+                                name: colorData.name,
+                                code: colorData.code,
+                                hasSpool: false,
+                                isTransparent: colorData.isTransparent,
+                                isMetallic: colorData.isMetallic
+                            )
+                            addColorFromPreset(
+                                colorData: noSpoolColor, 
+                                materialType: materialType, 
+                                context: context
+                            )
+                        }
+                    }
+                }
+            }
         }
         
         // 保存上下文
         saveContext(context)
     }
     
-    // 添加天瑞 Tinmorry 预设数据
-    private func addTinmorryPresets(context: ModelContext) {
-        // --- 天瑞 Tinmorry ---
-        let tianrui = SwiftDataBrand(name: "天瑞 Tinmorry")
-        context.insert(tianrui)
-        
-        // --- 添加PETG-ECO材料类型 ---
-        let petgEco = SwiftDataMaterialType(name: "PETG-ECO", brand: tianrui)
-        context.insert(petgEco)
-        tianrui.materialTypes.append(petgEco)
-        
-        // 添加PETG-ECO系列颜色
-        addTianruiPETGECOColors(to: petgEco, context: context)
-        
-        // 保存上下文
-        saveContext(context)
+    // 检查是否已经分别定义了含料盘和不含料盘版本
+    private func isWholeSpoolDefinedSeparately(in colors: [PresetFilamentData.ColorProperties]) -> Bool {
+        // 如果同一名称的颜色同时有料盘和无料盘两个版本，则认为是分别定义的
+        let colorNames = Set(colors.map { $0.name })
+        for name in colorNames {
+            let sameNameColors = colors.filter { $0.name == name }
+            if sameNameColors.count > 1 {
+                let hasSpoolVersion = sameNameColors.contains { $0.hasSpool }
+                let hasNoSpoolVersion = sameNameColors.contains { !$0.hasSpool }
+                if hasSpoolVersion && hasNoSpoolVersion {
+                    return true
+                }
+            }
+        }
+        return false
     }
     
-    // 添加天瑞PETG-ECO系列颜色
-    private func addTianruiPETGECOColors(to petgEco: SwiftDataMaterialType, context: ModelContext) {
-        // 定义所有颜色
-        let colors: [(name: String, isTransparent: Bool, isMetallic: Bool)] = [
-            ("亮丽黄", false, false),
-            ("咖啡色", false, false),
-            ("透明", true, false),
-            ("荧光绿", false, false),
-            ("荧光黄", false, false),
-            ("红色", false, false),
-            ("绿色", false, false),
-            ("灰色", false, false),
-            ("杏色", false, false),
-            ("黑色", false, false),
-            ("冷白", false, false),
-            ("奶白色", false, false),
-            ("米宝白", false, false),
-            ("肤色", false, false),
-            ("淡灰色", false, false),
-            ("夜光绿", false, false),
-            ("橙色", false, false),
-            ("樱花粉", false, false),
-            ("粉色", false, false),
-            ("长春花蓝", false, false),
-            ("薄荷绿", false, false),
-            ("卡特黄", false, false),
-            ("天空蓝", false, false),
-            ("橄榄绿", false, false),
-            ("透明蓝", true, false),
-            ("透明绿", true, false),
-            ("透明红", true, false),
-            ("荧光玫红", false, false),
-            ("荧光紫红", false, false),
-            ("克莱因蓝", false, false),
-            ("金属紫", false, true),
-            ("金属香槟金", false, true),
-            ("金属午夜绿", false, true),
-            ("金属银", false, true),
-            ("金属太空灰", false, true),
-            ("金属铜", false, true),
-            ("金属绿", false, true),
-            ("金属珠光蓝", false, true),
-            ("金属玫瑰金", false, true),
-            ("petg碳纤维黑色", false, false),
-            ("PETG碳纤维大理石灰", false, false),
-            ("PETG碳纤维咖啡色", false, false),
-            ("高速Petg薰衣草紫", false, false),
-            ("高速Petg桃红", false, false),
-            ("高速Petg黑色", false, false),
-            ("高速Petg浅蓝", false, false),
-            ("高速Petg冷白", false, false),
-            ("Petg大理石花岗岩", false, false),
-            ("大理石魔幻棕", false, false),
-            ("大理石浅灰", false, false),
-            ("大理石白", false, false),
-            ("petg大理石魔幻紫", false, false),
-            ("petg大理石魔幻蓝", false, false),
-            ("Petg大理石魔幻绿", false, false)
-        ]
+    // 从预设数据添加颜色
+    private func addColorFromPreset(colorData: PresetFilamentData.ColorProperties, materialType: SwiftDataMaterialType, context: ModelContext) {
+        // 根据颜色名称获取合适的颜色
+        let swiftUIColor = intelligentColorMapping(for: colorData.name)
         
-        // 为每种颜色添加含料盘和不含料盘两种版本
-        for (colorName, isTransparent, isMetallic) in colors {
-            // 根据颜色名称获取合适的颜色
-            let swiftUIColor = intelligentColorMapping(for: colorName)
-            
-            // 添加含料盘版本
-            let colorWithSpool = "\(colorName) (含料盘)"
-            let colorDataWithSpool = SwiftDataColorData(from: swiftUIColor)
-            
-            let filamentColorWithSpool = SwiftDataFilamentColor(
-                name: colorWithSpool,
-                colorData: colorDataWithSpool,
-                isTransparent: isTransparent,
-                isMetallic: isMetallic,
-                hasSpool: true,
-                materialType: petgEco
-            )
-            context.insert(filamentColorWithSpool)
-            petgEco.colors.append(filamentColorWithSpool)
-            
-            // 添加不含料盘版本
-            let colorWithoutSpool = "\(colorName) (无料盘)"
-            let colorDataWithoutSpool = SwiftDataColorData(from: swiftUIColor)
-            
-            let filamentColorWithoutSpool = SwiftDataFilamentColor(
-                name: colorWithoutSpool,
-                colorData: colorDataWithoutSpool,
-                isTransparent: isTransparent,
-                isMetallic: isMetallic,
-                hasSpool: false,
-                materialType: petgEco
-            )
-            context.insert(filamentColorWithoutSpool)
-            petgEco.colors.append(filamentColorWithoutSpool)
-        }
+        // 创建颜色数据
+        let colorDataObj = SwiftDataColorData(from: swiftUIColor)
+        
+        // 设置颜色名称，包含料盘信息
+        let suffix = colorData.hasSpool ? " (含料盘)" : " (无料盘)"
+        let fullName = colorData.name + suffix
+        
+        // 创建颜色对象
+        let filamentColor = SwiftDataFilamentColor(
+            name: fullName,
+            code: colorData.code,
+            colorData: colorDataObj,
+            isTransparent: colorData.isTransparent,
+            isMetallic: colorData.isMetallic,
+            hasSpool: colorData.hasSpool,
+            materialType: materialType
+        )
+        
+        // 添加到数据库
+        context.insert(filamentColor)
+        materialType.colors.append(filamentColor)
     }
     
     // MARK: - Data Fetching
