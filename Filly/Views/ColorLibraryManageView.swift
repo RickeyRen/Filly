@@ -18,8 +18,9 @@ struct ColorLibraryManageView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // 搜索栏和筛选器
-                VStack(spacing: 8) {
+                // 搜索栏和筛选器区域
+                VStack(spacing: 0) {
+                    // 搜索栏和筛选按钮
                     HStack {
                         TextField("搜索颜色", text: $searchText)
                             .padding()
@@ -28,6 +29,9 @@ struct ColorLibraryManageView: View {
                         
                         Button(action: {
                             showBrandFilter.toggle()
+                            if showBrandFilter {
+                                showMaterialFilter = false // 避免同时展开两个筛选器
+                            }
                         }) {
                             Label("品牌", systemImage: "tag")
                                 .padding(8)
@@ -37,6 +41,9 @@ struct ColorLibraryManageView: View {
                         
                         Button(action: {
                             showMaterialFilter.toggle()
+                            if showMaterialFilter {
+                                showBrandFilter = false // 避免同时展开两个筛选器
+                            }
                         }) {
                             Label("材料", systemImage: "square.stack.3d.up")
                                 .padding(8)
@@ -45,6 +52,7 @@ struct ColorLibraryManageView: View {
                         }
                     }
                     .padding(.horizontal)
+                    .padding(.vertical, 8)
                     
                     // 品牌筛选器
                     if showBrandFilter {
@@ -112,20 +120,47 @@ struct ColorLibraryManageView: View {
                         .padding(.bottom, 8)
                     }
                 }
-                .padding(.top, 8)
                 .background(SystemColorCompatibility.secondarySystemBackground)
                 
-                // 统计信息
+                // 选中的筛选条件指示器和统计信息
                 HStack {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        // 筛选条件指示器
+                        HStack(spacing: 8) {
+                            if !colorLibrary.selectedBrand.isEmpty {
+                                Text(colorLibrary.selectedBrand)
+                                    .font(.caption)
+                                    .padding(.vertical, 4)
+                                    .padding(.horizontal, 8)
+                                    .background(Color.blue.opacity(0.1))
+                                    .foregroundColor(.blue)
+                                    .cornerRadius(4)
+                            }
+                            
+                            if !colorLibrary.selectedMaterialType.isEmpty {
+                                Text(colorLibrary.selectedMaterialType)
+                                    .font(.caption)
+                                    .padding(.vertical, 4)
+                                    .padding(.horizontal, 8)
+                                    .background(Color.blue.opacity(0.1))
+                                    .foregroundColor(.blue)
+                                    .cornerRadius(4)
+                            }
+                            
+                            if !colorLibrary.selectedBrand.isEmpty || !colorLibrary.selectedMaterialType.isEmpty {
+                                Button("清除") {
+                                    colorLibrary.selectedBrand = ""
+                                    colorLibrary.selectedMaterialType = ""
+                                }
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                            }
+                        }
+                        
+                        // 统计信息
                         Text("共 \(filteredColors.count) 种颜色")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        if !colorLibrary.selectedBrand.isEmpty {
-                            Text("品牌: \(colorLibrary.selectedBrand)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
                     }
                     Spacer()
                 }
@@ -379,6 +414,7 @@ struct ColorEditorView: View {
                 // 颜色选择器
                 SwiftUI.ColorPicker("选择颜色", selection: $pickedColor)
                     .padding()
+                }
             }
             .padding(.bottom, 20)
             

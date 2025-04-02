@@ -26,8 +26,9 @@ struct ColorPickerView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // 搜索栏和筛选器
-                VStack(spacing: 8) {
+                // 搜索栏和筛选器区域
+                VStack(spacing: 0) {
+                    // 搜索栏和筛选按钮
                     HStack {
                         TextField("搜索颜色", text: $searchText)
                             .padding()
@@ -36,6 +37,9 @@ struct ColorPickerView: View {
                         
                         Button(action: {
                             showBrandFilter.toggle()
+                            if showBrandFilter {
+                                showMaterialFilter = false // 避免同时展开两个筛选器
+                            }
                         }) {
                             Label("品牌", systemImage: "tag")
                                 .padding(8)
@@ -45,6 +49,9 @@ struct ColorPickerView: View {
                         
                         Button(action: {
                             showMaterialFilter.toggle()
+                            if showMaterialFilter {
+                                showBrandFilter = false // 避免同时展开两个筛选器
+                            }
                         }) {
                             Label("材料", systemImage: "square.stack.3d.up")
                                 .padding(8)
@@ -53,6 +60,7 @@ struct ColorPickerView: View {
                         }
                     }
                     .padding(.horizontal)
+                    .padding(.top, 8)
                     
                     // 品牌筛选器
                     if showBrandFilter {
@@ -84,7 +92,7 @@ struct ColorPickerView: View {
                             }
                             .padding(.horizontal)
                         }
-                        .padding(.bottom, 8)
+                        .padding(.vertical, 8)
                     }
                     
                     // 材料筛选器
@@ -117,11 +125,47 @@ struct ColorPickerView: View {
                             }
                             .padding(.horizontal)
                         }
-                        .padding(.bottom, 8)
+                        .padding(.vertical, 8)
                     }
                 }
-                .padding(.top, 8)
                 .background(SystemColorCompatibility.secondarySystemBackground)
+                
+                // 选中的筛选条件指示器
+                if !colorLibrary.selectedBrand.isEmpty || !colorLibrary.selectedMaterialType.isEmpty {
+                    HStack {
+                        if !colorLibrary.selectedBrand.isEmpty {
+                            Text("品牌: \(colorLibrary.selectedBrand)")
+                                .font(.caption)
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 8)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .cornerRadius(4)
+                        }
+                        
+                        if !colorLibrary.selectedMaterialType.isEmpty {
+                            Text("材料: \(colorLibrary.selectedMaterialType)")
+                                .font(.caption)
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 8)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .cornerRadius(4)
+                        }
+                        
+                        Spacer()
+                        
+                        Button("清除") {
+                            colorLibrary.selectedBrand = ""
+                            colorLibrary.selectedMaterialType = ""
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 6)
+                    .background(SystemColorCompatibility.tertiarySystemBackground)
+                }
                 
                 // 最近使用的颜色
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -149,6 +193,7 @@ struct ColorPickerView: View {
                 }
                 .background(SystemColorCompatibility.tertiarySystemBackground)
                 
+                // 添加新颜色的视图或颜色网格
                 if isAddingNew {
                     // 添加新颜色的视图
                     VStack(spacing: 16) {
@@ -225,7 +270,7 @@ struct ColorPickerView: View {
                     }
                     .padding()
                 } else {
-                    // 所有颜色 - 网格布局替代列表
+                    // 所有颜色 - 网格布局
                     ScrollView {
                         if filteredColors.isEmpty {
                             VStack(spacing: 20) {
@@ -306,6 +351,7 @@ struct ColorPickerView: View {
                             }
                             .padding(.horizontal, 10)
                             .padding(.bottom, 20)
+                            .padding(.top, 10) // 添加顶部间距，避免与最近使用部分重叠
                         }
                     }
                 }
