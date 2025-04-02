@@ -5,14 +5,14 @@ import SwiftUI
 struct PresetFilamentData {
     
     // 渐变类型
-    enum GradientType {
-        case none              // 没有渐变（单色）
-        case horizontal        // 水平渐变
-        case vertical          // 垂直渐变
-        case diagonal          // 对角线渐变
-        case radial            // 径向渐变
-        case multiColor        // 多色渐变（超过两色）
-        case rainbow           // 彩虹色
+    enum GradientType: Int {
+        case none = 0          // 没有渐变（单色）
+        case horizontal = 1    // 水平渐变
+        case vertical = 2      // 垂直渐变
+        case diagonal = 3      // 对角线渐变
+        case radial = 4        // 径向渐变
+        case multiColor = 5    // 多色渐变（超过两色）
+        case rainbow = 6       // 彩虹色
     }
     
     // 颜色属性定义
