@@ -1704,10 +1704,10 @@ private struct OptimizedCenterHole: View {
                 )
                 .frame(width: 25, height: 25)
             
-            // 减少圆环段数
-            ForEach(0..<2) { i in
-                let startAngle = Double(i) * 180 + 20
-                let endAngle = startAngle + 120
+            // 改为三段圆环，每段80度，均匀分布
+            ForEach(0..<3) { i in
+                let startAngle = Double(i) * 120 + 20 // 起始角度，每段相隔120度
+                let endAngle = startAngle + 80 // 结束角度，每段覆盖80度
                 
                 Circle()
                     .trim(from: startAngle / 360, to: endAngle / 360)
