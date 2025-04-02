@@ -24,22 +24,22 @@ public struct SimpleFillamentReel2D: View {
         let centerContrastColor: Color
         
         init(baseColor: Color) {
-            let brightness = getColorBrightness(baseColor)
+            let brightness = SimpleFillamentReel2D.getColorBrightness(baseColor)
             
-            self.lightenedColor = lighten(baseColor, by: 0.1)
-            self.darkenedColor = darken(baseColor, by: 0.2)
+            self.lightenedColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.1)
+            self.darkenedColor = SimpleFillamentReel2D.darken(baseColor, by: 0.2)
             
             // 预计算边框颜色
             if brightness > 0.8 {
-                self.borderColor = darken(baseColor, by: 0.7).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.darken(baseColor, by: 0.7).opacity(0.9)
             } else if brightness > 0.6 {
-                self.borderColor = darken(baseColor, by: 0.5).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.darken(baseColor, by: 0.5).opacity(0.9)
             } else if brightness > 0.4 {
-                self.borderColor = lighten(baseColor, by: 0.4).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.4).opacity(0.9)
             } else if brightness > 0.2 {
-                self.borderColor = lighten(baseColor, by: 0.6).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.6).opacity(0.9)
             } else {
-                self.borderColor = lighten(baseColor, by: 0.8).opacity(0.9)
+                self.borderColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.8).opacity(0.9)
             }
             
             // 预计算线条对比色
@@ -47,19 +47,19 @@ public struct SimpleFillamentReel2D: View {
             for i in 0..<5 {
                 if i % 2 == 0 {
                     if brightness > 0.7 {
-                        colors.append(darken(baseColor, by: 0.5).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.5).opacity(0.9))
                     } else if brightness > 0.4 {
-                        colors.append(lighten(baseColor, by: 0.35).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.35).opacity(0.9))
                     } else {
-                        colors.append(lighten(baseColor, by: 0.6).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.6).opacity(0.9))
                     }
                 } else {
                     if brightness > 0.7 {
-                        colors.append(darken(baseColor, by: 0.3).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.3).opacity(0.9))
                     } else if brightness > 0.4 {
-                        colors.append(darken(baseColor, by: 0.25).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.25).opacity(0.9))
                     } else {
-                        colors.append(lighten(baseColor, by: 0.4).opacity(0.9))
+                        colors.append(SimpleFillamentReel2D.lighten(baseColor, by: 0.4).opacity(0.9))
                     }
                 }
             }
@@ -67,77 +67,10 @@ public struct SimpleFillamentReel2D: View {
             
             // 预计算中心对比色
             if brightness > 0.5 {
-                self.centerContrastColor = darken(baseColor, by: 0.6).opacity(0.9)
+                self.centerContrastColor = SimpleFillamentReel2D.darken(baseColor, by: 0.6).opacity(0.9)
             } else {
-                self.centerContrastColor = lighten(baseColor, by: 0.7).opacity(0.9)
+                self.centerContrastColor = SimpleFillamentReel2D.lighten(baseColor, by: 0.7).opacity(0.9)
             }
-        }
-        
-        // 静态颜色处理函数
-        private static func lighten(_ color: Color, by amount: CGFloat) -> Color {
-            #if os(iOS)
-            let uiColor = UIColor(color)
-            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-            uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            
-            return Color(UIColor(
-                red: min(1, red + amount),
-                green: min(1, green + amount),
-                blue: min(1, blue + amount),
-                alpha: alpha
-            ))
-            #elseif os(macOS)
-            let nsColor = NSColor(color)
-            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-            nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            
-            return Color(NSColor(
-                red: min(1, red + amount),
-                green: min(1, green + amount),
-                blue: min(1, blue + amount),
-                alpha: alpha
-            ))
-            #endif
-        }
-        
-        private static func darken(_ color: Color, by amount: CGFloat) -> Color {
-            #if os(iOS)
-            let uiColor = UIColor(color)
-            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-            uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            
-            return Color(UIColor(
-                red: max(0, red - amount),
-                green: max(0, green - amount),
-                blue: max(0, blue - amount),
-                alpha: alpha
-            ))
-            #elseif os(macOS)
-            let nsColor = NSColor(color)
-            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-            nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            
-            return Color(NSColor(
-                red: max(0, red - amount),
-                green: max(0, green - amount),
-                blue: max(0, blue - amount),
-                alpha: alpha
-            ))
-            #endif
-        }
-        
-        private static func getColorBrightness(_ color: Color) -> CGFloat {
-            #if os(iOS)
-            let uiColor = UIColor(color)
-            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-            uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            #elseif os(macOS)
-            let nsColor = NSColor(color)
-            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-            nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            #endif
-            
-            return 0.299 * red + 0.587 * green + 0.114 * blue
         }
     }
     
@@ -209,6 +142,73 @@ public struct SimpleFillamentReel2D: View {
                 rotationDegree = 360
             }
         }
+    }
+    
+    // 静态颜色处理函数，移到外部供CachedColors使用
+    static private func lighten(_ color: Color, by amount: CGFloat) -> Color {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(UIColor(
+            red: min(1, red + amount),
+            green: min(1, green + amount),
+            blue: min(1, blue + amount),
+            alpha: alpha
+        ))
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(NSColor(
+            red: min(1, red + amount),
+            green: min(1, green + amount),
+            blue: min(1, blue + amount),
+            alpha: alpha
+        ))
+        #endif
+    }
+    
+    static private func darken(_ color: Color, by amount: CGFloat) -> Color {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(UIColor(
+            red: max(0, red - amount),
+            green: max(0, green - amount),
+            blue: max(0, blue - amount),
+            alpha: alpha
+        ))
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return Color(NSColor(
+            red: max(0, red - amount),
+            green: max(0, green - amount),
+            blue: max(0, blue - amount),
+            alpha: alpha
+        ))
+        #endif
+    }
+    
+    static private func getColorBrightness(_ color: Color) -> CGFloat {
+        #if os(iOS)
+        let uiColor = UIColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        #elseif os(macOS)
+        let nsColor = NSColor(color)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        #endif
+        
+        return 0.299 * red + 0.587 * green + 0.114 * blue
     }
 }
 
@@ -318,71 +318,4 @@ public struct MiniFilamentReelView: View {
         .frame(width: 55, height: 55)
         .clipShape(Circle())
     }
-}
-
-// 保留原始辅助函数供外部使用
-private func lighten(_ color: Color, by amount: CGFloat) -> Color {
-    #if os(iOS)
-    let uiColor = UIColor(color)
-    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-    uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-    
-    return Color(UIColor(
-        red: min(1, red + amount),
-        green: min(1, green + amount),
-        blue: min(1, blue + amount),
-        alpha: alpha
-    ))
-    #elseif os(macOS)
-    let nsColor = NSColor(color)
-    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-    nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-    
-    return Color(NSColor(
-        red: min(1, red + amount),
-        green: min(1, green + amount),
-        blue: min(1, blue + amount),
-        alpha: alpha
-    ))
-    #endif
-}
-
-private func darken(_ color: Color, by amount: CGFloat) -> Color {
-    #if os(iOS)
-    let uiColor = UIColor(color)
-    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-    uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-    
-    return Color(UIColor(
-        red: max(0, red - amount),
-        green: max(0, green - amount),
-        blue: max(0, blue - amount),
-        alpha: alpha
-    ))
-    #elseif os(macOS)
-    let nsColor = NSColor(color)
-    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-    nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-    
-    return Color(NSColor(
-        red: max(0, red - amount),
-        green: max(0, green - amount),
-        blue: max(0, blue - amount),
-        alpha: alpha
-    ))
-    #endif
-}
-
-private func getColorBrightness(_ color: Color) -> CGFloat {
-    #if os(iOS)
-    let uiColor = UIColor(color)
-    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-    uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-    #elseif os(macOS)
-    let nsColor = NSColor(color)
-    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-    nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-    #endif
-    
-    return 0.299 * red + 0.587 * green + 0.114 * blue
 }
