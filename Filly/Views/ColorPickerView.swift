@@ -169,18 +169,28 @@ struct ColorPickerView: View {
                 
                 // 最近使用的颜色 - 使用LazyHStack提高性能
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 5) {
+                    LazyHStack(spacing: 15) {
                         Text("最近使用:")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .padding(.leading, 12)
                         
                         ForEach(colorLibrary.recentlyUsedColors()) { colorItem in
-                            ColorBubble(
-                                color: colorItem.getUIColor(),
-                                name: colorItem.name,
-                                isSelected: selectedColorName == colorItem.name
-                            )
+                            VStack(spacing: 5) {
+                                MiniFilamentReelView(color: colorItem.getUIColor())
+                                    .frame(width: 44, height: 44)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedColorName == colorItem.name ? Color.blue : Color.clear, lineWidth: 2)
+                                    )
+                                
+                                Text(colorItem.name)
+                                    .font(.system(size: 10))
+                                    .lineLimit(1)
+                                    .frame(width: 70)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .contentShape(Rectangle())
                             .onTapGesture {
                                 self.selectedColorName = colorItem.name
                                 self.selectedColor = colorItem.getUIColor()
