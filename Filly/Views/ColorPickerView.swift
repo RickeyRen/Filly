@@ -74,17 +74,18 @@ struct ColorPickerView: View {
                     // 品牌筛选器
                     if showBrandFilter {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            LazyHStack(spacing: 8) {
+                            LazyHStack(spacing: 6) {
                                 Button(action: {
                                     colorLibrary.selectedBrand = ""
                                     updateFilteredColors()
                                 }) {
                                     Text("全部")
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 4)
                                         .background(colorLibrary.selectedBrand.isEmpty ? Color.blue : Color.gray.opacity(0.2))
                                         .foregroundColor(colorLibrary.selectedBrand.isEmpty ? .white : .primary)
-                                        .cornerRadius(16)
+                                        .cornerRadius(12)
+                                        .font(.system(size: 13))
                                 }
                                 
                                 ForEach(colorLibrary.availableBrands, id: \.self) { brand in
@@ -93,33 +94,36 @@ struct ColorPickerView: View {
                                         updateFilteredColors()
                                     }) {
                                         Text(brand)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 4)
                                             .background(colorLibrary.selectedBrand == brand ? Color.blue : Color.gray.opacity(0.2))
                                             .foregroundColor(colorLibrary.selectedBrand == brand ? .white : .primary)
-                                            .cornerRadius(16)
+                                            .cornerRadius(12)
+                                            .font(.system(size: 13))
                                     }
                                 }
                             }
                             .padding(.horizontal)
                         }
-                        .padding(.vertical, 8)
+                        .frame(height: 32)
+                        .padding(.vertical, 4)
                     }
                     
                     // 材料筛选器
                     if showMaterialFilter {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            LazyHStack(spacing: 8) {
+                            LazyHStack(spacing: 6) {
                                 Button(action: {
                                     colorLibrary.selectedMaterialType = ""
                                     updateFilteredColors()
                                 }) {
                                     Text("全部")
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 4)
                                         .background(colorLibrary.selectedMaterialType.isEmpty ? Color.blue : Color.gray.opacity(0.2))
                                         .foregroundColor(colorLibrary.selectedMaterialType.isEmpty ? .white : .primary)
-                                        .cornerRadius(16)
+                                        .cornerRadius(12)
+                                        .font(.system(size: 13))
                                 }
                                 
                                 ForEach(colorLibrary.availableMaterialTypes, id: \.self) { material in
@@ -128,17 +132,19 @@ struct ColorPickerView: View {
                                         updateFilteredColors()
                                     }) {
                                         Text(material)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 4)
                                             .background(colorLibrary.selectedMaterialType == material ? Color.blue : Color.gray.opacity(0.2))
                                             .foregroundColor(colorLibrary.selectedMaterialType == material ? .white : .primary)
-                                            .cornerRadius(16)
+                                            .cornerRadius(12)
+                                            .font(.system(size: 13))
                                     }
                                 }
                             }
                             .padding(.horizontal)
                         }
-                        .padding(.vertical, 8)
+                        .frame(height: 32)
+                        .padding(.vertical, 4)
                     }
                 }
                 .background(SystemColorCompatibility.secondarySystemBackground)
