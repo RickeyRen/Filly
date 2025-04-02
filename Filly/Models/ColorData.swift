@@ -15,9 +15,10 @@ struct ColorData: Codable {
     var alpha: Double
     
     init(red: Double, green: Double, blue: Double, alpha: Double = 1.0) {
-        self.red = red
-        self.green = green
-        self.blue = blue
+        // 检查输入的颜色值范围，确保存储为0-1范围
+        self.red = red > 1.0 ? red / 255.0 : red
+        self.green = green > 1.0 ? green / 255.0 : green
+        self.blue = blue > 1.0 ? blue / 255.0 : blue
         self.alpha = alpha
     }
     
@@ -57,6 +58,7 @@ struct ColorData: Codable {
     }
     
     func getUIColor() -> Color {
+        // 直接使用存储的值，因为已经是0-1范围
         return Color(red: red, green: green, blue: blue, opacity: alpha)
     }
 } 

@@ -195,13 +195,16 @@ struct SelectFromFilamentLibraryView: View {
         let colorName = color.baseColorName
         let colorRGB = color.colorData
         
-        // 创建颜色数据
+        // 创建颜色数据 - 确保颜色值范围正确
         let filamentColorData = ColorData(
             red: colorRGB.red,
             green: colorRGB.green,
             blue: colorRGB.blue,
             alpha: colorRGB.alpha
         )
+        
+        // 打印颜色值，用于调试
+        print("添加新耗材颜色: \(colorName), RGB: \(colorRGB.red), \(colorRGB.green), \(colorRGB.blue)")
         
         // 创建或查找对应的耗材类型
         let filamentType = filamentViewModel.findOrCreateType(name: materialTypeName)

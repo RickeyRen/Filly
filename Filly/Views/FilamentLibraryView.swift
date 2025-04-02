@@ -576,7 +576,11 @@ struct ColorGridView: View {
         }
         #endif
         
-        let colorData = SwiftDataColorData(red: Double(r), green: Double(g), blue: Double(b), alpha: Double(a))
+        // 直接使用ColorPicker提供的颜色创建colorData
+        let colorData = SwiftDataColorData(from: selectedColor)
+        
+        // 打印颜色值，用于调试
+        print("添加新颜色: \(newColorName), RGB: \(colorData.red), \(colorData.green), \(colorData.blue)")
         
         // 全名格式设置
         let fullName = hasSpool ? 

@@ -81,9 +81,10 @@ struct SwiftDataColorData: Codable, Hashable {
     var alpha: Double
     
     init(red: Double, green: Double, blue: Double, alpha: Double = 1.0) {
-        self.red = red / 255.0 // Store as 0-1 range
-        self.green = green / 255.0
-        self.blue = blue / 255.0
+        // 检查输入的颜色值范围，确保存储为0-1范围
+        self.red = red > 1.0 ? red / 255.0 : red
+        self.green = green > 1.0 ? green / 255.0 : green
+        self.blue = blue > 1.0 ? blue / 255.0 : blue
         self.alpha = alpha
     }
     
