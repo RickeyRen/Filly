@@ -24,11 +24,22 @@ class FilamentLibraryViewModel: ObservableObject {
         }
         
         print("正在初始化耗材库预设数据...")
-        initializePresetData(in: context)
+        
+        // 添加所有预设数据
+        // 1. 添加拓竹 Bambu Lab
+        addBambuLabPresets(context: context)
+        
+        // 2. 添加天瑞 Tinmorry
+        addTinmorryPresets(context: context)
+        
+        // 如果需要，可以在这里添加更多品牌预设
+        // addMoreBrandPresets(context: context)
+        
         print("耗材库预设数据初始化完成。")
     }
     
-    private func initializePresetData(in context: ModelContext) {
+    // 添加拓竹Bambu Lab预设数据
+    private func addBambuLabPresets(context: ModelContext) {
         // --- 拓竹 Bambu Lab ---
         let bambuLab = SwiftDataBrand(name: "拓竹 Bambu Lab")
         context.insert(bambuLab)
@@ -65,20 +76,122 @@ class FilamentLibraryViewModel: ObservableObject {
             plaLite.colors.append(filamentColor)
         }
         
-        // --- 天瑞 Tinmorry --- (Only add the brand, no types or colors initially)
+        // 保存上下文
+        saveContext(context)
+    }
+    
+    // 添加天瑞 Tinmorry 预设数据
+    private func addTinmorryPresets(context: ModelContext) {
+        // --- 天瑞 Tinmorry ---
         let tianrui = SwiftDataBrand(name: "天瑞 Tinmorry")
         context.insert(tianrui)
-        // We are not adding PETG-ECO or its colors here as requested.
-        // You can add them later via a management interface or by modifying this code.
         
-        // --- Remove other brands --- 
-        // Any code previously here for other brands like Polymaker, eSUN etc. is removed.
+        // --- 添加PETG-ECO材料类型 ---
+        let petgEco = SwiftDataMaterialType(name: "PETG-ECO", brand: tianrui)
+        context.insert(petgEco)
+        tianrui.materialTypes.append(petgEco)
         
-        // Save the context after inserting all desired data
-        do {
-            try context.save()
-        } catch {
-            print("保存预设数据失败: \(error)")
+        // 添加PETG-ECO系列颜色
+        addTianruiPETGECOColors(to: petgEco, context: context)
+        
+        // 保存上下文
+        saveContext(context)
+    }
+    
+    // 添加天瑞PETG-ECO系列颜色
+    private func addTianruiPETGECOColors(to petgEco: SwiftDataMaterialType, context: ModelContext) {
+        // 定义所有颜色
+        let colors: [(name: String, isTransparent: Bool, isMetallic: Bool)] = [
+            ("亮丽黄", false, false),
+            ("咖啡色", false, false),
+            ("透明", true, false),
+            ("荧光绿", false, false),
+            ("荧光黄", false, false),
+            ("红色", false, false),
+            ("绿色", false, false),
+            ("灰色", false, false),
+            ("杏色", false, false),
+            ("黑色", false, false),
+            ("冷白", false, false),
+            ("奶白色", false, false),
+            ("米宝白", false, false),
+            ("肤色", false, false),
+            ("淡灰色", false, false),
+            ("夜光绿", false, false),
+            ("橙色", false, false),
+            ("樱花粉", false, false),
+            ("粉色", false, false),
+            ("长春花蓝", false, false),
+            ("薄荷绿", false, false),
+            ("卡特黄", false, false),
+            ("天空蓝", false, false),
+            ("橄榄绿", false, false),
+            ("透明蓝", true, false),
+            ("透明绿", true, false),
+            ("透明红", true, false),
+            ("荧光玫红", false, false),
+            ("荧光紫红", false, false),
+            ("克莱因蓝", false, false),
+            ("金属紫", false, true),
+            ("金属香槟金", false, true),
+            ("金属午夜绿", false, true),
+            ("金属银", false, true),
+            ("金属太空灰", false, true),
+            ("金属铜", false, true),
+            ("金属绿", false, true),
+            ("金属珠光蓝", false, true),
+            ("金属玫瑰金", false, true),
+            ("petg碳纤维黑色", false, false),
+            ("PETG碳纤维大理石灰", false, false),
+            ("PETG碳纤维咖啡色", false, false),
+            ("高速Petg薰衣草紫", false, false),
+            ("高速Petg桃红", false, false),
+            ("高速Petg黑色", false, false),
+            ("高速Petg浅蓝", false, false),
+            ("高速Petg冷白", false, false),
+            ("Petg大理石花岗岩", false, false),
+            ("大理石魔幻棕", false, false),
+            ("大理石浅灰", false, false),
+            ("大理石白", false, false),
+            ("petg大理石魔幻紫", false, false),
+            ("petg大理石魔幻蓝", false, false),
+            ("Petg大理石魔幻绿", false, false)
+        ]
+        
+        // 为每种颜色添加含料盘和不含料盘两种版本
+        for (colorName, isTransparent, isMetallic) in colors {
+            // 根据颜色名称获取合适的颜色
+            let swiftUIColor = intelligentColorMapping(for: colorName)
+            
+            // 添加含料盘版本
+            let colorWithSpool = "\(colorName) (含料盘)"
+            let colorDataWithSpool = SwiftDataColorData(from: swiftUIColor)
+            
+            let filamentColorWithSpool = SwiftDataFilamentColor(
+                name: colorWithSpool,
+                colorData: colorDataWithSpool,
+                isTransparent: isTransparent,
+                isMetallic: isMetallic,
+                hasSpool: true,
+                materialType: petgEco
+            )
+            context.insert(filamentColorWithSpool)
+            petgEco.colors.append(filamentColorWithSpool)
+            
+            // 添加不含料盘版本
+            let colorWithoutSpool = "\(colorName) (无料盘)"
+            let colorDataWithoutSpool = SwiftDataColorData(from: swiftUIColor)
+            
+            let filamentColorWithoutSpool = SwiftDataFilamentColor(
+                name: colorWithoutSpool,
+                colorData: colorDataWithoutSpool,
+                isTransparent: isTransparent,
+                isMetallic: isMetallic,
+                hasSpool: false,
+                materialType: petgEco
+            )
+            context.insert(filamentColorWithoutSpool)
+            petgEco.colors.append(filamentColorWithoutSpool)
         }
     }
     
@@ -206,157 +319,6 @@ class FilamentLibraryViewModel: ObservableObject {
         context.insert(color)
         materialType.colors.append(color)
         saveContext(context)
-    }
-    
-    // 为天瑞添加PETG-ECO系列颜色
-    func addTianruiPETGECOColors(context: ModelContext) {
-        // 查找天瑞品牌
-        let descriptor = FetchDescriptor<SwiftDataBrand>()
-        
-        do {
-            let brands = try context.fetch(descriptor)
-            // 在内存中过滤，避免复杂的Predicate表达式
-            let tianruiBrands = brands.filter { $0.name.contains("天瑞") }
-            
-            guard let tianrui = tianruiBrands.first else {
-                print("未找到天瑞品牌，创建新品牌")
-                let tianrui = SwiftDataBrand(name: "天瑞 Tinmorry")
-                context.insert(tianrui)
-                addPETGECOToTianrui(tianrui, context: context)
-                return
-            }
-            
-            // 找到现有品牌，添加材料类型和颜色
-            addPETGECOToTianrui(tianrui, context: context)
-            
-        } catch {
-            print("查找天瑞品牌失败: \(error)")
-        }
-    }
-    
-    private func addPETGECOToTianrui(_ tianrui: SwiftDataBrand, context: ModelContext) {
-        // 检查是否已存在PETG-ECO材料类型
-        // 使用简化的predicate避免复杂的可选类型比较
-        let materialTypes = tianrui.materialTypes.filter { $0.name == "PETG-ECO" }
-        
-        let petgEco: SwiftDataMaterialType
-        
-        if let existingType = materialTypes.first {
-            petgEco = existingType
-            print("找到现有PETG-ECO材料类型")
-        } else {
-            // 创建新材料类型
-            petgEco = SwiftDataMaterialType(name: "PETG-ECO", brand: tianrui)
-            context.insert(petgEco)
-            tianrui.materialTypes.append(petgEco)
-            print("创建新PETG-ECO材料类型")
-        }
-        
-        // 添加所有颜色
-        addTianruiColorsToPETGECO(petgEco, context: context)
-        
-        do {
-            try context.save()
-            print("成功添加天瑞PETG-ECO系列颜色")
-        } catch {
-            print("保存PETG-ECO材料类型失败: \(error)")
-        }
-    }
-    
-    private func addTianruiColorsToPETGECO(_ petgEco: SwiftDataMaterialType, context: ModelContext) {
-        // 定义所有颜色
-        let colors: [(name: String, isTransparent: Bool, isMetallic: Bool)] = [
-            ("亮丽黄", false, false),
-            ("咖啡色", false, false),
-            ("透明", true, false),
-            ("荧光绿", false, false),
-            ("荧光黄", false, false),
-            ("红色", false, false),
-            ("绿色", false, false),
-            ("灰色", false, false),
-            ("杏色", false, false),
-            ("黑色", false, false),
-            ("冷白", false, false),
-            ("奶白色", false, false),
-            ("米宝白", false, false),
-            ("肤色", false, false),
-            ("淡灰色", false, false),
-            ("夜光绿", false, false),
-            ("橙色", false, false),
-            ("樱花粉", false, false),
-            ("粉色", false, false),
-            ("长春花蓝", false, false),
-            ("薄荷绿", false, false),
-            ("卡特黄", false, false),
-            ("天空蓝", false, false),
-            ("橄榄绿", false, false),
-            ("透明蓝", true, false),
-            ("透明绿", true, false),
-            ("透明红", true, false),
-            ("荧光玫红", false, false),
-            ("荧光紫红", false, false),
-            ("克莱因蓝", false, false),
-            ("金属紫", false, true),
-            ("金属香槟金", false, true),
-            ("金属午夜绿", false, true),
-            ("金属银", false, true),
-            ("金属太空灰", false, true),
-            ("金属铜", false, true),
-            ("金属绿", false, true),
-            ("金属珠光蓝", false, true),
-            ("金属玫瑰金", false, true),
-            ("petg碳纤维黑色", false, false),
-            ("PETG碳纤维大理石灰", false, false),
-            ("PETG碳纤维咖啡色", false, false),
-            ("高速Petg薰衣草紫", false, false),
-            ("高速Petg桃红", false, false),
-            ("高速Petg黑色", false, false),
-            ("高速Petg浅蓝", false, false),
-            ("高速Petg冷白", false, false),
-            ("Petg大理石花岗岩", false, false),
-            ("大理石魔幻棕", false, false),
-            ("大理石浅灰", false, false),
-            ("大理石白", false, false),
-            ("petg大理石魔幻紫", false, false),
-            ("petg大理石魔幻蓝", false, false),
-            ("Petg大理石魔幻绿", false, false)
-        ]
-        
-        // 为每种颜色添加含料盘和不含料盘两种版本
-        for (colorName, isTransparent, isMetallic) in colors {
-            // 根据颜色名称获取合适的颜色
-            let swiftUIColor = intelligentColorMapping(for: colorName)
-            
-            // 添加含料盘版本
-            let colorWithSpool = "\(colorName) (含料盘)"
-            let colorDataWithSpool = SwiftDataColorData(from: swiftUIColor)
-            
-            let filamentColorWithSpool = SwiftDataFilamentColor(
-                name: colorWithSpool,
-                colorData: colorDataWithSpool,
-                isTransparent: isTransparent,
-                isMetallic: isMetallic,
-                hasSpool: true,
-                materialType: petgEco
-            )
-            context.insert(filamentColorWithSpool)
-            petgEco.colors.append(filamentColorWithSpool)
-            
-            // 添加不含料盘版本
-            let colorWithoutSpool = "\(colorName) (无料盘)"
-            let colorDataWithoutSpool = SwiftDataColorData(from: swiftUIColor)
-            
-            let filamentColorWithoutSpool = SwiftDataFilamentColor(
-                name: colorWithoutSpool,
-                colorData: colorDataWithoutSpool,
-                isTransparent: isTransparent,
-                isMetallic: isMetallic,
-                hasSpool: false,
-                materialType: petgEco
-            )
-            context.insert(filamentColorWithoutSpool)
-            petgEco.colors.append(filamentColorWithoutSpool)
-        }
     }
     
     // 根据颜色名称智能映射到颜色
