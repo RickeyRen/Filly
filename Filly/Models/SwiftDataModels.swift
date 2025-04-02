@@ -50,11 +50,16 @@ final class SwiftDataFilamentColor {
     var isMetallic: Bool
     var hasSpool: Bool // To distinguish spool/no-spool variants
     
+    // 新增渐变相关字段
+    var gradientType: Int // 使用Int而非enum以便SwiftData兼容，0=none, 1=horizontal, 2=vertical等
+    var additionalColorsData: [SwiftDataColorData]? // 其他颜色（用于渐变）
+    
     // Relationship to MaterialType
     var materialType: SwiftDataMaterialType?
     
     init(id: UUID = UUID(), name: String, code: String? = nil, colorData: SwiftDataColorData,
          isTransparent: Bool = false, isMetallic: Bool = false, hasSpool: Bool = false,
+         gradientType: Int = 0, additionalColorsData: [SwiftDataColorData]? = nil,
          materialType: SwiftDataMaterialType? = nil) {
         self.id = id
         self.name = name
@@ -63,6 +68,8 @@ final class SwiftDataFilamentColor {
         self.isTransparent = isTransparent
         self.isMetallic = isMetallic
         self.hasSpool = hasSpool
+        self.gradientType = gradientType
+        self.additionalColorsData = additionalColorsData
         self.materialType = materialType
     }
     
@@ -70,6 +77,25 @@ final class SwiftDataFilamentColor {
     var baseColorName: String {
         return name.replacingOccurrences(of: " (含料盘)", with: "")
                    .replacingOccurrences(of: " (无料盘)", with: "")
+    }
+    
+    // 帮助函数：判断是否是渐变色
+    var isGradient: Bool {
+        return gradientType > 0 && (additionalColorsData?.isEmpty == false)
+    }
+    
+    // 帮助函数：获取完整的渐变（如果有）
+    func getGradient() -> Gradient? {
+        guard isGradient, let additionalColors = additionalColorsData else {
+            return nil
+        }
+        
+        // 将主色和附加色合并为一个渐变数组
+        var colors: [Color] = [colorData.toColor()]
+        colors.append(contentsOf: additionalColors.map { $0.toColor() })
+        
+        // 创建渐变
+        return Gradient(colors: colors)
     }
 }
 

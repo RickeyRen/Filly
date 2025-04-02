@@ -110,6 +110,16 @@ class FilamentLibraryViewModel: ObservableObject {
         let suffix = colorData.hasSpool ? " (含料盘)" : " (无料盘)"
         let fullName = colorData.name + suffix
         
+        // 处理渐变色
+        let gradientType = colorData.gradientType.rawValue
+        var additionalColorsData: [SwiftDataColorData]? = nil
+        
+        if gradientType > 0 && !colorData.additionalColors.isEmpty {
+            additionalColorsData = colorData.additionalColors.map {
+                SwiftDataColorData(from: $0)
+            }
+        }
+        
         // 创建颜色对象
         let filamentColor = SwiftDataFilamentColor(
             name: fullName,
@@ -118,6 +128,8 @@ class FilamentLibraryViewModel: ObservableObject {
             isTransparent: colorData.isTransparent,
             isMetallic: colorData.isMetallic,
             hasSpool: colorData.hasSpool,
+            gradientType: gradientType,
+            additionalColorsData: additionalColorsData,
             materialType: materialType
         )
         

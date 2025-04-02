@@ -642,53 +642,87 @@ struct SearchResultsView: View {
 
 struct ColorCard: View {
     let color: SwiftDataFilamentColor
-    private let textContentMinHeight: CGFloat = 70
-
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Reel Image part (remains the same)
-            MiniFilamentReelView(color: color.colorData.toColor())
-                .frame(height: 80)
-                .frame(maxWidth: .infinity)
-                .background(Color(uiColor: .systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .padding(.bottom, 8)
-
-            // Text and Tag content area
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(color.baseColorName) \(color.code ?? "")")
-                    .font(.headline)
-                    .lineLimit(2)
-                    .frame(minHeight: UIFont.preferredFont(forTextStyle: .headline).lineHeight * 1.9, alignment: .top)
-
-                Text("\(color.materialType?.brand?.name ?? "N/A") - \(color.materialType?.name ?? "N/A")")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                // Tag Area
-                HStack(spacing: 4) {
-                     if color.isTransparent {
-                        TagView(text: "透明", color: .cyan)
+        VStack(spacing: 8) {
+            // 颜色圆圈，支持渐变色
+            ZStack {
+                if color.isGradient, let gradient = color.getGradient() {
+                    // 根据渐变类型创建不同样式的渐变
+                    switch color.gradientType {
+                    case 1: // horizontal
+                        Circle()
+                            .fill(LinearGradient(
+                                gradient: gradient,
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ))
+                    case 2: // vertical
+                        Circle()
+                            .fill(LinearGradient(
+                                gradient: gradient,
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ))
+                    case 3: // diagonal
+                        Circle()
+                            .fill(LinearGradient(
+                                gradient: gradient,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                    case 4: // radial
+                        Circle()
+                            .fill(RadialGradient(
+                                gradient: gradient,
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 40
+                            ))
+                    case 5, 6: // multiColor or rainbow
+                        Circle()
+                            .fill(AngularGradient(
+                                gradient: gradient,
+                                center: .center
+                            ))
+                    default:
+                        Circle()
+                            .fill(color.colorData.toColor())
                     }
-                    if color.isMetallic {
-                         TagView(text: "金属", color: .orange)
-                    }
-                     if !color.hasSpool {
-                         TagView(text: "无料盘", color: .gray)
-                    }
-                    Spacer()
+                } else {
+                    Circle()
+                        .fill(color.colorData.toColor())
                 }
-                .frame(height: 20)
-                
-                Spacer(minLength: 0)
             }
-            .frame(minHeight: textContentMinHeight)
-            .padding(.horizontal, 8)
-            .padding(.bottom, 8)
+            .frame(width: 80, height: 80)
+            .overlay(
+                Circle()
+                    .strokeBorder(Color.white, lineWidth: 2)
+            )
+            .shadow(color: Color.black.opacity(0.1), radius: 2)
+            
+            // 颜色名称，取基本名称而非完整名称（不含料盘信息）
+            Text(color.baseColorName)
+                .font(.caption)
+                .fontWeight(.medium)
+                .lineLimit(1)
+                .multilineTextAlignment(.center)
+            
+            // 是否有料盘标识
+            if color.hasSpool {
+                Image(systemName: "circle.grid.cross")
+                    .font(.system(size: 12))
+                    .foregroundColor(.blue)
+            } else {
+                // 无料盘时，添加占位符保持高度一致
+                Text(" ")
+                    .font(.system(size: 12))
+            }
         }
-        .background(Color(uiColor: .secondarySystemBackground))
+        .frame(minWidth: 90, maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
     }
 }
 

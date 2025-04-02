@@ -4,6 +4,17 @@ import SwiftUI
 /// 存储所有预设耗材数据的结构体
 struct PresetFilamentData {
     
+    // 渐变类型
+    enum GradientType {
+        case none              // 没有渐变（单色）
+        case horizontal        // 水平渐变
+        case vertical          // 垂直渐变
+        case diagonal          // 对角线渐变
+        case radial            // 径向渐变
+        case multiColor        // 多色渐变（超过两色）
+        case rainbow           // 彩虹色
+    }
+    
     // 颜色属性定义
     struct ColorProperties {
         let name: String
@@ -12,12 +23,24 @@ struct PresetFilamentData {
         let isTransparent: Bool
         let isMetallic: Bool
         
-        init(name: String, code: String? = nil, hasSpool: Bool = true, isTransparent: Bool = false, isMetallic: Bool = false) {
+        // 新增渐变相关属性
+        let gradientType: GradientType
+        let additionalColors: [Color]  // 附加颜色（用于渐变）
+        
+        init(name: String, 
+             code: String? = nil, 
+             hasSpool: Bool = true, 
+             isTransparent: Bool = false, 
+             isMetallic: Bool = false,
+             gradientType: GradientType = .none,
+             additionalColors: [Color] = []) {
             self.name = name
             self.code = code
             self.hasSpool = hasSpool
             self.isTransparent = isTransparent
             self.isMetallic = isMetallic
+            self.gradientType = gradientType
+            self.additionalColors = additionalColors
         }
     }
     
@@ -54,7 +77,26 @@ struct PresetFilamentData {
                         ColorProperties(name: "红色", code: "16200", hasSpool: true),
                         ColorProperties(name: "红色", code: "16200", hasSpool: false),
                         ColorProperties(name: "灰色", code: "16101", hasSpool: true),
-                        ColorProperties(name: "灰色", code: "16101", hasSpool: false)
+                        ColorProperties(name: "灰色", code: "16101", hasSpool: false),
+                        
+                        // 添加一些渐变色示例
+                        ColorProperties(
+                            name: "渐变红蓝", 
+                            code: "16700", 
+                            hasSpool: true,
+                            gradientType: .horizontal,
+                            additionalColors: [Color.blue]
+                        ),
+                        ColorProperties(
+                            name: "彩虹色", 
+                            code: "16800", 
+                            hasSpool: true,
+                            gradientType: .rainbow,
+                            additionalColors: [
+                                Color.red, Color.orange, Color.yellow, 
+                                Color.green, Color.blue, Color.purple
+                            ]
+                        )
                     ]
                 )
             ]
@@ -120,7 +162,19 @@ struct PresetFilamentData {
                         ColorProperties(name: "大理石白"),
                         ColorProperties(name: "petg大理石魔幻紫"),
                         ColorProperties(name: "petg大理石魔幻蓝"),
-                        ColorProperties(name: "Petg大理石魔幻绿")
+                        ColorProperties(name: "Petg大理石魔幻绿"),
+                        
+                        // 添加渐变色示例
+                        ColorProperties(
+                            name: "双色渐变黑红", 
+                            gradientType: .vertical,
+                            additionalColors: [Color.red]
+                        ),
+                        ColorProperties(
+                            name: "三色渐变", 
+                            gradientType: .multiColor,
+                            additionalColors: [Color.purple, Color.blue]
+                        )
                     ]
                 )
             ]

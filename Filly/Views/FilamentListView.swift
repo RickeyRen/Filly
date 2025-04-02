@@ -203,6 +203,19 @@ struct SelectFromFilamentLibraryView: View {
             alpha: colorRGB.alpha
         )
         
+        // 处理渐变色数据
+        var additionalColors: [ColorData]? = nil
+        if color.isGradient, let additionalColorsData = color.additionalColorsData {
+            additionalColors = additionalColorsData.map { colorData in
+                ColorData(
+                    red: colorData.red,
+                    green: colorData.green,
+                    blue: colorData.blue,
+                    alpha: colorData.alpha
+                )
+            }
+        }
+        
         // 打印颜色值，用于调试
         print("添加新耗材颜色: \(colorName), RGB: \(colorRGB.red), \(colorRGB.green), \(colorRGB.blue)")
         
@@ -218,7 +231,9 @@ struct SelectFromFilamentLibraryView: View {
             weight: 1000,
             diameter: .mm175,
             spools: [FilamentSpool(remainingPercentage: 100)],
-            notes: ""
+            notes: "",
+            gradientType: color.gradientType,
+            additionalColors: additionalColors
         )
         
         // 添加到库存
@@ -234,9 +249,20 @@ struct FilamentRowView: View {
     
     var body: some View {
         HStack(spacing: 15) {
-            FilamentReelView(color: filament.getColor())
+            // 使用支持渐变的耗材盘视图
+            if filament.isGradient, let gradient = filament.getGradient() {
+                FilamentReelView(
+                    color: filament.getColor(),
+                    gradient: gradient,
+                    gradientType: filament.gradientType
+                )
                 .frame(width: 40, height: 40)
                 .scaleEffect(0.5)
+            } else {
+                FilamentReelView(color: filament.getColor())
+                    .frame(width: 40, height: 40)
+                    .scaleEffect(0.5)
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(filament.brand)

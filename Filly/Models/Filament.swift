@@ -40,11 +40,16 @@ struct Filament: Identifiable, Codable {
     var dateAdded: Date
     var notes: String
     
+    // 渐变相关属性
+    var gradientType: Int // 对应于PresetFilamentData.GradientType的整数值
+    var additionalColors: [ColorData]? // 附加颜色（用于渐变）
+    
     // 自定义初始化方法
     init(brand: String, type: FilamentTypeModel, color: String, 
          colorData: ColorData? = nil,
          weight: Double = 1000, diameter: FilamentDiameter = .mm175, 
-         spools: [FilamentSpool] = [FilamentSpool()], notes: String = "") {
+         spools: [FilamentSpool] = [FilamentSpool()], notes: String = "",
+         gradientType: Int = 0, additionalColors: [ColorData]? = nil) {
         self.brand = brand
         self.type = type
         self.color = color
@@ -54,13 +59,16 @@ struct Filament: Identifiable, Codable {
         self.spools = spools
         self.dateAdded = Date()
         self.notes = notes
+        self.gradientType = gradientType
+        self.additionalColors = additionalColors
     }
     
     // 向后兼容的初始化方法（使用旧 FilamentType 枚举）
     init(brand: String, type: FilamentType, color: String,
          colorData: ColorData? = nil,
          weight: Double = 1000, diameter: FilamentDiameter = .mm175,
-         spools: [FilamentSpool] = [FilamentSpool()], notes: String = "") {
+         spools: [FilamentSpool] = [FilamentSpool()], notes: String = "",
+         gradientType: Int = 0, additionalColors: [ColorData]? = nil) {
         self.brand = brand
         self.type = FilamentTypeModel.from(type) // 转换枚举为模型
         self.color = color
@@ -70,6 +78,8 @@ struct Filament: Identifiable, Codable {
         self.spools = spools
         self.dateAdded = Date()
         self.notes = notes
+        self.gradientType = gradientType
+        self.additionalColors = additionalColors
     }
     
     // 获取平均剩余百分比（为了兼容旧代码）
@@ -90,6 +100,11 @@ struct Filament: Identifiable, Codable {
         return spools.filter { $0.remainingPercentage >= 100 }.count
     }
     
+    // 判断是否是渐变色
+    var isGradient: Bool {
+        return gradientType > 0 && (additionalColors?.isEmpty == false)
+    }
+    
     // 获取颜色对象
     func getColor() -> Color {
         if let colorData = colorData {
@@ -98,6 +113,27 @@ struct Filament: Identifiable, Codable {
             // 返回默认颜色映射
             return getDefaultColor(for: color)
         }
+    }
+    
+    // 获取渐变
+    func getGradient() -> Gradient? {
+        // 如果不是渐变色或没有附加色，返回nil
+        guard isGradient, let additionalColors = additionalColors else {
+            return nil
+        }
+        
+        // 创建渐变色
+        var colors: [Color] = []
+        if let mainColor = colorData {
+            colors.append(mainColor.getUIColor())
+        } else {
+            colors.append(getDefaultColor(for: color))
+        }
+        
+        // 添加附加颜色
+        colors.append(contentsOf: additionalColors.map { $0.getUIColor() })
+        
+        return Gradient(colors: colors)
     }
     
     // 默认颜色映射
