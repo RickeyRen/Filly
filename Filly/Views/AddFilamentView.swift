@@ -24,6 +24,24 @@ struct AddFilamentView: View {
     @State private var showingCustomBrand = false
     @State private var showingColorPicker = false
     
+    // 获取品牌可用的材料类型
+    private func getAvailableMaterialTypes(for brand: String) -> [String] {
+        if brand.isEmpty {
+            // 如果没有选择品牌，返回默认的所有类型
+            return FilamentType.allCases.map { $0.rawValue }
+        }
+        
+        // 从颜色库中获取该品牌的材料类型
+        let types = colorLibrary.colors
+            .filter { $0.brand == brand }
+            .map { $0.materialType }
+        
+        let uniqueTypes = Array(Set(types)).filter { !$0.isEmpty }.sorted()
+        
+        // 如果没有找到该品牌的任何材料类型，返回默认的所有类型
+        return uniqueTypes.isEmpty ? FilamentType.allCases.map { $0.rawValue } : uniqueTypes
+    }
+    
     var body: some View {
         NavigationView {
             Form {
@@ -53,8 +71,22 @@ struct AddFilamentView: View {
                     }
                     
                     Picker("类型", selection: $selectedType) {
-                        ForEach(FilamentType.allCases) { type in
-                            Text(type.rawValue).tag(type)
+                        // 根据选择的品牌动态显示材料类型
+                        let availableTypes = getAvailableMaterialTypes(for: brand)
+                        ForEach(availableTypes, id: \.self) { typeString in
+                            if let type = FilamentType(rawValue: typeString) {
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                    }
+                    .onChange(of: brand) { oldValue, newValue in
+                        // 当品牌变化时，检查当前选择的类型是否在新品牌的可用类型中
+                        let types = getAvailableMaterialTypes(for: newValue)
+                        if !types.isEmpty && !types.contains(selectedType.rawValue) {
+                            // 如果不在，则选择该品牌的第一个可用类型
+                            if let firstType = types.first, let type = FilamentType(rawValue: firstType) {
+                                selectedType = type
+                            }
                         }
                     }
                     
@@ -326,8 +358,22 @@ struct EditFilamentView: View {
                     }
                     
                     Picker("类型", selection: $selectedType) {
-                        ForEach(FilamentType.allCases) { type in
-                            Text(type.rawValue).tag(type)
+                        // 根据选择的品牌动态显示材料类型
+                        let availableTypes = getAvailableMaterialTypes(for: brand)
+                        ForEach(availableTypes, id: \.self) { typeString in
+                            if let type = FilamentType(rawValue: typeString) {
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                    }
+                    .onChange(of: brand) { oldValue, newValue in
+                        // 当品牌变化时，检查当前选择的类型是否在新品牌的可用类型中
+                        let types = getAvailableMaterialTypes(for: newValue)
+                        if !types.isEmpty && !types.contains(selectedType.rawValue) {
+                            // 如果不在，则选择该品牌的第一个可用类型
+                            if let firstType = types.first, let type = FilamentType(rawValue: firstType) {
+                                selectedType = type
+                            }
                         }
                     }
                     

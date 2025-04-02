@@ -138,11 +138,23 @@ class ColorLibraryViewModel: ObservableObject {
     // 获取所有可用的材料类型
     var availableMaterialTypes: [String] {
         var types = Set<String>()
-        for color in colors {
-            if !color.materialType.isEmpty {
-                types.insert(color.materialType)
+        
+        // 如果选择了品牌，只返回该品牌下的材料类型
+        if !selectedBrand.isEmpty {
+            for color in colors {
+                if color.brand == selectedBrand && !color.materialType.isEmpty {
+                    types.insert(color.materialType)
+                }
+            }
+        } else {
+            // 如果没有选择品牌，返回所有材料类型
+            for color in colors {
+                if !color.materialType.isEmpty {
+                    types.insert(color.materialType)
+                }
             }
         }
+        
         return Array(types).sorted()
     }
     

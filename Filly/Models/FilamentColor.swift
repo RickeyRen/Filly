@@ -206,6 +206,17 @@ struct FilamentColor: Identifiable, Codable, Equatable {
         }
         return Array(types).sorted()
     }
+    
+    // 获取特定品牌的所有材料类型
+    static func materialTypesForBrand(_ brand: String) -> [String] {
+        var types = Set<String>()
+        for color in presets {
+            if color.brand == brand && !color.materialType.isEmpty {
+                types.insert(color.materialType)
+            }
+        }
+        return Array(types).sorted()
+    }
 }
 
 // 由于SwiftUI的Color不符合Codable，我们需要创建一个可编码的颜色数据结构
