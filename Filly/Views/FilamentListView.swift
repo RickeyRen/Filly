@@ -203,8 +203,8 @@ struct SelectFromFilamentLibraryView: View {
             alpha: colorRGB.alpha
         )
         
-        // 查找或创建对应的耗材类型
-        let filamentType = filamentViewModel.typeViewModel.findOrCreateType(name: materialTypeName)
+        // 创建或查找对应的耗材类型
+        let filamentType = filamentViewModel.findOrCreateType(name: materialTypeName)
         
         // 创建新耗材，初始化一个新的耗材盘
         let newFilament = Filament(

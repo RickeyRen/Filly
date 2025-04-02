@@ -177,6 +177,37 @@ class FilamentLibraryViewModel: ObservableObject {
     
     // Similar functions for MaterialType and FilamentColor can be added here...
     
+    // 添加材料类型到品牌
+    func addMaterialType(name: String, to brand: SwiftDataBrand, context: ModelContext) {
+        let materialType = SwiftDataMaterialType(name: name, brand: brand)
+        context.insert(materialType)
+        brand.materialTypes.append(materialType)
+        saveContext(context)
+    }
+    
+    // 删除材料类型
+    func deleteMaterialType(_ materialType: SwiftDataMaterialType, context: ModelContext) {
+        context.delete(materialType)
+        saveContext(context)
+    }
+    
+    // 添加颜色到材料类型
+    func addColor(name: String, colorData: SwiftDataColorData, to materialType: SwiftDataMaterialType, context: ModelContext, 
+                 code: String? = nil, isTransparent: Bool = false, isMetallic: Bool = false, hasSpool: Bool = true) {
+        let color = SwiftDataFilamentColor(
+            name: name,
+            code: code,
+            colorData: colorData,
+            isTransparent: isTransparent,
+            isMetallic: isMetallic,
+            hasSpool: hasSpool,
+            materialType: materialType
+        )
+        context.insert(color)
+        materialType.colors.append(color)
+        saveContext(context)
+    }
+    
     private func saveContext(_ context: ModelContext) {
         do {
             try context.save()

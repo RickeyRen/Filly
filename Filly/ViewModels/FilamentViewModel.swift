@@ -1,15 +1,12 @@
 import Foundation
 import SwiftUI
+import SwiftData
 
 class FilamentViewModel: ObservableObject {
     @Published var filaments: [Filament] = []
     private let saveKey = "savedFilaments"
     
-    // 添加 FilamentTypeViewModel 依赖
-    let typeViewModel: FilamentTypeViewModel
-    
-    init(typeViewModel: FilamentTypeViewModel = FilamentTypeViewModel()) {
-        self.typeViewModel = typeViewModel
+    init() {
         loadFilaments()
         
         // 如果没有数据，添加一些示例数据
@@ -20,10 +17,10 @@ class FilamentViewModel: ObservableObject {
     
     // 添加示例数据
     private func addSampleData() {
-        // 使用 typeViewModel 获取或创建材料类型
-        let plaType = typeViewModel.findOrCreateType(name: "PLA")
-        let petgType = typeViewModel.findOrCreateType(name: "PETG")
-        let tpuType = typeViewModel.findOrCreateType(name: "TPU")
+        // 创建材料类型
+        let plaType = FilamentTypeModel(name: "PLA")
+        let petgType = FilamentTypeModel(name: "PETG")
+        let tpuType = FilamentTypeModel(name: "TPU")
         
         let samples = [
             Filament(brand: "拓竹 Bambu Lab", type: plaType, color: "黑色", weight: 1000, 
@@ -52,28 +49,12 @@ class FilamentViewModel: ObservableObject {
     }
     
     // 删除耗材
-    func deleteFilament(at offsets: IndexSet) {
-        filaments.remove(atOffsets: offsets)
+    func deleteFilament(id: UUID) {
+        filaments.removeAll { $0.id == id }
         saveFilaments()
     }
     
-    // 删除指定ID的耗材
-    func deleteFilament(id: UUID) {
-        if let index = filaments.firstIndex(where: { $0.id == id }) {
-            filaments.remove(at: index)
-            saveFilaments()
-        }
-    }
-    
-    // 标记耗材为用完
-    func markAsEmpty(id: UUID) {
-        if let index = filaments.firstIndex(where: { $0.id == id }) {
-            filaments.remove(at: index)
-            saveFilaments()
-        }
-    }
-    
-    // 更新耗材信息
+    // 更新现有耗材
     func updateFilament(_ filament: Filament) {
         if let index = filaments.firstIndex(where: { $0.id == filament.id }) {
             filaments[index] = filament
@@ -81,74 +62,68 @@ class FilamentViewModel: ObservableObject {
         }
     }
     
-    // 更新耗材盘的剩余量
-    func updateSpoolPercentage(filamentId: UUID, spoolId: UUID, percentage: Double) {
-        if let filamentIndex = filaments.firstIndex(where: { $0.id == filamentId }),
-           let spoolIndex = filaments[filamentIndex].spools.firstIndex(where: { $0.id == spoolId }) {
-            filaments[filamentIndex].spools[spoolIndex].remainingPercentage = max(0, min(100, percentage))
-            saveFilaments()
-        }
-    }
-    
-    // 移除空盘 - 优化版
-    func removeEmptySpool(filamentId: UUID, spoolId: UUID) {
-        // 直接修改数据源 - 使用更高效的方式
-        if let filamentIndex = filaments.firstIndex(where: { $0.id == filamentId }) {
-            // 直接使用removeAll方法，而不是循环比较
-            filaments[filamentIndex].spools.removeAll(where: { $0.id == spoolId })
-            
-            // 检查是否全部删除
-            if filaments[filamentIndex].spools.isEmpty {
-                filaments.remove(at: filamentIndex)
-            }
-            
-            // 立即保存并通知UI
-            saveFilaments()
-            objectWillChange.send()
-        }
-    }
-    
-    // 添加新的耗材盘
-    func addSpool(to filamentId: UUID) {
+    // 更新耗材盘
+    func updateSpool(filamentId: UUID, spoolIndex: Int, remainingPercentage: Double, notes: String = "") {
         if let index = filaments.firstIndex(where: { $0.id == filamentId }) {
-            var updatedFilament = filaments[index]
-            let newSpool = FilamentSpool(remainingPercentage: 100)
-            updatedFilament.spools.insert(newSpool, at: 0) // 将新耗材盘插入到数组的第一个位置
-            filaments[index] = updatedFilament
+            if spoolIndex < filaments[index].spools.count {
+                filaments[index].spools[spoolIndex].remainingPercentage = remainingPercentage
+                filaments[index].spools[spoolIndex].notes = notes
+                saveFilaments()
+            }
+        }
+    }
+    
+    // 添加耗材盘
+    func addSpool(filamentId: UUID, remainingPercentage: Double = 100, notes: String = "") {
+        if let index = filaments.firstIndex(where: { $0.id == filamentId }) {
+            filaments[index].spools.append(FilamentSpool(remainingPercentage: remainingPercentage, notes: notes))
             saveFilaments()
         }
     }
     
-    // 保存数据 - 高效版
+    // 删除耗材盘
+    func deleteSpool(filamentId: UUID, spoolIndex: Int) {
+        if let index = filaments.firstIndex(where: { $0.id == filamentId }) {
+            if spoolIndex < filaments[index].spools.count {
+                filaments[index].spools.remove(at: spoolIndex)
+                saveFilaments()
+            }
+        }
+    }
+    
+    // 保存数据
     private func saveFilaments() {
-        do {
-            let encoded = try JSONEncoder().encode(filaments)
+        if let encoded = try? JSONEncoder().encode(filaments) {
             UserDefaults.standard.set(encoded, forKey: saveKey)
-            UserDefaults.standard.synchronize() // 立即保存
-        } catch {
-            print("数据保存失败: \(error)")
         }
     }
     
     // 加载数据
     private func loadFilaments() {
-        print("ViewModel: 开始加载耗材数据")
-        if let data = UserDefaults.standard.data(forKey: saveKey) {
-            do {
-                let decoded = try JSONDecoder().decode([Filament].self, from: data)
-                filaments = decoded
-                print("ViewModel: 耗材数据加载成功，共\(filaments.count)个耗材")
-            } catch {
-                print("ViewModel: 解析耗材数据失败: \(error.localizedDescription)")
-                filaments = []
+        if let savedFilaments = UserDefaults.standard.data(forKey: saveKey) {
+            if let decodedFilaments = try? JSONDecoder().decode([Filament].self, from: savedFilaments) {
+                self.filaments = decodedFilaments
+                return
             }
-        } else {
-            print("ViewModel: 未找到保存的耗材数据")
-            filaments = []
         }
+        self.filaments = []
     }
     
-    // 获取不同品牌的统计数据
+    // 查找或创建对应的材料类型
+    func findOrCreateType(name: String) -> FilamentTypeModel {
+        // 查找现有类型
+        for filament in filaments {
+            if filament.type.name.lowercased() == name.lowercased() {
+                return filament.type
+            }
+        }
+        // 创建新类型
+        return FilamentTypeModel(name: name)
+    }
+    
+    // MARK: - 统计信息
+    
+    // 品牌统计
     func brandStatistics() -> [(brand: String, count: Int)] {
         var brandCounts: [String: Int] = [:]
         
@@ -160,7 +135,7 @@ class FilamentViewModel: ObservableObject {
             .sorted { $0.count > $1.count }
     }
     
-    // 获取不同类型的统计数据
+    // 类型统计
     func typeStatistics() -> [(type: String, count: Int)] {
         var typeCounts: [String: Int] = [:]
         

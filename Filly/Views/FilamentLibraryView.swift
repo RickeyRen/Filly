@@ -246,29 +246,75 @@ struct FilterScrollView: View {
 struct BrandListView: View {
     let brands: [SwiftDataBrand]
     @Binding var selectedBrandId: UUID?
-
+    @State private var showingAddBrandSheet = false
+    @State private var newBrandName = ""
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var filamentLibraryViewModel: FilamentLibraryViewModel
+    
     var body: some View {
         List {
-            ForEach(brands) { brand in
+            // 添加新品牌的按钮
+            Section {
                 Button {
-                    withAnimation { selectedBrandId = brand.id }
+                    showingAddBrandSheet = true
                 } label: {
                     HStack {
-                        Text(brand.name)
-                        Spacer()
-                        Text("\(brand.materialTypes.count) 种材料")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.blue)
+                        Text("添加新品牌")
                     }
-                    .contentShape(Rectangle()) // Make entire row tappable
                 }
-                .buttonStyle(.plain) // Use plain button style in List
+            }
+            
+            Section {
+                if brands.isEmpty {
+                    Text("未找到品牌信息")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(brands) { brand in
+                        Button {
+                            withAnimation { selectedBrandId = brand.id }
+                        } label: {
+                            HStack {
+                                Text(brand.name)
+                                Spacer()
+                                Text("\(brand.materialTypes.count) 种材料")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                filamentLibraryViewModel.deleteBrand(brand, context: modelContext)
+                            } label: {
+                                Label("删除", systemImage: "trash")
+                            }
+                        }
+                    }
+                }
             }
         }
         .listStyle(.insetGrouped)
+        .navigationTitle("耗材品牌")
+        .alert("添加新品牌", isPresented: $showingAddBrandSheet) {
+            TextField("品牌名称", text: $newBrandName)
+            Button("取消", role: .cancel) {
+                newBrandName = ""
+            }
+            Button("添加") {
+                if !newBrandName.isEmpty {
+                    filamentLibraryViewModel.addBrand(name: newBrandName, context: modelContext)
+                    newBrandName = ""
+                }
+            }
+        } message: {
+            Text("请输入新品牌的名称")
+        }
     }
 }
 
@@ -278,6 +324,10 @@ struct MaterialTypeListView: View {
     @Binding var selectedMaterialTypeId: UUID?
     let viewModel: FilamentLibraryViewModel
     let context: ModelContext
+    
+    // 新增状态变量
+    @State private var showingAddTypeSheet = false
+    @State private var newTypeName = ""
     
     // 使用Query获取品牌对象
     @Query private var brands: [SwiftDataBrand]
@@ -302,27 +352,52 @@ struct MaterialTypeListView: View {
         List {
             if let brand = brand {
                 let materialTypes = viewModel.fetchMaterialTypes(for: brand, context: context)
-                if materialTypes.isEmpty {
-                    Text("未找到 \(brand.name) 的材料类型。")
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(materialTypes) { type in
-                        Button {
-                            withAnimation { selectedMaterialTypeId = type.id }
-                        } label: {
-                            HStack {
-                                Text(type.name)
-                                Spacer()
-                                Text("\(type.colors.count) 种颜色")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                             .contentShape(Rectangle())
+                
+                // 添加新类型的按钮
+                Section {
+                    Button {
+                        showingAddTypeSheet = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(.blue)
+                            Text("添加新材料类型")
                         }
-                        .buttonStyle(.plain)
+                    }
+                }
+                
+                Section {
+                    if materialTypes.isEmpty {
+                        Text("未找到 \(brand.name) 的材料类型。")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(materialTypes) { type in
+                            Button {
+                                withAnimation { selectedMaterialTypeId = type.id }
+                            } label: {
+                                HStack {
+                                    Text(type.name)
+                                    Spacer()
+                                    Text("\(type.colors.count) 种颜色")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                 .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    if let type = materialTypes.first(where: { $0.id == type.id }) {
+                                        viewModel.deleteMaterialType(type, context: context)
+                                    }
+                                } label: {
+                                    Label("删除", systemImage: "trash")
+                                }
+                            }
+                        }
                     }
                 }
             } else {
@@ -332,6 +407,20 @@ struct MaterialTypeListView: View {
         }
         .listStyle(.insetGrouped)
         .navigationTitle(brand?.name ?? "材料类型") // 安全获取品牌名称
+        .alert("添加新材料类型", isPresented: $showingAddTypeSheet) {
+            TextField("材料类型名称", text: $newTypeName)
+            Button("取消", role: .cancel) {
+                newTypeName = ""
+            }
+            Button("添加") {
+                if !newTypeName.isEmpty, let brand = brand {
+                    viewModel.addMaterialType(name: newTypeName, to: brand, context: context)
+                    newTypeName = ""
+                }
+            }
+        } message: {
+            Text("请输入新材料类型的名称")
+        }
     }
 }
 
@@ -341,6 +430,15 @@ struct ColorGridView: View {
     let viewModel: FilamentLibraryViewModel
     let onSelectColor: (SwiftDataFilamentColor) -> Void 
     let context: ModelContext
+    
+    // 新增状态变量
+    @State private var showingAddColorSheet = false
+    @State private var newColorName = ""
+    @State private var selectedColor = Color.blue
+    @State private var isTransparent = false
+    @State private var isMetallic = false
+    @State private var hasSpool = true
+    @State private var colorCode = ""
     
     // 使用Query获取材料类型
     @Query private var materialTypes: [SwiftDataMaterialType]
@@ -368,6 +466,25 @@ struct ColorGridView: View {
     var body: some View {
         ScrollView {
             if let materialType = materialType {
+                // 添加新颜色按钮
+                Button {
+                    showingAddColorSheet = true
+                } label: {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.blue)
+                        Text("添加新颜色")
+                            .foregroundStyle(.primary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal)
+                .padding(.top)
+                
                 let colors = viewModel.fetchColors(for: materialType, context: context)
                 if colors.isEmpty {
                     ContentUnavailableView(
@@ -383,6 +500,14 @@ struct ColorGridView: View {
                                 .onTapGesture {
                                     onSelectColor(color)
                                 }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        context.delete(color)
+                                        try? context.save()
+                                    } label: {
+                                        Label("删除颜色", systemImage: "trash")
+                                    }
+                                }
                         }
                     }
                     .padding()
@@ -397,6 +522,86 @@ struct ColorGridView: View {
             }
         }
         .navigationTitle(materialType?.name ?? "颜色") // 安全获取材料类型名称
+        .sheet(isPresented: $showingAddColorSheet) {
+            if let materialType = materialType {
+                NavigationView {
+                    Form {
+                        Section(header: Text("基本信息")) {
+                            TextField("颜色名称", text: $newColorName)
+                            TextField("型号代码 (可选)", text: $colorCode)
+                            ColorPicker("选择颜色", selection: $selectedColor)
+                        }
+                        
+                        Section(header: Text("属性")) {
+                            Toggle("是否透明", isOn: $isTransparent)
+                            Toggle("是否金属质感", isOn: $isMetallic)
+                            Toggle("是否包含料盘", isOn: $hasSpool)
+                        }
+                        
+                        Section {
+                            Button("添加") {
+                                addNewColor(to: materialType)
+                                showingAddColorSheet = false
+                            }
+                            .frame(maxWidth: .infinity)
+                            .disabled(newColorName.isEmpty)
+                        }
+                    }
+                    .navigationTitle("添加新颜色")
+                    .navigationBarItems(trailing: Button("取消") {
+                        showingAddColorSheet = false
+                    })
+                }
+            }
+        }
+    }
+    
+    private func addNewColor(to materialType: SwiftDataMaterialType) {
+        // 创建颜色数据
+        #if os(iOS)
+        let uiColor = UIColor(selectedColor)
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+        #else
+        let nsColor = NSColor(selectedColor)
+        var r: CGFloat = 0.5
+        var g: CGFloat = 0.5
+        var b: CGFloat = 0.5
+        var a: CGFloat = 1.0
+        if let rgbColor = nsColor.usingColorSpace(.sRGB) {
+            rgbColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+        }
+        #endif
+        
+        let colorData = SwiftDataColorData(red: Double(r), green: Double(g), blue: Double(b), alpha: Double(a))
+        
+        // 全名格式设置
+        let fullName = hasSpool ? 
+            "\(newColorName) (含料盘)" : 
+            "\(newColorName) (无料盘)"
+        
+        // 添加新颜色
+        viewModel.addColor(
+            name: fullName, 
+            colorData: colorData, 
+            to: materialType, 
+            context: context,
+            code: colorCode.isEmpty ? nil : colorCode,
+            isTransparent: isTransparent,
+            isMetallic: isMetallic,
+            hasSpool: hasSpool
+        )
+        
+        // 重置表单
+        newColorName = ""
+        colorCode = ""
+        selectedColor = .blue
+        isTransparent = false
+        isMetallic = false
+        hasSpool = true
     }
 }
 
@@ -491,11 +696,6 @@ struct AddLegacyFilamentSheet: View {
     let item: FilamentSheetItem 
     @ObservedObject var filamentViewModel: FilamentViewModel
     
-    // 直接使用filamentViewModel中的typeViewModel
-    private var typeViewModel: FilamentTypeViewModel {
-        filamentViewModel.typeViewModel
-    }
-
     // State remains the same
     @State private var weight: Double = 1000.0
     @State private var selectedDiameter: FilamentDiameter = .mm175
@@ -622,15 +822,15 @@ struct AddLegacyFilamentSheet: View {
         }
     }
 
-    // 更新 addFilamentToInventory 使用 FilamentTypeViewModel
+    // 更新addFilamentToInventory方法不再使用FilamentTypeViewModel
     private func addFilamentToInventory() {
-        // 从 typeViewModel 中查找或创建材料类型
-        let materialType = typeViewModel.findOrCreateType(name: item.materialTypeName)
+        // 直接使用filamentViewModel创建或查找材料类型
+        let materialType = filamentViewModel.findOrCreateType(name: item.materialTypeName)
         
-        // 创建 Filament 对象并添加到库存
+        // 创建Filament对象并添加到库存
         let newFilament = Filament(
             brand: item.brandName,
-            type: materialType,  // 使用从类型管理器获取的类型
+            type: materialType,
             color: item.libraryColorBaseName,
             colorData: ColorData(from: item.swiftUIColor),
             weight: weight,

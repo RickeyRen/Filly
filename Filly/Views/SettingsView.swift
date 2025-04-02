@@ -1,22 +1,18 @@
 import SwiftUI
-import SwiftData
 
 struct SettingsView: View {
     @EnvironmentObject var themeManager: ThemeManager
-    @EnvironmentObject var typeViewModel: FilamentTypeViewModel
-    @State private var showingMaterialTypeManager = false
-    @State private var localTheme: ThemeMode = .system
     
-    // 监听主题变更计数器
+    // 状态变量用于本地主题选择和计数器同步
+    @State private var localTheme: ThemeMode = .system
     @State private var themeCounter: Int = 0
     
     var body: some View {
         NavigationView {
             List {
-                Section(header: Text("应用设置")) {
-                    // 主题选择器 - 使用枚举作为选择项
-                    VStack(alignment: .leading) {
-                        Text("主题选择")
+                Section(header: Text("外观")) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("主题设置")
                             .font(.headline)
                             .padding(.bottom, 8)
                         
@@ -57,19 +53,6 @@ struct SettingsView: View {
                     .padding(.vertical, 8)
                 }
                 
-                Section(header: Text("耗材管理")) {
-                    Button(action: {
-                        showingMaterialTypeManager = true
-                    }) {
-                        HStack {
-                            Image(systemName: "tag")
-                                .foregroundColor(.blue)
-                                .frame(width: 24, height: 24)
-                            Text("管理材料类型")
-                        }
-                    }
-                }
-                
                 Section(header: Text("关于应用")) {
                     HStack {
                         Image(systemName: "info.circle")
@@ -83,9 +66,6 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("设置")
-            .sheet(isPresented: $showingMaterialTypeManager) {
-                MaterialTypeManagerView()
-            }
             .onAppear {
                 localTheme = themeManager.selectedTheme
                 themeCounter = themeManager.themeChangeCounter
