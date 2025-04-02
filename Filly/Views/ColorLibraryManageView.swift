@@ -414,7 +414,6 @@ struct ColorEditorView: View {
                 // 颜色选择器
                 SwiftUI.ColorPicker("选择颜色", selection: $pickedColor)
                     .padding()
-                }
             }
             .padding(.bottom, 20)
             
