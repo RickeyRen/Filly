@@ -47,7 +47,7 @@ struct SettingsView: View {
             }
             .navigationTitle("设置")
             .sheet(isPresented: $showingMaterialTypeManager) {
-                MaterialTypeManagerView(viewModel: typeViewModel)
+                MaterialTypeManagerView()
             }
         }
     }
