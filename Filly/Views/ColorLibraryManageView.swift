@@ -1,11 +1,16 @@
 import SwiftUI
 
+// 创建一个遵循Identifiable协议的UUID包装结构体
+struct IdentifiableUUID: Identifiable {
+    let id: UUID
+}
+
 struct ColorLibraryManageView: View {
     @ObservedObject var colorLibrary: ColorLibraryViewModel
     @Environment(\.presentationMode) var presentationMode
     @State private var searchText = ""
     @State private var isAddingNew = false
-    @State private var selectedColorID: UUID? = nil
+    @State private var selectedColorID: IdentifiableUUID? = nil
     @State private var showingConfirmation = false
     @State private var showBrandFilter = false
     @State private var showMaterialFilter = false
@@ -143,7 +148,7 @@ struct ColorLibraryManageView: View {
                         ColorLibraryItemView(color: colorItem)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                selectedColorID = colorItem.id
+                                selectedColorID = IdentifiableUUID(id: colorItem.id)
                             }
                     }
                     .onDelete { indexSet in
@@ -196,8 +201,8 @@ struct ColorLibraryManageView: View {
                     }
                 }
             }
-            .sheet(item: $selectedColorID) { colorID in
-                if let color = colorLibrary.colors.first(where: { $0.id == colorID }) {
+            .sheet(item: $selectedColorID) { identifiableID in
+                if let color = colorLibrary.colors.first(where: { $0.id == identifiableID.id }) {
                     ColorEditorView(
                         colorLibrary: colorLibrary,
                         isNew: false,
