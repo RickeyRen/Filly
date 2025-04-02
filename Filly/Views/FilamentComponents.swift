@@ -3,8 +3,8 @@ import SwiftUI
 // 简化的2D耗材盘图标 - 性能优化设计
 public struct SimpleFillamentReel2D: View {
     let color: Color
-    // 移除动态旋转角度状态，使用固定值
-    private let rotationDegree: Double = 30
+    // 恢复动画状态，但降低动画频率和复杂度
+    @State private var rotationDegree: Double = 0
     @Environment(\.colorScheme) private var colorScheme
     
     // 使用缓存颜色计算结果
@@ -45,7 +45,7 @@ public struct SimpleFillamentReel2D: View {
             
             // 预计算线条对比色
             var colors: [Color] = []
-            for i in 0..<5 {
+            for i in 0..<3 {  // 减少预计算的颜色数量
                 if i % 2 == 0 {
                     if brightness > 0.7 {
                         colors.append(SimpleFillamentReel2D.darken(baseColor, by: 0.5).opacity(0.9))
@@ -93,12 +93,12 @@ public struct SimpleFillamentReel2D: View {
                 )
                 .frame(width: 50, height: 50)
             
-            // 使用较少的同心圆减少渲染负担，固定旋转角度
+            // 使用较少的同心圆减少渲染负担
             CircleWindingsView(colorScheme: colorScheme, rotationDegree: rotationDegree, contrastColors: cachedColors.contrastColors)
             
-            // 添加两个标记点，使用固定位置
+            // 添加两个标记点，减少动态计算
             ForEach(0..<2) { i in
-                let angle = Double(i) * 180.0 + rotationDegree * 1.2
+                let angle = Double(i) * 180.0
                 let radius = 20.0
                 
                 // 小圆点标记
@@ -106,8 +106,8 @@ public struct SimpleFillamentReel2D: View {
                     .fill(colorScheme == .dark ? Color.white.opacity(0.9) : Color.black.opacity(0.7))
                     .frame(width: 3, height: 3)
                     .offset(
-                        x: CGFloat(cos(Angle(degrees: angle).radians) * radius),
-                        y: CGFloat(sin(Angle(degrees: angle).radians) * radius)
+                        x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 0.6).radians) * radius),
+                        y: CGFloat(sin(Angle(degrees: angle + rotationDegree * 0.6).radians) * radius)
                     )
             }
             
@@ -116,15 +116,15 @@ public struct SimpleFillamentReel2D: View {
                 .stroke(cachedColors.centerContrastColor, lineWidth: 1.5)
                 .frame(width: 18, height: 18)
             
-            // 简化的中心孔，使用固定旋转角度
+            // 简化的中心孔
             OptimizedCenterHole(rotationDegree: rotationDegree)
             
-            // 顶部高光 - 使用固定位置
+            // 顶部高光 - 使用更简单的形状
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(Color.white.opacity(0.5), style: StrokeStyle(lineWidth: 15, lineCap: .round))
                 .frame(width: 30, height: 30)
-                .rotationEffect(Angle(degrees: -20))
+                .rotationEffect(Angle(degrees: -20 + rotationDegree * 0.25))
                 .offset(y: -6)
                 .blur(radius: 3.0)
                 
@@ -132,6 +132,15 @@ public struct SimpleFillamentReel2D: View {
             Circle()
                 .stroke(cachedColors.borderColor, lineWidth: 1.0)
                 .frame(width: 50, height: 50)
+        }
+        .onAppear {
+            // 使用更长的动画周期减少动画计算频率
+            let baseAnimation = Animation.linear(duration: 60) // 大幅延长动画周期减少重绘
+            let smoothAnimation = baseAnimation.repeatForever(autoreverses: false)
+            
+            withAnimation(smoothAnimation) {
+                rotationDegree = 360
+            }
         }
     }
     
@@ -203,7 +212,7 @@ public struct SimpleFillamentReel2D: View {
     }
 }
 
-// 提取的同心圆组件 - 使用固定角度
+// 提取的同心圆组件 - 优化性能
 struct CircleWindingsView: View {
     let colorScheme: ColorScheme
     let rotationDegree: Double
@@ -211,30 +220,31 @@ struct CircleWindingsView: View {
     
     var body: some View {
         // 减少圆圈数量以提高性能
-        ForEach(0..<3) { i in
-            let radius = 20.0 + CGFloat(i) * 3.5
-            let rotationOffset = Double(i) * 60 // 固定的角度偏移量
+        ForEach(0..<3) { i in // 只渲染3个圆环
+            let radius = 14.0 + CGFloat(i) * 4.5
+            let rotationSpeed = i % 2 == 0 ? 0.5 : -0.4 // 降低旋转速度
+            let rotationOffset = Double(i) * 72
             
             Circle()
-                .trim(from: i % 3 == 0 ? 0.0 : 0.03, to: i % 4 == 0 ? 0.97 : 1.0)
+                .trim(from: i % 2 == 0 ? 0.0 : 0.05, to: i % 3 == 0 ? 0.95 : 1.0)
                 .stroke(
                     i % 2 == 0 ? 
                         contrastColors[i % contrastColors.count] :
                         (colorScheme == .dark ? Color.white.opacity(0.8) : Color.black.opacity(0.7)),
                     style: StrokeStyle(
-                        lineWidth: 1.2 + (CGFloat(2-i) * 0.1),
+                        lineWidth: 1.2,
                         lineCap: .round,
                         lineJoin: .round,
                         dash: i % 2 == 0 ? [] : [3, 3]
                     )
                 )
                 .frame(width: radius * 2, height: radius * 2)
-                .rotationEffect(Angle(degrees: rotationOffset))
+                .rotationEffect(Angle(degrees: rotationOffset + rotationDegree * rotationSpeed))
         }
     }
 }
 
-// 提取的中心孔组件 - 使用固定角度
+// 提取的中心孔组件 - 优化性能
 private struct OptimizedCenterHole: View {
     let rotationDegree: Double
     
@@ -255,7 +265,7 @@ private struct OptimizedCenterHole: View {
                 )
                 .frame(width: 15, height: 15)
             
-            // 三段圆环，固定位置
+            // 三段圆环，较低速度动画
             ForEach(0..<3) { i in
                 let startAngle = Double(i) * 120 + 20 // 起始角度，每段相隔120度
                 let endAngle = startAngle + 80 // 结束角度，每段覆盖80度
@@ -267,7 +277,7 @@ private struct OptimizedCenterHole: View {
                         style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
                     )
                     .frame(width: 12, height: 12)
-                    .rotationEffect(Angle(degrees: -90 - rotationDegree * 0.5))
+                    .rotationEffect(Angle(degrees: -90 - rotationDegree * 0.7)) // 降低旋转速度
             }
         }
         .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.4)
