@@ -170,45 +170,6 @@ struct ColorPickerView: View {
                     .background(SystemColorCompatibility.tertiarySystemBackground)
                 }
                 
-                // 最近使用的颜色 - 使用LazyHStack提高性能
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 12) {
-                        Text("最近使用:")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 12)
-                        
-                        ForEach(colorLibrary.recentlyUsedColors()) { colorItem in
-                            VStack(spacing: 2) {
-                                MiniFilamentReelView(color: colorItem.getUIColor())
-                                    .frame(width: 36, height: 36)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(selectedColorName == colorItem.name ? Color.blue : Color.clear, lineWidth: 2)
-                                    )
-                                
-                                Text(colorItem.name)
-                                    .font(.system(size: 9))
-                                    .lineLimit(1)
-                                    .frame(width: 60)
-                                    .multilineTextAlignment(.center)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(width: 60, height: 60)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                self.selectedColorName = colorItem.name
-                                self.selectedColor = colorItem.getUIColor()
-                                colorLibrary.updateLastUsed(for: colorItem)
-                                presentationMode.wrappedValue.dismiss()
-                            }
-                        }
-                    }
-                    .padding(.vertical, 8)
-                }
-                .frame(height: 70)
-                .background(Color(#colorLiteral(red: 0.1298420429, green: 0.1298461258, blue: 0.1298439503, alpha: 1)))
-                
                 // 添加新颜色的视图或颜色网格
                 if isAddingNew {
                     // 添加新颜色的视图
