@@ -1,18 +1,27 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @StateObject private var viewModel = FilamentViewModel()
-    @StateObject private var colorLibrary = ColorLibraryViewModel()
-    @EnvironmentObject var themeManager: ThemeManager // 从环境中获取，而不是创建新实例
+    @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var filamentLibraryViewModel: FilamentLibraryViewModel
+    @EnvironmentObject var filamentViewModel: FilamentViewModel
+    @EnvironmentObject var colorLibrary: ColorLibraryViewModel
     
     var body: some View {
         TabView {
-            FilamentListView(viewModel: viewModel, colorLibrary: colorLibrary)
+            FilamentListView(viewModel: filamentViewModel, colorLibrary: colorLibrary)
                 .tabItem {
-                    Label("库存", systemImage: "cube.box")
+                    Label("我的耗材", systemImage: "square.stack.3d.up")
                 }
             
-            StatisticsView(viewModel: viewModel)
+            FilamentLibraryView()
+                .environmentObject(filamentLibraryViewModel)
+                .environmentObject(filamentViewModel)
+                .environmentObject(colorLibrary)
+                .tabItem {
+                    Label("耗材库", systemImage: "books.vertical")
+                }
+            
+            StatisticsView(viewModel: filamentViewModel)
                 .tabItem {
                     Label("统计", systemImage: "chart.pie")
                 }
