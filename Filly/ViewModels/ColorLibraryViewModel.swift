@@ -13,8 +13,7 @@ class ColorLibraryViewModel: ObservableObject {
         
         // 如果没有颜色，添加预设颜色
         if colors.isEmpty {
-            colors = FilamentColor.presets
-            saveColors()
+            resetToDefaults()
         }
     }
     
