@@ -35,7 +35,7 @@ struct ColorLibraryManageView: View {
                 // 颜色列表 - 经过优化的性能
                 List {
                     if isAddingNew {
-                        ColorEditorView(
+                        ColorLibraryEditorView(
                             colorLibrary: colorLibrary,
                             isNew: true,
                             isPresented: $isAddingNew,
@@ -104,7 +104,7 @@ struct ColorLibraryManageView: View {
             }
             .sheet(item: $selectedColorID) { identifiableID in
                 if let color = colorLibrary.colors.first(where: { $0.id == identifiableID.id }) {
-                    ColorEditorView(
+                    ColorLibraryEditorView(
                         colorLibrary: colorLibrary,
                         isNew: false,
                         isPresented: Binding(
@@ -393,7 +393,7 @@ struct ColorLibraryItemView: View {
 }
 
 // 颜色编辑器视图
-struct ColorEditorView: View {
+struct ColorLibraryEditorView: View {
     @ObservedObject var colorLibrary: ColorLibraryViewModel
     let isNew: Bool
     @Binding var isPresented: Bool
@@ -487,7 +487,7 @@ struct ColorEditorView: View {
                 // 颜色选择器
                 SwiftUI.ColorPicker("选择颜色", selection: $pickedColor)
                     .padding()
-            }
+                }
             .padding(.bottom, 20)
             
             // 按钮

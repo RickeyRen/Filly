@@ -1,10 +1,14 @@
 import SwiftUI
+import Combine
 
 #if os(iOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
 #endif
+
+// 导入系统颜色兼容层
+// SystemColorCompatibility在其他文件中已定义
 
 struct ColorPickerView: View {
     @ObservedObject var colorLibrary: ColorLibraryViewModel
@@ -34,7 +38,7 @@ struct ColorPickerView: View {
                         .padding(.vertical, 8)
                         .background(SystemColorCompatibility.tertiarySystemBackground)
                         .cornerRadius(10)
-                        .onChange(of: searchText) { _ in
+                        .onChange(of: searchText) { oldValue, newValue in
                             updateFilteredColors()
                         }
                 }
@@ -246,32 +250,5 @@ struct ColorEditorView: View {
                 }
             }
         }
-    }
-}
-
-// 系统颜色兼容层，用于在iOS和macOS之间统一颜色
-struct SystemColorCompatibility {
-    static var systemBackground: Color {
-        #if os(iOS)
-        return Color(UIColor.systemBackground)
-        #elseif os(macOS)
-        return Color(NSColor.windowBackgroundColor)
-        #endif
-    }
-    
-    static var secondarySystemBackground: Color {
-        #if os(iOS)
-        return Color(UIColor.secondarySystemBackground)
-        #elseif os(macOS)
-        return Color(NSColor.controlBackgroundColor)
-        #endif
-    }
-    
-    static var tertiarySystemBackground: Color {
-        #if os(iOS)
-        return Color(UIColor.tertiarySystemBackground)
-        #elseif os(macOS)
-        return Color(NSColor.textBackgroundColor)
-        #endif
     }
 } 

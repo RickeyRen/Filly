@@ -30,8 +30,8 @@ struct AddFilamentView: View {
                 Section(header: Text("基本信息")) {
                     if showingCustomBrand {
                         TextField("输入品牌名称", text: $customBrand)
-                            .onChange(of: customBrand) { _ in
-                                brand = customBrand
+                            .onChange(of: customBrand) { oldValue, newValue in
+                                brand = newValue
                             }
                         
                         Button("选择预设品牌") {
@@ -303,8 +303,8 @@ struct EditFilamentView: View {
                 Section(header: Text("基本信息")) {
                     if showingCustomBrand {
                         TextField("输入品牌名称", text: $customBrand)
-                            .onChange(of: customBrand) { _ in
-                                brand = customBrand
+                            .onChange(of: customBrand) { oldValue, newValue in
+                                brand = newValue
                             }
                         
                         Button("选择预设品牌") {
