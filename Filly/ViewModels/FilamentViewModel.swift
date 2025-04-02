@@ -81,6 +81,15 @@ class FilamentViewModel: ObservableObject {
         }
     }
     
+    // 更新耗材盘百分比
+    func updateSpoolPercentage(filamentId: UUID, spoolId: UUID, percentage: Double) {
+        if let filamentIndex = filaments.firstIndex(where: { $0.id == filamentId }),
+           let spoolIndex = filaments[filamentIndex].spools.firstIndex(where: { $0.id == spoolId }) {
+            filaments[filamentIndex].spools[spoolIndex].remainingPercentage = max(0, min(100, percentage))
+            saveFilaments()
+        }
+    }
+    
     // 删除耗材盘
     func deleteSpool(filamentId: UUID, spoolIndex: Int) {
         if let index = filaments.firstIndex(where: { $0.id == filamentId }) {
@@ -88,6 +97,14 @@ class FilamentViewModel: ObservableObject {
                 filaments[index].spools.remove(at: spoolIndex)
                 saveFilaments()
             }
+        }
+    }
+    
+    // 通过ID删除耗材盘
+    func removeEmptySpool(filamentId: UUID, spoolId: UUID) {
+        if let filamentIndex = filaments.firstIndex(where: { $0.id == filamentId }) {
+            filaments[filamentIndex].spools.removeAll(where: { $0.id == spoolId })
+            saveFilaments()
         }
     }
     

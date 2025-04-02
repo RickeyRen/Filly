@@ -180,7 +180,7 @@ struct FilamentDetailView: View {
                         Spacer()
                         
                         Button(action: {
-                            viewModel.addSpool(to: filament.id)
+                            viewModel.addSpool(filamentId: filament.id)
                             // 更新本地状态
                             if let updatedFilament = viewModel.filaments.first(where: { $0.id == filament.id }) {
                                 filament = updatedFilament
@@ -203,7 +203,7 @@ struct FilamentDetailView: View {
                                 .font(.headline)
                             
                             Button(action: {
-                                viewModel.addSpool(to: filament.id)
+                                viewModel.addSpool(filamentId: filament.id)
                                 // 更新本地状态
                                 if let updatedFilament = viewModel.filaments.first(where: { $0.id == filament.id }) {
                                     filament = updatedFilament
@@ -586,7 +586,9 @@ struct SpoolItemView: View {
                                             let relativePosition = dragLocation - horizontalPadding
                                             
                                             // 计算百分比，限制在0-100范围内
-                                            let newPercentage = max(0, min(100, Double(relativePosition / trackWidth * 100)))
+                                            let percentage = relativePosition / trackWidth 
+                                            let normalizedPercentage = max(0.0, min(1.0, percentage))
+                                            let newPercentage = normalizedPercentage * 100.0
                                             
                                             // 更新剩余量
                                             viewModel.updateSpoolPercentage(
@@ -608,7 +610,9 @@ struct SpoolItemView: View {
                             let relativePosition = tapLocation - horizontalPadding
                             
                             // 计算百分比，限制在0-100范围内
-                            let newPercentage = max(0, min(100, Double(relativePosition / trackWidth * 100)))
+                            let percentage = relativePosition / trackWidth 
+                            let normalizedPercentage = max(0.0, min(1.0, percentage))
+                            let newPercentage = normalizedPercentage * 100.0
                             
                             viewModel.updateSpoolPercentage(
                                 filamentId: filamentId, 
