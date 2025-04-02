@@ -6,8 +6,8 @@ import SwiftUI
 struct FilamentListView: View {
     @ObservedObject var viewModel: FilamentViewModel
     @ObservedObject var colorLibrary: ColorLibraryViewModel
-    @State private var showingAddFilament = false
     @State private var searchText = ""
+    @Binding var selectedTab: Int
     
     var body: some View {
         NavigationView {
@@ -26,12 +26,12 @@ struct FilamentListView: View {
                 }
             }
             .searchable(text: $searchText, prompt: "搜索耗材")
-            .navigationTitle("耗材库存")
+            .navigationTitle("我的耗材")
             .toolbar {
                 #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showingAddFilament = true
+                        selectedTab = 1
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -39,15 +39,12 @@ struct FilamentListView: View {
                 #elseif os(macOS)
                 ToolbarItem {
                     Button {
-                        showingAddFilament = true
+                        selectedTab = 1
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
                 #endif
-            }
-            .sheet(isPresented: $showingAddFilament) {
-                AddFilamentView(viewModel: viewModel, colorLibrary: colorLibrary)
             }
         }
     }

@@ -1,19 +1,34 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Identifiable Item for Sheet
+struct FilamentSheetItem: Identifiable {
+    let id: UUID // Use the color's UUID for Identifiable conformance
+    let libraryColorName: String // Full name like "白色 (含料盘)"
+    let libraryColorBaseName: String // Base name like "白色"
+    let libraryColorCode: String?
+    let libraryColorHasSpool: Bool
+    let brandName: String
+    let materialTypeName: String
+    let swiftUIColor: Color
+    // Keep the original ID if needed for saving logic later
+    let originalColorID: UUID 
+}
+
+// MARK: - Main View
 struct FilamentLibraryView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var filamentLibraryViewModel: FilamentLibraryViewModel // Use the new ViewModel
-    @EnvironmentObject var filamentViewModel: FilamentViewModel // For adding to user inventory
-    @EnvironmentObject var colorLibrary: ColorLibraryViewModel // Access legacy color library if needed
+    @EnvironmentObject var filamentLibraryViewModel: FilamentLibraryViewModel
+    @EnvironmentObject var filamentViewModel: FilamentViewModel
+    @EnvironmentObject var colorLibrary: ColorLibraryViewModel
 
     @State private var searchText = ""
     @State private var selectedBrand: SwiftDataBrand? = nil
     @State private var selectedMaterialType: SwiftDataMaterialType? = nil
-    @State private var showingAddFilamentSheet = false
-    @State private var colorToAdd: SwiftDataFilamentColor? = nil
+    
+    // Use identifiable item for the sheet state
+    @State private var sheetItem: FilamentSheetItem? = nil 
 
-    // Query to fetch all brands, sorted by name
     @Query(sort: \SwiftDataBrand.name) private var brands: [SwiftDataBrand]
 
     var body: some View {
@@ -21,10 +36,9 @@ struct FilamentLibraryView: View {
             VStack(spacing: 0) {
                 // Search Bar
                 LibrarySearchBar(text: $searchText, placeholder: "搜索品牌、类型或颜色...")
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal).padding(.vertical, 8)
 
-                // Brand and Material Type Filters (only show if not searching)
+                // Filters
                 if searchText.isEmpty {
                     FilterScrollView(
                         brands: brands,
@@ -42,25 +56,19 @@ struct FilamentLibraryView: View {
                         SearchResultsView(
                             searchText: searchText,
                             viewModel: filamentLibraryViewModel,
-                            onSelectColor: { color in
-                                colorToAdd = color
-                                showingAddFilamentSheet = true
-                            },
+                            // Pass the closure to handle selection
+                            onSelectColor: { color in handleColorSelection(color) }, 
                             context: modelContext
                         )
                     } else if let brand = selectedBrand, let materialType = selectedMaterialType {
-                        // Show colors for selected MaterialType
                         ColorGridView(
                             materialType: materialType,
                             viewModel: filamentLibraryViewModel,
-                            onSelectColor: { color in
-                                colorToAdd = color
-                                showingAddFilamentSheet = true
-                            },
+                            // Pass the closure to handle selection
+                            onSelectColor: { color in handleColorSelection(color) }, 
                             context: modelContext
                         )
                     } else if let brand = selectedBrand {
-                        // Show MaterialTypes for selected Brand
                         MaterialTypeListView(
                             brand: brand,
                             selectedMaterialType: $selectedMaterialType,
@@ -68,7 +76,6 @@ struct FilamentLibraryView: View {
                             context: modelContext
                         )
                     } else {
-                        // Show all Brands
                         BrandListView(brands: brands, selectedBrand: $selectedBrand)
                     }
                 }
@@ -78,21 +85,39 @@ struct FilamentLibraryView: View {
             .toolbar {
                 // Add toolbar items if needed (e.g., add custom brand/type)
             }
-            .sheet(isPresented: $showingAddFilamentSheet) {
-                // Sheet to add the selected library color to user's filament list
-                if let color = colorToAdd {
-                    AddLegacyFilamentSheet(
-                        libraryColor: color,
-                        filamentViewModel: filamentViewModel,
-                        colorLibrary: colorLibrary // Pass legacy color library
-                    )
-                }
+            // Use .sheet(item: ...) modifier
+            .sheet(item: $sheetItem) { item in 
+                // Pass the prepared item to the sheet
+                AddLegacyFilamentSheet(
+                    item: item, // Pass the whole item struct
+                    filamentViewModel: filamentViewModel,
+                    colorLibrary: colorLibrary
+                )
             }
             .onAppear {
-                // Ensure preset data is loaded when the view appears
                 filamentLibraryViewModel.initializePresetDataIfNeeded(context: modelContext)
             }
         }
+    }
+    
+    // Function to handle color selection and prepare sheet item
+    private func handleColorSelection(_ color: SwiftDataFilamentColor) {
+        // Pre-access data (keep the potential fix)
+        _ = color.materialType?.name
+        _ = color.materialType?.brand?.name
+        
+        // Create the identifiable item with extracted data
+        self.sheetItem = FilamentSheetItem(
+            id: color.id,
+            libraryColorName: color.name,
+            libraryColorBaseName: color.baseColorName,
+            libraryColorCode: color.code,
+            libraryColorHasSpool: color.hasSpool,
+            brandName: color.materialType?.brand?.name ?? "未知品牌",
+            materialTypeName: color.materialType?.name ?? "未知类型",
+            swiftUIColor: color.colorData.toColor(),
+            originalColorID: color.id
+        )
     }
 }
 
@@ -260,10 +285,13 @@ struct MaterialTypeListView: View {
 struct ColorGridView: View {
     let materialType: SwiftDataMaterialType
     let viewModel: FilamentLibraryViewModel
-    let onSelectColor: (SwiftDataFilamentColor) -> Void
+    // This closure now simply passes the selected color back
+    let onSelectColor: (SwiftDataFilamentColor) -> Void 
     let context: ModelContext
 
-    private let columns = [GridItem(.adaptive(minimum: 150))]
+    // Define 3 flexible columns with desired spacing
+    private let columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 12), count: 3)
+    private let gridSpacing: CGFloat = 12
 
     var body: some View {
         let colors = viewModel.fetchColors(for: materialType, context: context)
@@ -276,10 +304,12 @@ struct ColorGridView: View {
                 )
                 .padding()
             } else {
-                LazyVGrid(columns: columns, spacing: 15) {
+                // Use the new column definition and spacing
+                LazyVGrid(columns: columns, spacing: gridSpacing) {
                     ForEach(colors) { color in
                         ColorCard(color: color)
                             .onTapGesture {
+                                // Directly call the passed closure
                                 onSelectColor(color)
                             }
                     }
@@ -294,9 +324,12 @@ struct ColorGridView: View {
 struct SearchResultsView: View {
     let searchText: String
     let viewModel: FilamentLibraryViewModel
+     // This closure now simply passes the selected color back
     let onSelectColor: (SwiftDataFilamentColor) -> Void
     let context: ModelContext
-    private let columns = [GridItem(.adaptive(minimum: 150))]
+    // Apply the same 3-column layout to search results
+    private let columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 12), count: 3)
+    private let gridSpacing: CGFloat = 12
 
     var body: some View {
         let results = viewModel.searchLibrary(query: searchText, context: context)
@@ -304,10 +337,11 @@ struct SearchResultsView: View {
             if results.isEmpty {
                 ContentUnavailableView.search(text: searchText)
             } else {
-                LazyVGrid(columns: columns, spacing: 15) {
+                LazyVGrid(columns: columns, spacing: gridSpacing) {
                     ForEach(results) { color in
                         ColorCard(color: color)
                             .onTapGesture {
+                                // Directly call the passed closure
                                 onSelectColor(color)
                             }
                     }
@@ -320,26 +354,30 @@ struct SearchResultsView: View {
 
 struct ColorCard: View {
     let color: SwiftDataFilamentColor
+    private let textContentMinHeight: CGFloat = 70
 
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Reel Image part (remains the same)
             MiniFilamentReelView(color: color.colorData.toColor())
                 .frame(height: 80)
                 .frame(maxWidth: .infinity)
                 .background(Color(uiColor: .systemGray6))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                
+                .padding(.bottom, 8)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(color.name)
+            // Text and Tag content area
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(color.baseColorName) \(color.code ?? "")")
                     .font(.headline)
                     .lineLimit(2)
-                
+                    .frame(minHeight: UIFont.preferredFont(forTextStyle: .headline).lineHeight * 1.9, alignment: .top)
+
                 Text("\(color.materialType?.brand?.name ?? "N/A") - \(color.materialType?.name ?? "N/A")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                
+
+                // Tag Area
                 HStack(spacing: 4) {
                      if color.isTransparent {
                         TagView(text: "透明", color: .cyan)
@@ -348,12 +386,15 @@ struct ColorCard: View {
                          TagView(text: "金属", color: .orange)
                     }
                      if !color.hasSpool {
-                         TagView(text: "无盘", color: .gray)
+                         TagView(text: "无料盘", color: .gray)
                     }
-                    // Add more tags if needed
+                    Spacer()
                 }
-                .padding(.top, 2)
+                .frame(height: 20)
+                
+                Spacer(minLength: 0)
             }
+            .frame(minHeight: textContentMinHeight)
             .padding(.horizontal, 8)
             .padding(.bottom, 8)
         }
@@ -363,65 +404,123 @@ struct ColorCard: View {
     }
 }
 
-// Sheet View to Add Legacy Filament from Library Color
+// MARK: - Update AddLegacyFilamentSheet to accept Item
+
 struct AddLegacyFilamentSheet: View {
     @Environment(\.dismiss) var dismiss
-    let libraryColor: SwiftDataFilamentColor
-    @ObservedObject var filamentViewModel: FilamentViewModel // User inventory VM
-    @ObservedObject var colorLibrary: ColorLibraryViewModel // Legacy color library
+    // Accept the prepared Item struct instead of the full SwiftData object
+    let item: FilamentSheetItem 
+    @ObservedObject var filamentViewModel: FilamentViewModel
+    @ObservedObject var colorLibrary: ColorLibraryViewModel
 
-    // State for the new legacy filament details
+    // State remains the same
     @State private var weight: Double = 1000.0
     @State private var selectedDiameter: FilamentDiameter = .mm175
     @State private var notes: String = ""
     @State private var spoolCount: Int = 1
-    @State private var spoolsData: [FilamentSpool] = [FilamentSpool()] // Use FilamentSpool
+    @State private var spoolsData: [FilamentSpool] = [FilamentSpool()]
 
     var body: some View {
         NavigationView {
-            Form {
-                Section("选中的耗材库颜色") {
-                    HStack {
-                        MiniFilamentReelView(color: libraryColor.colorData.toColor())
-                            .frame(width: 30, height: 30)
-                        Text(libraryColor.name)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Section 1: Use data from the item
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("选中的耗材库颜色").font(.caption).foregroundStyle(.secondary).padding(.bottom, 4)
+                        HStack(spacing: 15) {
+                            MiniFilamentReelView(color: item.swiftUIColor) // Use color from item
+                                .frame(width: 50, height: 50).scaleEffect(0.7)
+                                .background(Color(.systemGray6)).clipShape(Circle())
+                            VStack(alignment: .leading) {
+                                Text(item.libraryColorName) // Use name from item
+                                    .font(.headline)
+                                Text("品牌: \(item.brandName)") // Use brand from item
+                                    .font(.subheadline).foregroundStyle(.secondary)
+                                Text("类型: \(item.materialTypeName)") // Use type from item
+                                    .font(.subheadline).foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
                     }
-                    Text("品牌: \(libraryColor.materialType?.brand?.name ?? "未知")")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text("类型: \(libraryColor.materialType?.name ?? "未知")")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                Section("添加到我的耗材") {
-                     Stepper("重量: \(Int(weight))g", value: $weight, in: 100...10000, step: 100)
-
-                    Picker("直径", selection: $selectedDiameter) {
-                        ForEach(FilamentDiameter.allCases) { Text($0.description).tag($0) }
-                    }
-
-                    // Spool Count and Details Editor
-                    Stepper("料盘数量: \(spoolCount)", value: $spoolCount, in: 1...10)
-                        .onChange(of: spoolCount) { _, newValue in updateSpoolsData(newCount: newValue) }
-
-                    ForEach(0..<spoolsData.count, id: \.self) { index in
-                         SpoolEditorRow(index: index + 1, spool: $spoolsData[index])
-                    }
+                    .padding().background(Color(.secondarySystemBackground)).cornerRadius(12)
                     
-                    TextField("备注 (可选)", text: $notes, axis: .vertical)
+                    // Section 2: Add to My Filaments Card
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("添加到我的耗材")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.bottom, 4)
+
+                        HStack {
+                            Text("重量")
+                            Spacer()
+                            Text("\(Int(weight))g")
+                                .foregroundStyle(.secondary)
+                            Stepper("", value: $weight, in: 100...10000, step: 100).labelsHidden()
+                        }
+
+                        HStack {
+                             Text("直径")
+                             Spacer()
+                             Picker("直径", selection: $selectedDiameter) {
+                                 ForEach(FilamentDiameter.allCases) { Text($0.description).tag($0) }
+                             }
+                             .pickerStyle(.menu)
+                             .labelsHidden()
+                             .tint(.secondary) // Style the picker arrow
+                         }
+
+                        HStack {
+                            Text("料盘数量")
+                            Spacer()
+                            Text("\(spoolCount)")
+                                .foregroundStyle(.secondary)
+                            Stepper("", value: $spoolCount, in: 1...10)
+                                .labelsHidden()
+                                .onChange(of: spoolCount) { _, newValue in updateSpoolsData(newCount: newValue) }
+                        }
+                        
+                        Divider()
+                        
+                        // Spool Editor Rows within the card
+                        ForEach(0..<spoolsData.count, id: \.self) { index in
+                             SpoolEditorRowRedesigned(index: index + 1, spool: $spoolsData[index])
+                             if index < spoolsData.count - 1 {
+                                 Divider().padding(.vertical, 5)
+                             }
+                        }
+                        
+                        Divider().padding(.bottom, 5)
+                        
+                        Text("备注 (可选)")
+                             .font(.subheadline)
+                        TextEditor(text: $notes)
+                            .frame(height: 80)
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemGray4), lineWidth: 1))
+                            .font(.body)
+                            .padding(.bottom, 5)
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(12)
+                    
                 }
+                .padding() // Padding around the VStack containing the cards
             }
+            .background(Color(.systemGroupedBackground)) // Use grouped background for the ScrollView
             .navigationTitle("添加到我的耗材")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("添加") { addFilamentToInventory() } }
+                ToolbarItem(placement: .confirmationAction) {
+                     Button("添加") { addFilamentToInventory() }
+                     // Add validation if needed, e.g., disable if weight is 0?
+                }
             }
         }
     }
-
-    // Updates the spoolsData array based on the stepper count
+    
+    // updateSpoolsData remains the same
     private func updateSpoolsData(newCount: Int) {
         if newCount > spoolsData.count {
             let needed = newCount - spoolsData.count
@@ -431,43 +530,40 @@ struct AddLegacyFilamentSheet: View {
         }
     }
 
-    // Adds the filament to the user's inventory (Uses original non-legacy types)
+    // Update addFilamentToInventory to use data from the item
     private func addFilamentToInventory() {
-        guard let materialTypeName = libraryColor.materialType?.name, 
-              let inventoryType = FilamentType(rawValue: materialTypeName) else { // Use FilamentType
-            print("错误：无法将库材料类型映射到 FilamentType")
-            // TODO: Show alert to user?
+        // Use data passed in the item struct
+        guard let inventoryType = FilamentType(rawValue: item.materialTypeName) else {
+            print("错误：无法将库材料类型映射到 FilamentType: \(item.materialTypeName)")
             return
         }
         
-        let brandName = libraryColor.materialType?.brand?.name ?? "未知品牌"
-        let baseColorName = libraryColor.baseColorName // Use base name without spool info
+        let brandName = item.brandName
+        let baseColorName = item.libraryColorBaseName // Use base name from item
         
-        // Find or create original color data
-        var inventoryColorData: ColorData? // Use ColorData
-        if let existingInventoryColor = colorLibrary.colors.first(where: { $0.name == baseColorName && $0.brand == brandName && $0.materialType == materialTypeName }) {
+        var inventoryColorData: ColorData?
+        if let existingInventoryColor = colorLibrary.colors.first(where: { $0.name == baseColorName && $0.brand == brandName && $0.materialType == item.materialTypeName }) {
             inventoryColorData = existingInventoryColor.colorData
              colorLibrary.updateLastUsed(for: existingInventoryColor)
         } else {
-            // Create new original color if not found
-            inventoryColorData = ColorData(from: libraryColor.colorData.toColor()) // Use ColorData
-            let newInventoryColor = FilamentColor( // Use FilamentColor
-                name: baseColorName, // Use base name
-                color: libraryColor.colorData.toColor(),
+            inventoryColorData = ColorData(from: item.swiftUIColor) // Use color from item
+            let newInventoryColor = FilamentColor(
+                name: baseColorName,
+                color: item.swiftUIColor, // Use color from item
                 brand: brandName,
-                materialType: materialTypeName
+                materialType: item.materialTypeName
             )
-            colorLibrary.addColor(newInventoryColor) // Add to original color library
+            colorLibrary.addColor(newInventoryColor)
         }
         
-        let newInventoryFilament = Filament( // Use Filament
+        let newInventoryFilament = Filament(
             brand: brandName,
-            type: inventoryType, // Use mapped inventoryType
-            color: baseColorName, // Use base name for display
-            colorData: inventoryColorData, // Use inventoryColorData
+            type: inventoryType,
+            color: baseColorName,
+            colorData: inventoryColorData,
             weight: weight,
             diameter: selectedDiameter,
-            spools: spoolsData, // Use the edited spool data (already FilamentSpool)
+            spools: spoolsData,
             notes: notes
         )
         
@@ -476,26 +572,35 @@ struct AddLegacyFilamentSheet: View {
     }
 }
 
-// Helper Row for editing spool details in the sheet
-struct SpoolEditorRow: View {
+// MARK: - Redesigned SpoolEditorRow
+
+struct SpoolEditorRowRedesigned: View {
     let index: Int
-    @Binding var spool: FilamentSpool // Use FilamentSpool
+    @Binding var spool: FilamentSpool
 
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("料盘 \(index)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                
             HStack {
                 Text("剩余: \(Int(spool.remainingPercentage))%")
+                    .font(.callout)
                 Slider(value: $spool.remainingPercentage, in: 0...100, step: 1)
             }
-            TextField("料盘备注 (可选)", text: $spool.notes)
-                .font(.footnote)
+            
+            TextField("料盘 \(index) 备注 (可选)", text: $spool.notes)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .textFieldStyle(.plain) // Use plain style for less visual clutter
+                .padding(.vertical, 4)
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 5))
+                 .padding(.leading, -4) // Minor adjustment to align with slider
         }
     }
 }
-
 
 // MARK: - Helper Views & Styles
 
@@ -530,7 +635,6 @@ struct TagView: View {
             .cornerRadius(4)
     }
 }
-
 
 // MARK: - Preview
 #Preview {

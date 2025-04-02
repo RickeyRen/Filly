@@ -38,23 +38,25 @@ class FilamentLibraryViewModel: ObservableObject {
         context.insert(plaLite)
         bambuLab.materialTypes.append(plaLite)
         
-        let bambuColors: [(name: String, hasSpool: Bool)] = [
-            ("黑色", true), ("黑色", false),
-            ("天蓝色", true), ("天蓝色", false),
-            ("黄色", true), ("黄色", false),
-            ("白色", true), ("白色", false),
-            ("红色", true), ("红色", false),
-            ("灰色", true), ("灰色", false)
+        // Define color data including name, code, and spool status
+        let bambuColors: [(name: String, code: String, hasSpool: Bool)] = [
+            ("黑色",   "16100", true), ("黑色",   "16100", false),
+            ("天蓝色", "16600", true), ("天蓝色", "16600", false),
+            ("黄色",   "16400", true), ("黄色",   "16400", false),
+            ("白色",   "16103", true), ("白色",   "16103", false),
+            ("红色",   "16200", true), ("红色",   "16200", false),
+            ("灰色",   "16101", true), ("灰色",   "16101", false)
         ]
         
-        for (colorName, hasSpool) in bambuColors {
-            let suffix = hasSpool ? " (含料盘)" : " (无料盘)"
+        for (colorName, productCode, hasSpool) in bambuColors {
+            let suffix = hasSpool ? " (含料盘)" : " (无料盘)" // Correct suffix is used
             let fullName = colorName + suffix
             let swiftUIColor = colorMapping(for: colorName)
             let colorData = SwiftDataColorData(from: swiftUIColor)
             
             let filamentColor = SwiftDataFilamentColor(
                 name: fullName,
+                code: productCode, // Pass the product code here
                 colorData: colorData,
                 hasSpool: hasSpool,
                 materialType: plaLite
