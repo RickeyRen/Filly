@@ -11,6 +11,7 @@ struct EditFilamentView: View {
     @State private var selectedType: String
     @State private var color: String
     @State private var selectedColor: Color
+    @State private var selectedFilamentColor: FilamentColor?
     @State private var weight: Double
     @State private var selectedDiameter: FilamentDiameter
     @State private var notes: String
@@ -188,7 +189,10 @@ struct EditFilamentView: View {
                 ColorPickerView(
                     colorLibrary: colorLibrary,
                     selectedColorName: $color, 
-                    selectedColor: $selectedColor
+                    selectedColor: $selectedFilamentColor,
+                    onSelect: { filamentColor in
+                        self.selectedColor = filamentColor.getUIColor()
+                    }
                 )
             }
         }
@@ -200,10 +204,14 @@ struct EditFilamentView: View {
         if let colorItem = colorLibrary.colors.first(where: { $0.name == color }) {
             colorData = colorItem.colorData
             colorLibrary.updateLastUsed(for: colorItem)
+            // 确保selectedFilamentColor始终反映当前选择
+            selectedFilamentColor = colorItem
         } else if !color.isEmpty {
             colorData = ColorData(from: selectedColor)
             let newColor = FilamentColor(name: color, color: selectedColor)
             colorLibrary.addColor(newColor)
+            // 更新selectedFilamentColor为新创建的颜色
+            selectedFilamentColor = newColor
         }
         
         var updatedFilament = filament
