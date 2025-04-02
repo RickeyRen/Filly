@@ -119,6 +119,7 @@ enum FilamentDiameter: Double, Codable, CaseIterable, Identifiable {
 // 预设品牌
 struct PresetBrands {
     static let brands = [
+        "拓竹 Tinzhu",
         "拓竹 Bambu Lab",
         "天瑞 Tinmorry",
         "普维 Polymaker",

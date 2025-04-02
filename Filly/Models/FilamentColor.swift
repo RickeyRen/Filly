@@ -113,10 +113,70 @@ struct FilamentColor: Identifiable, Codable, Equatable {
         FilamentColor(name: "PETG大理石魔幻绿", color: Color(red: 0.4, green: 0.7, blue: 0.5), brand: "天瑞 Tinmorry", materialType: "PETG-ECO")
     ]
     
+    // 拓竹 PLA Basic 颜色预设
+    static let tinzhuPLABasicColors: [FilamentColor] = [
+        FilamentColor(name: "银色10102【含料盘】", color: Color("#C0C0C0"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "红色10200【含料盘】", color: Color("#FF0000"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "黑色10101【含料盘】", color: Color("#000000"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "深蓝色10601【含料盘】", color: Color("#00008B"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "拓竹绿10501【含料盘】", color: Color("#2E8B57"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "金色10401【含料盘】", color: Color("#FFD700"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "青铜色10801【含料盘】", color: Color("#CD7F32"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "紫色10700【含料盘】", color: Color("#800080"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "橙色10300【含料盘】", color: Color("#FFA500"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "灰蓝10602【含料盘】", color: Color("#6699CC"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "灰色10103【含料盘】", color: Color("#808080"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "棕色10800【含料盘】", color: Color("#8B4513"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "浅杏色10201【含料盘】", color: Color("#FFCC99"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "粉红色10203【含料盘】", color: Color("#FFC0CB"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "玉石白10100【含料盘】", color: Color("#F5F5F5"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "黄色10400【含料盘】", color: Color("#FFFF00"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "品红色10202【含料盘】", color: Color("#FF00FF"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "青色10603【含料盘】", color: Color("#00FFFF"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "圣诞绿10502【含料盘】", color: Color("#006400"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "南瓜橙10301【含料盘】", color: Color("#FF7518"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "暖黄色10402【含料盘】", color: Color("#FFD580"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "绀紫色10701【含料盘】", color: Color("#4B0082"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "桃红色10204【含料盘】", color: Color("#FF69B4"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "可可棕10802【含料盘】", color: Color("#D2691E"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        
+        FilamentColor(name: "浅灰10104【无料盘】", color: Color("#D3D3D3"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "深灰10105【无料盘】", color: Color("#696969"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "金色10401【无料盘】", color: Color("#FFD700"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "紫色10700【无料盘】", color: Color("#800080"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "品红色10202【无料盘】", color: Color("#FF00FF"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "青色10603【无料盘】", color: Color("#00FFFF"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "圣诞绿10502【无料盘】", color: Color("#006400"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "青铜色10801【无料盘】", color: Color("#CD7F32"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "可可棕10802【无料盘】", color: Color("#D2691E"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "红色10200【无料盘】", color: Color("#FF0000"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "南瓜橙10301【无料盘】", color: Color("#FF7518"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "暖黄色10402【无料盘】", color: Color("#FFD580"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "桃红色10204【无料盘】", color: Color("#FF69B4"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "钴蓝色10604【无料盘】", color: Color("#0047AB"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "胭脂红10205【无料盘】", color: Color("#E34234"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "玉石白10100【无料盘】", color: Color("#F5F5F5"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "绀紫色10701【无料盘】", color: Color("#4B0082"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "橙色10300【无料盘】", color: Color("#FFA500"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "深蓝色10601【无料盘】", color: Color("#00008B"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "灰色10103【无料盘】", color: Color("#808080"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "浅杏色10201【无料盘】", color: Color("#FFCC99"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "银色10102【无料盘】", color: Color("#C0C0C0"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "黄色10400【无料盘】", color: Color("#FFFF00"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "灰蓝10602【无料盘】", color: Color("#6699CC"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "粉红色10203【无料盘】", color: Color("#FFC0CB"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "棕色10800【无料盘】", color: Color("#8B4513"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "苹果绿10503【无料盘】", color: Color("#8DB600"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "松石绿10605【无料盘】", color: Color("#40E0D0"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "拓竹绿10501【无料盘】", color: Color("#2E8B57"), brand: "拓竹 Tinzhu", materialType: "PLA Basic"),
+        FilamentColor(name: "黑色10101【无料盘】", color: Color("#000000"), brand: "拓竹 Tinzhu", materialType: "PLA Basic")
+    ]
+    
     // 合并所有预设颜色
     static var presets: [FilamentColor] {
         var allPresets = basicPresets
         allPresets.append(contentsOf: tianruiPETGColors)
+        allPresets.append(contentsOf: tinzhuPLABasicColors)
         return allPresets
     }
     
