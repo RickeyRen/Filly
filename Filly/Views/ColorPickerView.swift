@@ -113,6 +113,11 @@ struct ColorPickerView: View {
             .onAppear {
                 updateFilteredColors()
             }
+            .onDisappear {
+                // 关闭颜色选择器时重置筛选条件
+                colorLibrary.selectedBrand = ""
+                colorLibrary.selectedMaterialType = ""
+            }
         }
     }
     

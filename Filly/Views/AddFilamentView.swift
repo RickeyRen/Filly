@@ -60,6 +60,7 @@ struct AddFilamentView: View {
                     
                     Button(action: {
                         showingColorPicker = true
+                        colorLibrary.selectedBrand = brand
                     }) {
                         HStack {
                             Text("颜色")

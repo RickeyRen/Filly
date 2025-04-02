@@ -41,6 +41,8 @@ struct FilamentDetailView: View {
                                 Button(action: {
                                     selectedColorName = filament.color
                                     selectedColor = filament.getColor()
+                                    // 在此处设置筛选条件为当前耗材品牌
+                                    colorLibrary.selectedBrand = filament.brand
                                     showingColorPicker = true
                                 }) {
                                     Image(systemName: "eyedropper")
