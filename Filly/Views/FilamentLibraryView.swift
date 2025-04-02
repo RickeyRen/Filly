@@ -20,7 +20,6 @@ struct FilamentLibraryView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var filamentLibraryViewModel: FilamentLibraryViewModel
     @EnvironmentObject var filamentViewModel: FilamentViewModel
-    @EnvironmentObject var colorLibrary: ColorLibraryViewModel
 
     @State private var searchText = ""
     // 保存 ID 而不是对象引用
@@ -102,8 +101,7 @@ struct FilamentLibraryView: View {
                 // Pass the prepared item to the sheet
                 AddLegacyFilamentSheet(
                     item: item, // Pass the whole item struct
-                    filamentViewModel: filamentViewModel,
-                    colorLibrary: colorLibrary
+                    filamentViewModel: filamentViewModel
                 )
             }
             .onAppear {
@@ -435,9 +433,6 @@ struct AddLegacyFilamentSheet: View {
     // Accept the prepared Item struct instead of the full SwiftData object
     let item: FilamentSheetItem 
     @ObservedObject var filamentViewModel: FilamentViewModel
-    @ObservedObject var colorLibrary: ColorLibraryViewModel
-    // 添加 FilamentTypeViewModel
-    @ObservedObject var typeViewModel: FilamentTypeViewModel = FilamentTypeViewModel()
 
     // State remains the same
     @State private var weight: Double = 1000.0
@@ -585,23 +580,6 @@ struct AddLegacyFilamentSheet: View {
         // 添加到库存
         filamentViewModel.addFilament(newFilament)
         
-        // 更新最后使用的颜色
-        if let existingInventoryColor = colorLibrary.colors.first(where: {
-            $0.name == item.libraryColorBaseName &&
-            $0.brand == item.brandName &&
-            $0.materialType == item.materialTypeName
-        }) {
-            colorLibrary.updateLastUsed(for: existingInventoryColor)
-        } else {
-            let newLegacyColor = FilamentColor(
-                name: item.libraryColorBaseName,
-                color: item.swiftUIColor,
-                brand: item.brandName,
-                materialType: item.materialTypeName
-            )
-            colorLibrary.addColor(newLegacyColor)
-        }
-        
         // 关闭sheet并重置状态
         dismiss()
     }
@@ -688,5 +666,4 @@ struct TagView: View {
         .environmentObject(sampleVM)
          // Provide dummy ViewModels for preview
         .environmentObject(FilamentViewModel())
-        .environmentObject(ColorLibraryViewModel())
 } 

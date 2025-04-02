@@ -15,7 +15,6 @@ struct FillyApp: App {
     @StateObject private var filamentTypeViewModel = FilamentTypeViewModel()
     @StateObject private var filamentLibraryViewModel = FilamentLibraryViewModel()
     @StateObject private var filamentViewModel: FilamentViewModel
-    @StateObject private var colorLibrary = ColorLibraryViewModel() // Existing view model for legacy colors
     
     // 使用 init() 确保 filamentViewModel 使用 filamentTypeViewModel
     init() {
@@ -47,7 +46,6 @@ struct FillyApp: App {
                 .environmentObject(filamentTypeViewModel) // Add the new type VM
                 .environmentObject(filamentLibraryViewModel)
                 .environmentObject(filamentViewModel)
-                .environmentObject(colorLibrary)
                 .modelContainer(container)
         }
     }

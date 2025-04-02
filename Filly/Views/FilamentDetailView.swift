@@ -9,7 +9,6 @@ import AppKit
 
 struct FilamentDetailView: View {
     @ObservedObject var viewModel: FilamentViewModel
-    @ObservedObject var colorLibrary: ColorLibraryViewModel
     @State var filament: Filament
     @State private var isEditing = false
     @State private var showingDeleteConfirm = false
