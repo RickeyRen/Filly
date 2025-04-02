@@ -17,13 +17,13 @@ class FilamentViewModel: ObservableObject {
     // 添加示例数据
     private func addSampleData() {
         let samples = [
-            Filament(brand: "Bambu Lab", type: .pla, color: "黑色", weight: 1000, 
+            Filament(brand: "拓竹 Bambu Lab", type: .pla, color: "黑色", weight: 1000, 
                      spools: [
                         FilamentSpool(remainingPercentage: 100),
                         FilamentSpool(remainingPercentage: 100),
                         FilamentSpool(remainingPercentage: 80, notes: "轻微受潮")
                      ]),
-            Filament(brand: "天瑞 Tianrui", type: .petg, color: "蓝色", weight: 1000,
+            Filament(brand: "天瑞 Tinmorry", type: .petg, color: "蓝色", weight: 1000,
                      spools: [
                         FilamentSpool(remainingPercentage: 100),
                         FilamentSpool(remainingPercentage: 20, notes: "打印床校准测试用")
