@@ -28,10 +28,11 @@ enum ThemeMode: String, CaseIterable, Identifiable {
 
 // 主题管理器
 class ThemeManager: ObservableObject {
+    // 使用willSet而不是didSet，避免触发不必要的UI重建
     @Published var selectedTheme: ThemeMode {
-        didSet {
-            if oldValue != selectedTheme { // 只有当值确实发生变化时才执行
-                UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selectedTheme")
+        willSet {
+            if newValue != selectedTheme {
+                UserDefaults.standard.set(newValue.rawValue, forKey: "selectedTheme")
             }
         }
     }
@@ -44,6 +45,13 @@ class ThemeManager: ObservableObject {
         } else {
             self.selectedTheme = .system
         }
+    }
+    
+    // 安全应用主题而不导致上下文重置
+    func applyTheme() {
+        // 通过NotificationCenter发送通知，而不是直接修改Published属性
+        // 这样可以减少视图层次结构的重建次数
+        NotificationCenter.default.post(name: .themeChanged, object: selectedTheme)
     }
 }
 

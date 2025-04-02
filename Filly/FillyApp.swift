@@ -16,6 +16,9 @@ struct FillyApp: App {
     @StateObject private var filamentLibraryViewModel = FilamentLibraryViewModel()
     @StateObject private var filamentViewModel: FilamentViewModel
     
+    // 使用 State 存储当前颜色方案，而不是直接从 themeManager 读取
+    @State private var activeColorScheme: ColorScheme? = nil
+    
     // 使用 init() 确保 filamentViewModel 使用 filamentTypeViewModel
     init() {
         let typeVM = FilamentTypeViewModel()
@@ -47,6 +50,21 @@ struct FillyApp: App {
                 .environmentObject(filamentLibraryViewModel)
                 .environmentObject(filamentViewModel)
                 .modelContainer(container)
+                // 使用本地状态变量设置颜色方案，而不是直接绑定到themeManager
+                .preferredColorScheme(activeColorScheme)
+                // 监听主题变更通知
+                .onReceive(NotificationCenter.default.publisher(for: .themeChanged)) { notification in
+                    if let theme = notification.object as? ThemeMode {
+                        // 安全地更新颜色方案
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            activeColorScheme = theme.colorScheme
+                        }
+                    }
+                }
+                .onAppear {
+                    // 初始化颜色方案
+                    activeColorScheme = themeManager.selectedTheme.colorScheme
+                }
         }
     }
 }

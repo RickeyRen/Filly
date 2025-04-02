@@ -107,6 +107,12 @@ struct FilamentLibraryView: View {
             .onAppear {
                 filamentLibraryViewModel.initializePresetDataIfNeeded(context: modelContext)
             }
+            // 添加通知监听，当主题改变时清除选择状态，避免访问无效对象
+            .onReceive(NotificationCenter.default.publisher(for: .themeChanged)) { _ in
+                // 清除选择状态
+                selectedBrandId = nil
+                selectedMaterialTypeId = nil
+            }
         }
     }
     

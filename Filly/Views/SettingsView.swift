@@ -4,12 +4,13 @@ struct SettingsView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var typeViewModel: FilamentTypeViewModel
     @State private var showingMaterialTypeManager = false
+    @State private var localTheme: ThemeMode = .system
     
     var body: some View {
         NavigationView {
             List {
                 Section(header: Text("应用设置")) {
-                    Picker("主题", selection: $themeManager.selectedTheme) {
+                    Picker("主题", selection: $localTheme) {
                         ForEach(ThemeMode.allCases) { theme in
                             HStack {
                                 Image(systemName: theme.iconName)
@@ -48,6 +49,17 @@ struct SettingsView: View {
             .navigationTitle("设置")
             .sheet(isPresented: $showingMaterialTypeManager) {
                 MaterialTypeManagerView()
+            }
+            .onAppear {
+                localTheme = themeManager.selectedTheme
+            }
+            .onChange(of: localTheme) { _, newTheme in
+                if newTheme != themeManager.selectedTheme {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        themeManager.selectedTheme = newTheme
+                        themeManager.applyTheme()
+                    }
+                }
             }
         }
     }
