@@ -73,7 +73,7 @@ struct FilamentLibraryView: View {
                         )
                     } else if let brand = selectedBrand, let materialType = selectedMaterialType {
                         ColorGridView(
-                            materialType: materialType,
+                            materialTypeId: materialType.id,
                             viewModel: filamentLibraryViewModel,
                             // Pass the closure to handle selection
                             onSelectColor: { color in handleColorSelection(color) }, 
@@ -81,7 +81,7 @@ struct FilamentLibraryView: View {
                         )
                     } else if let brand = selectedBrand {
                         MaterialTypeListView(
-                            brand: brand,
+                            brandId: brand.id,
                             selectedMaterialTypeId: $selectedMaterialTypeId,
                             viewModel: filamentLibraryViewModel,
                             context: modelContext
@@ -273,79 +273,130 @@ struct BrandListView: View {
 }
 
 struct MaterialTypeListView: View {
-    let brand: SwiftDataBrand
+    // 改为使用ID而非直接对象引用
+    let brandId: UUID
     @Binding var selectedMaterialTypeId: UUID?
     let viewModel: FilamentLibraryViewModel
     let context: ModelContext
+    
+    // 使用Query获取品牌对象
+    @Query private var brands: [SwiftDataBrand]
+    
+    // 通过ID安全获取品牌
+    private var brand: SwiftDataBrand? {
+        brands.first { $0.id == brandId }
+    }
+    
+    init(brandId: UUID, selectedMaterialTypeId: Binding<UUID?>, viewModel: FilamentLibraryViewModel, context: ModelContext) {
+        self.brandId = brandId
+        self._selectedMaterialTypeId = selectedMaterialTypeId
+        self.viewModel = viewModel
+        self.context = context
+        
+        // 配置Query以获取所有品牌
+        let descriptor = FetchDescriptor<SwiftDataBrand>()
+        self._brands = Query(descriptor)
+    }
 
     var body: some View {
-        let materialTypes = viewModel.fetchMaterialTypes(for: brand, context: context)
         List {
-            if materialTypes.isEmpty {
-                Text("未找到 \(brand.name) 的材料类型。")
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(materialTypes) { type in
-                    Button {
-                        withAnimation { selectedMaterialTypeId = type.id }
-                    } label: {
-                        HStack {
-                            Text(type.name)
-                            Spacer()
-                            Text("\(type.colors.count) 种颜色")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+            if let brand = brand {
+                let materialTypes = viewModel.fetchMaterialTypes(for: brand, context: context)
+                if materialTypes.isEmpty {
+                    Text("未找到 \(brand.name) 的材料类型。")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(materialTypes) { type in
+                        Button {
+                            withAnimation { selectedMaterialTypeId = type.id }
+                        } label: {
+                            HStack {
+                                Text(type.name)
+                                Spacer()
+                                Text("\(type.colors.count) 种颜色")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                             .contentShape(Rectangle())
                         }
-                         .contentShape(Rectangle())
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
+            } else {
+                Text("无法加载品牌信息")
+                    .foregroundStyle(.secondary)
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle(brand.name) // Show brand name in title
+        .navigationTitle(brand?.name ?? "材料类型") // 安全获取品牌名称
     }
 }
 
 struct ColorGridView: View {
-    let materialType: SwiftDataMaterialType
+    // 改为使用ID而非直接对象引用
+    let materialTypeId: UUID
     let viewModel: FilamentLibraryViewModel
-    // This closure now simply passes the selected color back
     let onSelectColor: (SwiftDataFilamentColor) -> Void 
     let context: ModelContext
-
-    // Define 3 flexible columns with desired spacing
+    
+    // 使用Query获取材料类型
+    @Query private var materialTypes: [SwiftDataMaterialType]
+    
+    // 通过ID安全获取材料类型
+    private var materialType: SwiftDataMaterialType? {
+        materialTypes.first { $0.id == materialTypeId }
+    }
+    
+    // 定义列布局
     private let columns: [GridItem] = Array(repeating: .init(.flexible(), spacing: 12), count: 3)
     private let gridSpacing: CGFloat = 12
+    
+    init(materialTypeId: UUID, viewModel: FilamentLibraryViewModel, onSelectColor: @escaping (SwiftDataFilamentColor) -> Void, context: ModelContext) {
+        self.materialTypeId = materialTypeId
+        self.viewModel = viewModel
+        self.onSelectColor = onSelectColor
+        self.context = context
+        
+        // 配置Query以获取所有材料类型
+        let descriptor = FetchDescriptor<SwiftDataMaterialType>()
+        self._materialTypes = Query(descriptor)
+    }
 
     var body: some View {
-        let colors = viewModel.fetchColors(for: materialType, context: context)
         ScrollView {
-            if colors.isEmpty {
-                ContentUnavailableView(
-                    "无颜色",
-                    systemImage: "paintpalette",
-                    description: Text("\(materialType.name)下没有颜色信息。")
-                )
-                .padding()
-            } else {
-                // Use the new column definition and spacing
-                LazyVGrid(columns: columns, spacing: gridSpacing) {
-                    ForEach(colors) { color in
-                        ColorCard(color: color)
-                            .onTapGesture {
-                                // Directly call the passed closure
-                                onSelectColor(color)
-                            }
+            if let materialType = materialType {
+                let colors = viewModel.fetchColors(for: materialType, context: context)
+                if colors.isEmpty {
+                    ContentUnavailableView(
+                        "无颜色",
+                        systemImage: "paintpalette",
+                        description: Text("\(materialType.name)下没有颜色信息。")
+                    )
+                    .padding()
+                } else {
+                    LazyVGrid(columns: columns, spacing: gridSpacing) {
+                        ForEach(colors) { color in
+                            ColorCard(color: color)
+                                .onTapGesture {
+                                    onSelectColor(color)
+                                }
+                        }
                     }
+                    .padding()
                 }
+            } else {
+                ContentUnavailableView(
+                    "无法加载材料类型",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text("请返回上一级重新选择")
+                )
                 .padding()
             }
         }
-        .navigationTitle(materialType.name)
+        .navigationTitle(materialType?.name ?? "颜色") // 安全获取材料类型名称
     }
 }
 

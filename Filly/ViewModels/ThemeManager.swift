@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import SwiftData
 
 // 主题模式枚举
 enum ThemeMode: String, CaseIterable, Identifiable {
@@ -28,34 +29,62 @@ enum ThemeMode: String, CaseIterable, Identifiable {
 
 // 主题管理器
 class ThemeManager: ObservableObject {
-    // 使用willSet而不是didSet，避免触发不必要的UI重建
-    @Published var selectedTheme: ThemeMode {
-        willSet {
-            if newValue != selectedTheme {
-                UserDefaults.standard.set(newValue.rawValue, forKey: "selectedTheme")
-            }
-        }
+    // 使用私有属性存储主题，避免直接修改Published属性
+    private var _selectedTheme: ThemeMode
+    
+    // 公开的计算属性，只读
+    var selectedTheme: ThemeMode {
+        get { _selectedTheme }
     }
+    
+    // 主题变更指示器
+    @Published var themeChangeCounter: Int = 0
     
     init() {
         // 从UserDefaults读取保存的主题设置，默认跟随系统
         if let savedThemeValue = UserDefaults.standard.string(forKey: "selectedTheme"),
            let savedTheme = ThemeMode(rawValue: savedThemeValue) {
-            self.selectedTheme = savedTheme
+            self._selectedTheme = savedTheme
         } else {
-            self.selectedTheme = .system
+            self._selectedTheme = .system
         }
     }
     
-    // 安全应用主题而不导致上下文重置
-    func applyTheme() {
-        // 通过NotificationCenter发送通知，而不是直接修改Published属性
-        // 这样可以减少视图层次结构的重建次数
-        NotificationCenter.default.post(name: .themeChanged, object: selectedTheme)
+    // 安全地更改主题
+    func changeTheme(to newTheme: ThemeMode) {
+        guard newTheme != _selectedTheme else { return }
+        
+        // 将主题变更操作放在主队列的下一个周期执行
+        // 这样可以确保当前的视图更新周期已经完成
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 保存到UserDefaults
+            UserDefaults.standard.set(newTheme.rawValue, forKey: "selectedTheme")
+            
+            // 更新私有存储
+            self._selectedTheme = newTheme
+            
+            // 通过计数器触发UI更新
+            self.themeChangeCounter += 1
+            
+            // 发送通知
+            NotificationCenter.default.post(
+                name: .themeChanged,
+                object: newTheme,
+                userInfo: ["counter": self.themeChangeCounter]
+            )
+        }
+    }
+    
+    // 获取当前主题的颜色方案
+    func currentColorScheme() -> ColorScheme? {
+        return _selectedTheme.colorScheme
     }
 }
 
 // 主题变更通知名称
 extension Notification.Name {
     static let themeChanged = Notification.Name("com.filly.themeChanged")
+    static let prepareForThemeChange = Notification.Name("com.filly.prepareForThemeChange")
 } 
