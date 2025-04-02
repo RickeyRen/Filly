@@ -13,11 +13,15 @@ import AppKit
 struct ColorPickerView: View {
     @ObservedObject var colorLibrary: ColorLibraryViewModel
     @Binding var selectedColorName: String
-    @Binding var selectedColor: Color
+    @Binding var selectedColor: FilamentColor?
     @Environment(\.presentationMode) var presentationMode
+    @State private var isPresented: Bool = true
+    
+    // 添加onSelect回调
+    var onSelect: ((FilamentColor) -> Void)?
     
     @State private var searchText = ""
-    @State private var isAddingNew = false
+    @State private var isAddingNewColor = false
     @State private var newColorName = ""
     @State private var newColor = Color.blue
     @State private var newBrand = ""
@@ -72,15 +76,19 @@ struct ColorPickerView: View {
                 
                 // 颜色网格
                 ScrollView {
-                    LazyVGrid(columns: gridItems, spacing: 16) {
+                    // 简化复杂表达式
+                    let columns = Array(repeating: GridItem(.adaptive(minimum: 80, maximum: 100), spacing: 16), count: calculateColumnsForWidth())
+                    
+                    LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(cachedFilteredColors, id: \.id) { color in
-                            ColorItemView(
-                                color: color,
-                                isSelected: selectedColor?.id == color.id
-                            ) {
+                            let isSelected = selectedColor?.id == color.id
+                            ColorItemView(color: color, isSelected: isSelected) {
                                 selectedColor = color
                                 selectedColorName = color.name
                                 colorLibrary.updateLastUsed(for: color)
+                                if let onSelect = onSelect {
+                                    onSelect(color)
+                                }
                                 presentationMode.wrappedValue.dismiss()
                             }
                         }
@@ -115,7 +123,7 @@ struct ColorPickerView: View {
                         }
                         
                         Button(action: {
-                            isAddingNew = true
+                            isAddingNewColor = true
                         }) {
                             Label("添加新颜色", systemImage: "plus.circle")
                         }
@@ -124,9 +132,9 @@ struct ColorPickerView: View {
                     }
                 }
             }
-            .sheet(isPresented: $isAddingNew) {
+            .sheet(isPresented: $isAddingNewColor) {
                 ColorEditorView(
-                    isPresented: $isAddingNew,
+                    isPresented: $isAddingNewColor,
                     colorName: $newColorName,
                     color: $newColor,
                     brand: $newBrand,
@@ -166,10 +174,6 @@ struct ColorPickerView: View {
         }
     }
     
-    private var gridItems: [GridItem] {
-        Array(repeating: .init(.adaptive(minimum: 80, maximum: 100), spacing: 16), count: calculateColumnsForWidth())
-    }
-    
     private func calculateColumnsForWidth() -> Int {
         // 根据屏幕宽度动态计算列数
         #if os(iOS)
@@ -205,7 +209,7 @@ struct ColorItemView: View {
     var body: some View {
         VStack {
             Button(action: action) {
-                MiniFilamentReelView(color: color.getAccurateUIColor(), colorName: color.name)
+                MiniFilamentReelView(color: color.getUIColor(), colorName: color.name)
                     .frame(width: 60, height: 60)
                     .overlay(
                         Circle()
