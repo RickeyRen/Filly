@@ -192,6 +192,7 @@ struct ColorPickerView: View {
                                     .lineLimit(1)
                                     .frame(width: 60)
                                     .multilineTextAlignment(.center)
+                                    .foregroundColor(.white)
                             }
                             .frame(width: 60, height: 60)
                             .contentShape(Rectangle())
@@ -206,7 +207,7 @@ struct ColorPickerView: View {
                     .padding(.vertical, 8)
                 }
                 .frame(height: 70)
-                .background(Color.black)
+                .background(Color(#colorLiteral(red: 0.1298420429, green: 0.1298461258, blue: 0.1298439503, alpha: 1)))
                 
                 // 添加新颜色的视图或颜色网格
                 if isAddingNew {
