@@ -23,6 +23,9 @@ struct ColorPickerView: View {
     @State private var showBrandFilter = false
     @State private var showMaterialFilter = false
     
+    // 缓存过滤后的颜色结果，避免滚动时频繁计算
+    @State private var cachedFilteredColors: [FilamentColor] = []
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -35,6 +38,9 @@ struct ColorPickerView: View {
                             .padding(.vertical, 8)
                             .background(SystemColorCompatibility.tertiarySystemBackground)
                             .cornerRadius(10)
+                            .onChange(of: searchText) { _ in
+                                updateFilteredColors()
+                            }
                         
                         Button(action: {
                             showBrandFilter.toggle()
@@ -68,9 +74,10 @@ struct ColorPickerView: View {
                     // 品牌筛选器
                     if showBrandFilter {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
+                            LazyHStack(spacing: 8) {
                                 Button(action: {
                                     colorLibrary.selectedBrand = ""
+                                    updateFilteredColors()
                                 }) {
                                     Text("全部")
                                         .padding(.horizontal, 12)
@@ -83,6 +90,7 @@ struct ColorPickerView: View {
                                 ForEach(colorLibrary.availableBrands, id: \.self) { brand in
                                     Button(action: {
                                         colorLibrary.selectedBrand = brand
+                                        updateFilteredColors()
                                     }) {
                                         Text(brand)
                                             .padding(.horizontal, 12)
@@ -101,9 +109,10 @@ struct ColorPickerView: View {
                     // 材料筛选器
                     if showMaterialFilter {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
+                            LazyHStack(spacing: 8) {
                                 Button(action: {
                                     colorLibrary.selectedMaterialType = ""
+                                    updateFilteredColors()
                                 }) {
                                     Text("全部")
                                         .padding(.horizontal, 12)
@@ -116,6 +125,7 @@ struct ColorPickerView: View {
                                 ForEach(colorLibrary.availableMaterialTypes, id: \.self) { material in
                                     Button(action: {
                                         colorLibrary.selectedMaterialType = material
+                                        updateFilteredColors()
                                     }) {
                                         Text(material)
                                             .padding(.horizontal, 12)
@@ -161,6 +171,7 @@ struct ColorPickerView: View {
                         Button("清除") {
                             colorLibrary.selectedBrand = ""
                             colorLibrary.selectedMaterialType = ""
+                            updateFilteredColors()
                         }
                         .font(.caption)
                         .foregroundColor(.blue)
@@ -247,9 +258,9 @@ struct ColorPickerView: View {
                     }
                     .padding()
                 } else {
-                    // 优化颜色网格
+                    // 优化颜色网格 - 使用缓存的过滤结果
                     ScrollView {
-                        if filteredColors.isEmpty {
+                        if cachedFilteredColors.isEmpty {
                             VStack(spacing: 20) {
                                 Image(systemName: "magnifyingglass")
                                     .font(.largeTitle)
@@ -261,6 +272,7 @@ struct ColorPickerView: View {
                                     Button("清除筛选条件") {
                                         colorLibrary.selectedBrand = ""
                                         colorLibrary.selectedMaterialType = ""
+                                        updateFilteredColors()
                                     }
                                     .padding()
                                     .background(Color.blue)
@@ -272,38 +284,32 @@ struct ColorPickerView: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                         } else {
                             // 使用ID确保列表重建时能够正确识别每个项
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: 8),
-                                    GridItem(.flexible(), spacing: 8),
-                                    GridItem(.flexible(), spacing: 8),
-                                    GridItem(.flexible(), spacing: 8)
-                                ],
-                                spacing: 16
-                            ) {
-                                ForEach(filteredColors) { colorItem in
-                                    OptimizedColorGridItem(
-                                        color: colorItem,
-                                        isSelected: selectedColorName == colorItem.name,
-                                        onTap: {
-                                            self.selectedColorName = colorItem.name
-                                            self.selectedColor = colorItem.getUIColor()
-                                            colorLibrary.updateLastUsed(for: colorItem)
-                                            presentationMode.wrappedValue.dismiss()
-                                        }
-                                    )
-                                    .id(colorItem.id) // 确保每个项有唯一标识符
+                            VStack(spacing: 0) {
+                                LazyVGrid(
+                                    columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
+                                    spacing: 16
+                                ) {
+                                    ForEach(cachedFilteredColors) { colorItem in
+                                        OptimizedColorGridItem(
+                                            color: colorItem,
+                                            isSelected: selectedColorName == colorItem.name,
+                                            onTap: {
+                                                self.selectedColorName = colorItem.name
+                                                self.selectedColor = colorItem.getUIColor()
+                                                colorLibrary.updateLastUsed(for: colorItem)
+                                                presentationMode.wrappedValue.dismiss()
+                                            }
+                                        )
+                                        .id(colorItem.id) // 确保每个项有唯一标识符
+                                    }
                                 }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 10)
                             }
-                            .padding(.horizontal, 10)
-                            .padding(.bottom, 20)
-                            .padding(.top, 10)
                         }
                     }
-                    .onAppear {
-                        // 预先计算布局，减少滚动时的计算量
-                        let _ = filteredColors.count
-                    }
+                    // 禁用默认的滚动指示器以提高性能
+                    .scrollIndicators(.hidden)
                 }
             }
             .navigationTitle("选择颜色")
@@ -401,11 +407,28 @@ struct ColorPickerView: View {
                     dismissButton: .default(Text("确定"))
                 )
             }
+            .onAppear {
+                // 首次加载时初始化过滤颜色缓存
+                updateFilteredColors()
+            }
+            .onChange(of: colorLibrary.colors) { _ in
+                // 当颜色列表发生变化时更新缓存
+                updateFilteredColors()
+            }
+            .onChange(of: colorLibrary.selectedBrand) { _ in
+                // 当品牌筛选条件变化时更新缓存
+                updateFilteredColors()
+            }
+            .onChange(of: colorLibrary.selectedMaterialType) { _ in
+                // 当材料筛选条件变化时更新缓存
+                updateFilteredColors()
+            }
         }
     }
     
-    private var filteredColors: [FilamentColor] {
-        colorLibrary.searchColors(query: searchText)
+    // 更新筛选后的颜色缓存
+    private func updateFilteredColors() {
+        cachedFilteredColors = colorLibrary.searchColors(query: searchText)
     }
     
     private func saveNewColor() {
@@ -439,8 +462,8 @@ struct ColorPickerView: View {
     }
 }
 
-// 优化的颜色网格项，提高渲染性能
-struct OptimizedColorGridItem: View {
+// 优化的颜色网格项，实现Equatable以提高SwiftUI Diff性能
+struct OptimizedColorGridItem: View, Equatable {
     let color: FilamentColor
     let isSelected: Bool
     let onTap: () -> Void
