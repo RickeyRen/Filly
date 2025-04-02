@@ -17,8 +17,8 @@ class ColorLibraryViewModel: ObservableObject {
             addAllPredefinedColors()
         }
         
-        // 确保拓竹品牌的颜色在列表中
-        ensureTinzhuColorsExist()
+        // 确保所有品牌的颜色在列表中
+        ensureAllBrandColorsExist()
     }
     
     // 添加所有预设颜色
@@ -27,14 +27,26 @@ class ColorLibraryViewModel: ObservableObject {
         saveColors()
     }
     
-    // 确保拓竹颜色存在
-    private func ensureTinzhuColorsExist() {
+    // 确保所有品牌的颜色都存在
+    private func ensureAllBrandColorsExist() {
         // 检查是否已经存在拓竹的颜色
-        let hasTinzhuColors = colors.contains { $0.brand == "拓竹 Bambu Lab" }
+        let hasTinzhuBasicColors = colors.contains { $0.brand == "拓竹 Bambu Lab" && $0.materialType == "PLA Basic" }
+        let hasTinzhuLiteColors = colors.contains { $0.brand == "拓竹 Bambu Lab" && $0.materialType == "PLA Lite" }
+        let hasTinmorryColors = colors.contains { $0.brand == "天瑞 Tinmorry" }
         
-        // 如果没有拓竹颜色，添加它们
-        if !hasTinzhuColors {
+        // 如果没有拓竹PLA Basic颜色，添加它们
+        if !hasTinzhuBasicColors {
             addColors(FilamentColor.tinzhuPLABasicColors)
+        }
+        
+        // 如果没有拓竹PLA Lite颜色，添加它们
+        if !hasTinzhuLiteColors {
+            addAllTinzhuPLALiteColors()
+        }
+        
+        // 如果没有天瑞颜色，添加它们
+        if !hasTinmorryColors && FilamentColor.tianruiPETGColors.count > 0 {
+            addColors(FilamentColor.tianruiPETGColors)
         }
     }
     

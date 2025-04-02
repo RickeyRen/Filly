@@ -85,12 +85,6 @@ struct ColorLibraryManageView: View {
                                 Label("重置为默认颜色", systemImage: "arrow.clockwise")
                             }
                             
-                            Button(action: {
-                                colorLibrary.addAllColorsForBrand("天瑞 Tinmorry")
-                            }) {
-                                Label("添加天瑞所有颜色", systemImage: "plus.circle")
-                            }
-                            
                             Button(role: .destructive, action: {
                                 showingConfirmation = true
                             }) {
