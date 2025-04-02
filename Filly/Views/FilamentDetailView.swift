@@ -11,118 +11,330 @@ struct FilamentDetailView: View {
     @ObservedObject var viewModel: FilamentViewModel
     @ObservedObject var colorLibrary: ColorLibraryViewModel
     @State var filament: Filament
-    @State private var showingSpoolDetail: FilamentSpool? = nil
+    @State private var isEditing = false
+    @State private var showingDeleteConfirm = false
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
-        List {
-            // Section 1: Basic Info
-            Section(header: Text("基本信息")) {
-                InfoRow(label: "品牌", value: filament.brand)
-                InfoRow(label: "类型", value: filament.type.rawValue)
-                HStack {
-                    Text("颜色")
-                    Spacer()
-                    MiniFilamentReelView(color: filament.getColor())
-                        .frame(width: 24, height: 24)
-                    Text(filament.color)
-                }
-            }
-            
-            // Section 2: Specifications
-            Section(header: Text("规格")) {
-                InfoRow(label: "重量", value: "\(Int(filament.weight))g")
-                InfoRow(label: "直径", value: filament.diameter.description)
-            }
-            
-            // Section 3: Spools
-            Section(header: spoolSectionHeader) {
-                if filament.spools.isEmpty {
-                    Text("没有添加耗材盘")
-                        .foregroundColor(.secondary)
-                } else {
-                    ForEach(filament.spools.indices, id: \.self) { index in
-                        SpoolItemView(
-                            viewModel: viewModel,
-                            filamentId: filament.id,
-                            spool: filament.spools[index],
-                            onUpdate: { updatedSpool in
-                                // Update the spool within the filament's array
-                                if let spoolIndex = filament.spools.firstIndex(where: { $0.id == updatedSpool.id }) {
-                                    filament.spools[spoolIndex] = updatedSpool
-                                    viewModel.updateFilament(filament) // Save changes
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // 耗材基本信息和操作按钮 - 放在同一个卡片中
+                VStack(alignment: .leading, spacing: 20) {
+                    // 耗材颜色和基本信息
+                    HStack(spacing: 20) {
+                        FilamentReelView(color: filament.getColor())
+                            .frame(width: 80, height: 80)
+                        
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(filament.brand)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Text(filament.type.name)
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            
+                            Text(filament.color)
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            
+                            HStack {
+                                Text("共\(filament.spools.count)盘")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                if filament.fullSpoolCount > 0 {
+                                    Text("\(filament.fullSpoolCount)盘全新")
+                                        .font(.subheadline)
+                                        .foregroundColor(.green)
+                                }
+                                
+                                let partialCount = filament.remainingSpoolCount - filament.fullSpoolCount
+                                if partialCount > 0 {
+                                    Text("\(partialCount)盘部分使用")
+                                        .font(.subheadline)
+                                        .foregroundColor(.orange)
                                 }
                             }
-                        )
-                        .onTapGesture { // Allow tapping to show detail/edit sheet
-                            showingSpoolDetail = filament.spools[index]
                         }
                     }
-                    // Remove the onDelete modifier if spool deletion logic moves elsewhere or is removed
+                    
+                    Divider()
+                        .padding(.vertical, 5)
+                    
+                    // 操作按钮
+                    HStack(spacing: 16) {
+                        // 编辑按钮
+                        Button(action: {
+                            // 暂时禁用编辑功能
+                            // isEditing = true
+                            // 显示提示
+                            print("编辑功能暂未实现")
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 16))
+                                Text("编辑耗材类型")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .frame(minWidth: 0, maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color(red: 0.9, green: 0.95, blue: 1.0))
+                            .foregroundColor(.blue)
+                            .cornerRadius(12)
+                        }
+                        .opacity(0.6) // 降低不可用按钮的透明度
+                        
+                        // 删除按钮
+                        Button(action: {
+                            showingDeleteConfirm = true
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 16))
+                                Text("删除耗材类型")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .frame(minWidth: 0, maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color(red: 1.0, green: 0.95, blue: 0.95))
+                            .foregroundColor(.red)
+                            .cornerRadius(12)
+                        }
+                    }
+                    .padding(.horizontal, 2)
                 }
-            }
-            
-            // Section 4: Notes
-            Section(header: Text("备注")) {
-                if filament.notes.isEmpty {
-                    Text("无备注")
-                        .foregroundColor(.secondary)
-                } else {
-                    Text(filament.notes)
+                .padding(.vertical, 18)
+                .padding(.horizontal, 18)
+                .background(SystemColorCompatibility.systemBackground)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.blue.opacity(0.6),
+                                    Color.blue.opacity(0.3),
+                                    Color.blue.opacity(0.6)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.2
+                        )
+                        .opacity(0.5)
+                )
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                
+                // 详细信息
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("详细信息")
+                        .font(.headline)
+                        .padding(.bottom, 5)
+                    
+                    DetailRow(title: "直径", value: filament.diameter.description)
+                    DetailRow(title: "重量", value: "\(filament.weight)g")
+                    DetailRow(title: "添加日期", value: formattedDate(filament.dateAdded))
+                    
+                    if !filament.notes.isEmpty {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("备注")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Text(filament.notes)
+                                .font(.body)
+                        }
+                        .padding(.top, 5)
+                    }
                 }
+                .padding()
+                .background(SystemColorCompatibility.systemBackground)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.gray.opacity(0.5),
+                                    Color.gray.opacity(0.2),
+                                    Color.gray.opacity(0.5)
+                                ]), 
+                                startPoint: .topLeading, 
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.0
+                        )
+                        .opacity(0.5)
+                )
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                
+                // 耗材盘列表
+                VStack(alignment: .leading, spacing: 15) {
+                    HStack {
+                        Text("耗材盘")
+                            .font(.headline)
+                            .padding(.bottom, 5)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            viewModel.addSpool(to: filament.id)
+                            // 更新本地状态
+                            if let updatedFilament = viewModel.filaments.first(where: { $0.id == filament.id }) {
+                                filament = updatedFilament
+                            }
+                        }) {
+                            Label("添加耗材盘", systemImage: "plus.circle")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    
+                    if filament.spools.isEmpty {
+                        VStack(spacing: 20) {
+                            Image(systemName: "tray.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(.secondary.opacity(0.5))
+                            
+                            Text("没有耗材盘")
+                                .foregroundColor(.secondary)
+                                .font(.headline)
+                            
+                            Button(action: {
+                                viewModel.addSpool(to: filament.id)
+                                // 更新本地状态
+                                if let updatedFilament = viewModel.filaments.first(where: { $0.id == filament.id }) {
+                                    filament = updatedFilament
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: "plus.circle.fill")
+                                    Text("添加第一盘")
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(Color.blue)
+                                .cornerRadius(8)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 30)
+                    } else {
+                        // 耗材盘状态统计
+                        HStack(spacing: 12) {
+                            SpoolStatusItem(
+                                count: filament.fullSpoolCount,
+                                label: "全新",
+                                icon: "circle.fill",
+                                color: .green
+                            )
+                            
+                            Divider()
+                                .frame(height: 30)
+                            
+                            let partialCount = filament.remainingSpoolCount - filament.fullSpoolCount
+                            SpoolStatusItem(
+                                count: partialCount,
+                                label: "部分使用",
+                                icon: "circle.righthalf.filled",
+                                color: .orange
+                            )
+                            
+                            Divider()
+                                .frame(height: 30)
+                            
+                            let emptyCount = filament.spools.count - filament.remainingSpoolCount
+                            SpoolStatusItem(
+                                count: emptyCount,
+                                label: "已用完",
+                                icon: "circle",
+                                color: .red
+                            )
+                        }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(SystemColorCompatibility.tertiarySystemBackground)
+                        .cornerRadius(12)
+                        .padding(.bottom, 10)
+                        
+                        // 耗材盘列表
+                        ForEach(filament.spools) { spool in
+                            SpoolItemView(
+                                viewModel: viewModel,
+                                filamentId: filament.id,
+                                spool: spool,
+                                onUpdate: { _ in
+                                    print("触发更新UI回调")
+                                    
+                                    // 先检查整个耗材是否还存在
+                                    if let updatedFilament = viewModel.filaments.first(where: { $0.id == filament.id }) {
+                                        print("更新耗材UI，当前有\(updatedFilament.spools.count)个耗材盘")
+                                        filament = updatedFilament
+                                    } else {
+                                        print("耗材已被删除，返回上一级")
+                                        presentationMode.wrappedValue.dismiss()
+                                    }
+                                }
+                            )
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+                .padding()
+                .background(SystemColorCompatibility.systemBackground)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.gray.opacity(0.5),
+                                    Color.gray.opacity(0.2),
+                                    Color.gray.opacity(0.5)
+                                ]), 
+                                startPoint: .topLeading, 
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.0
+                        )
+                        .opacity(0.5)
+                )
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             }
-            
-            // Section 5: Date Added
-            Section {
-                InfoRow(label: "添加日期", value: formattedDate(filament.dateAdded))
-            }
+            .padding()
         }
-        .navigationTitle(filament.brand + " - " + filament.color)
-        .toolbar {
-            // Remove the Edit button from toolbar
-            #if os(iOS)
-            ToolbarItem(placement: .navigationBarTrailing) {
-                // Example: Add a button to add a new spool?
-                 Button {
-                     viewModel.addSpool(to: filament.id)
-                     // Optionally fetch the updated filament to refresh the view if needed
-                     if let updatedFil = viewModel.filaments.first(where: {$0.id == filament.id}) {
-                         self.filament = updatedFil
-                     }
-                 } label: {
-                     Label("添加新料盘", systemImage: "plus.circle")
-                 }
-            }
-            #else
-            // macOS toolbar items if needed
-            #endif
+        .navigationTitle("耗材详情")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.large)
+        #endif
+        .alert(isPresented: $showingDeleteConfirm) {
+            Alert(
+                title: Text("删除确认"),
+                message: Text("确定要删除这个耗材及其所有料盘吗？"),
+                primaryButton: .destructive(Text("删除")) {
+                    viewModel.deleteFilament(id: filament.id)
+                    presentationMode.wrappedValue.dismiss()
+                },
+                secondaryButton: .cancel()
+            )
         }
-        // Remove the .sheet modifier for EditFilamentView
-        .sheet(item: $showingSpoolDetail) { spool in
-             // Find the binding to the spool for editing
-             if let index = filament.spools.firstIndex(where: { $0.id == spool.id }) {
-                 SpoolDetailView(
-                     viewModel: viewModel,
-                     filament: filament,
-                     spoolIndex: index,
-                     spool: $filament.spools[index]
-                 )
-             }
-         }
-    }
-    
-    private var spoolSectionHeader: some View {
-        HStack {
-            Text("耗材盘")
-            Spacer()
-            // Add button to add spool directly in the header?
-            // Button { viewModel.addSpool(to: filament.id) } label: { Image(systemName: "plus") }
+        // 暂时注释掉 EditFilamentView 的引用，因为此视图可能尚未实现
+        // 后续需要创建 EditFilamentView 或使用其他方式实现编辑功能
+        /* 
+        .sheet(isPresented: $isEditing) {
+            EditFilamentView(viewModel: viewModel, colorLibrary: colorLibrary, filament: $filament)
         }
+        */
     }
     
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
-        formatter.timeStyle = .short
+        formatter.timeStyle = .none
         return formatter.string(from: date)
     }
 }
@@ -1319,85 +1531,6 @@ struct Cylinder: View {
                 )
                 .frame(width: width, height: height)
                 .blendMode(.overlay)
-        }
-    }
-}
-
-// MARK: - Re-added Helper Views
-
-// Simple row for displaying label and value
-struct InfoRow: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(label)
-                .foregroundColor(.secondary)
-            Spacer()
-            Text(value)
-                .foregroundColor(.primary)
-        }
-    }
-}
-
-// View for editing a single spool's details in a sheet
-struct SpoolDetailView: View {
-    @ObservedObject var viewModel: FilamentViewModel
-    let filament: Filament
-    let spoolIndex: Int
-    @Binding var spool: FilamentSpool // Use binding to allow modification
-    @Environment(\.dismiss) var dismiss
-    
-    // Local state for editing
-    @State private var editingPercentage: Double
-    @State private var editingNotes: String
-    
-    init(viewModel: FilamentViewModel, filament: Filament, spoolIndex: Int, spool: Binding<FilamentSpool>) {
-        self.viewModel = viewModel
-        self.filament = filament
-        self.spoolIndex = spoolIndex
-        self._spool = spool
-        // Initialize local state with current spool values
-        self._editingPercentage = State(initialValue: spool.wrappedValue.remainingPercentage)
-        self._editingNotes = State(initialValue: spool.wrappedValue.notes)
-    }
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section("耗材盘 \(spoolIndex + 1)") {
-                    VStack(alignment: .leading) {
-                        Text("剩余量: \(Int(editingPercentage))%")
-                        Slider(value: $editingPercentage, in: 0...100, step: 1)
-                    }
-                    .padding(.vertical, 5)
-                    
-                    VStack(alignment: .leading) {
-                        Text("备注")
-                        TextEditor(text: $editingNotes)
-                            .frame(height: 100)
-                            .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color(.systemGray5)))
-                    }
-                }
-            }
-            .navigationTitle("编辑料盘信息")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
-                        // Save changes back to the original spool binding
-                        spool.remainingPercentage = editingPercentage
-                        spool.notes = editingNotes
-                        // Trigger ViewModel update to persist changes
-                        viewModel.updateFilament(filament) 
-                        dismiss()
-                    }
-                }
-            }
         }
     }
 }

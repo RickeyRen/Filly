@@ -1,10 +1,37 @@
 import Foundation
 import SwiftUI
 
+// 新的耗材类型模型 - 替代枚举
+struct FilamentTypeModel: Identifiable, Codable, Equatable, Hashable {
+    var id = UUID()
+    var name: String
+    
+    // 初始化方法
+    init(name: String) {
+        self.name = name
+    }
+    
+    // 便于与旧枚举进行转换的静态方法
+    static func from(_ legacyType: FilamentType) -> FilamentTypeModel {
+        return FilamentTypeModel(name: legacyType.rawValue)
+    }
+    
+    // 用于比较
+    static func == (lhs: FilamentTypeModel, rhs: FilamentTypeModel) -> Bool {
+        return lhs.id == rhs.id && lhs.name == rhs.name
+    }
+    
+    // 用于 Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(name)
+    }
+}
+
 struct Filament: Identifiable, Codable {
     var id = UUID()
     var brand: String
-    var type: FilamentType
+    var type: FilamentTypeModel // 修改为使用 FilamentTypeModel 而非枚举
     var color: String // 颜色名称
     var colorData: ColorData? // 颜色数据
     var weight: Double // 以克为单位
@@ -14,12 +41,28 @@ struct Filament: Identifiable, Codable {
     var notes: String
     
     // 自定义初始化方法
-    init(brand: String, type: FilamentType, color: String, 
+    init(brand: String, type: FilamentTypeModel, color: String, 
          colorData: ColorData? = nil,
          weight: Double = 1000, diameter: FilamentDiameter = .mm175, 
          spools: [FilamentSpool] = [FilamentSpool()], notes: String = "") {
         self.brand = brand
         self.type = type
+        self.color = color
+        self.colorData = colorData
+        self.weight = weight
+        self.diameter = diameter
+        self.spools = spools
+        self.dateAdded = Date()
+        self.notes = notes
+    }
+    
+    // 向后兼容的初始化方法（使用旧 FilamentType 枚举）
+    init(brand: String, type: FilamentType, color: String,
+         colorData: ColorData? = nil,
+         weight: Double = 1000, diameter: FilamentDiameter = .mm175,
+         spools: [FilamentSpool] = [FilamentSpool()], notes: String = "") {
+        self.brand = brand
+        self.type = FilamentTypeModel.from(type) // 转换枚举为模型
         self.color = color
         self.colorData = colorData
         self.weight = weight
@@ -87,7 +130,7 @@ struct Filament: Identifiable, Codable {
     }
 }
 
-// 耗材类型
+// 旧的耗材类型枚举 - 保留用于向后兼容和转换
 enum FilamentType: String, Codable, CaseIterable, Identifiable {
     case pla = "PLA"
     case plaLite = "PLA Lite"

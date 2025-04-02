@@ -436,6 +436,8 @@ struct AddLegacyFilamentSheet: View {
     let item: FilamentSheetItem 
     @ObservedObject var filamentViewModel: FilamentViewModel
     @ObservedObject var colorLibrary: ColorLibraryViewModel
+    // 添加 FilamentTypeViewModel
+    @ObservedObject var typeViewModel: FilamentTypeViewModel = FilamentTypeViewModel()
 
     // State remains the same
     @State private var weight: Double = 1000.0
@@ -563,21 +565,15 @@ struct AddLegacyFilamentSheet: View {
         }
     }
 
-    // Update addFilamentToInventory to use data from the item
+    // 更新 addFilamentToInventory 使用 FilamentTypeViewModel
     private func addFilamentToInventory() {
-        // 直接尝试从 item.materialTypeName 创建 FilamentType
-        // 不再做特殊类型映射，因为我们已经在 FilamentType 枚举中添加了所有支持的类型
-        guard let inventoryType = FilamentType(rawValue: item.materialTypeName) else {
-            addErrorMessage = "无法识别的材料类型: \(item.materialTypeName)，请先在 FilamentType 枚举中添加此类型"
-            showingAddError = true
-            print("错误：无法将库材料类型映射到 FilamentType: \(item.materialTypeName)")
-            return
-        }
+        // 从 typeViewModel 中查找或创建材料类型
+        let materialType = typeViewModel.findOrCreateType(name: item.materialTypeName)
         
         // 创建 Filament 对象并添加到库存
         let newFilament = Filament(
             brand: item.brandName,
-            type: inventoryType,
+            type: materialType,  // 使用从类型管理器获取的类型
             color: item.libraryColorBaseName,
             colorData: ColorData(from: item.swiftUIColor),
             weight: weight,

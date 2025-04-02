@@ -5,7 +5,11 @@ class FilamentViewModel: ObservableObject {
     @Published var filaments: [Filament] = []
     private let saveKey = "savedFilaments"
     
-    init() {
+    // 添加 FilamentTypeViewModel 依赖
+    let typeViewModel: FilamentTypeViewModel
+    
+    init(typeViewModel: FilamentTypeViewModel = FilamentTypeViewModel()) {
+        self.typeViewModel = typeViewModel
         loadFilaments()
         
         // 如果没有数据，添加一些示例数据
@@ -16,19 +20,24 @@ class FilamentViewModel: ObservableObject {
     
     // 添加示例数据
     private func addSampleData() {
+        // 使用 typeViewModel 获取或创建材料类型
+        let plaType = typeViewModel.findOrCreateType(name: "PLA")
+        let petgType = typeViewModel.findOrCreateType(name: "PETG")
+        let tpuType = typeViewModel.findOrCreateType(name: "TPU")
+        
         let samples = [
-            Filament(brand: "拓竹 Bambu Lab", type: .pla, color: "黑色", weight: 1000, 
+            Filament(brand: "拓竹 Bambu Lab", type: plaType, color: "黑色", weight: 1000, 
                      spools: [
                         FilamentSpool(remainingPercentage: 100),
                         FilamentSpool(remainingPercentage: 100),
                         FilamentSpool(remainingPercentage: 80, notes: "轻微受潮")
                      ]),
-            Filament(brand: "天瑞 Tinmorry", type: .petg, color: "蓝色", weight: 1000,
+            Filament(brand: "天瑞 Tinmorry", type: petgType, color: "蓝色", weight: 1000,
                      spools: [
                         FilamentSpool(remainingPercentage: 100),
                         FilamentSpool(remainingPercentage: 20, notes: "打印床校准测试用")
                      ]),
-            Filament(brand: "易生 eSUN", type: .tpu, color: "透明", weight: 500,
+            Filament(brand: "易生 eSUN", type: tpuType, color: "透明", weight: 500,
                      spools: [FilamentSpool(remainingPercentage: 100)])
         ]
         
@@ -156,7 +165,7 @@ class FilamentViewModel: ObservableObject {
         var typeCounts: [String: Int] = [:]
         
         for filament in filaments {
-            typeCounts[filament.type.rawValue, default: 0] += filament.spools.count
+            typeCounts[filament.type.name, default: 0] += filament.spools.count
         }
         
         return typeCounts.map { (type: $0.key, count: $0.value) }

@@ -12,9 +12,17 @@ import SwiftData
 struct FillyApp: App {
     // 创建一个全局的ThemeManager实例
     @StateObject private var themeManager = ThemeManager()
+    @StateObject private var filamentTypeViewModel = FilamentTypeViewModel()
     @StateObject private var filamentLibraryViewModel = FilamentLibraryViewModel()
-    @StateObject private var filamentViewModel = FilamentViewModel() // Existing view model for user filaments
+    @StateObject private var filamentViewModel: FilamentViewModel
     @StateObject private var colorLibrary = ColorLibraryViewModel() // Existing view model for legacy colors
+    
+    // 使用 init() 确保 filamentViewModel 使用 filamentTypeViewModel
+    init() {
+        let typeVM = FilamentTypeViewModel()
+        _filamentTypeViewModel = StateObject(wrappedValue: typeVM)
+        _filamentViewModel = StateObject(wrappedValue: FilamentViewModel(typeViewModel: typeVM))
+    }
 
     var body: some Scene {
         // Define the SwiftData model container configuration
@@ -36,10 +44,11 @@ struct FillyApp: App {
         WindowGroup {
             SplashScreen()
                 .environmentObject(themeManager)
-                .environmentObject(filamentLibraryViewModel) // Add the new library VM
-                .environmentObject(filamentViewModel) // Keep the existing filament VM
-                .environmentObject(colorLibrary) // Keep the existing color library VM
-                .modelContainer(container) // Apply the configured container
+                .environmentObject(filamentTypeViewModel) // Add the new type VM
+                .environmentObject(filamentLibraryViewModel)
+                .environmentObject(filamentViewModel)
+                .environmentObject(colorLibrary)
+                .modelContainer(container)
         }
     }
 }

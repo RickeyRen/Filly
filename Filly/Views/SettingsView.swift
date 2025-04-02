@@ -2,8 +2,10 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var typeViewModel: FilamentTypeViewModel
     @StateObject private var colorLibrary = ColorLibraryViewModel()
     @State private var showingColorLibrary = false
+    @State private var showingMaterialTypeManager = false
     @State private var showingAbout = false
     
     var body: some View {
@@ -55,8 +57,25 @@ struct SettingsView: View {
                     }
                 }
                 
-                // 颜色库管理
+                // 耗材管理
                 Section(header: Text("耗材管理")) {
+                    // 添加材料类型管理入口
+                    Button(action: {
+                        showingMaterialTypeManager = true
+                    }) {
+                        HStack {
+                            Image(systemName: "shippingbox")
+                                .foregroundColor(.green)
+                            Text("材料类型管理")
+                            Spacer()
+                            Text("\(typeViewModel.types.count)")
+                                .foregroundColor(.secondary)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
                     Button(action: {
                         showingColorLibrary = true
                     }) {
@@ -131,6 +150,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingColorLibrary) {
                 ColorLibraryManageView(colorLibrary: colorLibrary)
+            }
+            .sheet(isPresented: $showingMaterialTypeManager) {
+                MaterialTypeManagerView()
             }
         }
     }
