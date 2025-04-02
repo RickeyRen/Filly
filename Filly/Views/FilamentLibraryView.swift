@@ -46,8 +46,11 @@ struct FilamentLibraryView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Search Bar
-                LibrarySearchBar(text: $searchText, placeholder: "搜索品牌、类型或颜色...")
-                    .padding(.horizontal).padding(.vertical, 8)
+                LibrarySearchBar(text: $searchText, placeholder: "搜索耗材颜色、品牌或类型")
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+                    .padding(.bottom, 12)
+                    .background(Color(.tertiarySystemBackground))
 
                 // Filters
                 if searchText.isEmpty {
@@ -58,39 +61,17 @@ struct FilamentLibraryView: View {
                         viewModel: filamentLibraryViewModel,
                         context: modelContext
                     )
-                    .padding(.bottom, 8)
+                    .padding(.vertical, 8)
+                    .background(Color(.tertiarySystemBackground))
                 }
 
                 // Content Area
-                Group {
-                    if !searchText.isEmpty {
-                        SearchResultsView(
-                            searchText: searchText,
-                            viewModel: filamentLibraryViewModel,
-                            // Pass the closure to handle selection
-                            onSelectColor: { color in handleColorSelection(color) }, 
-                            context: modelContext
-                        )
-                    } else if let brand = selectedBrand, let materialType = selectedMaterialType {
-                        ColorGridView(
-                            materialTypeId: materialType.id,
-                            viewModel: filamentLibraryViewModel,
-                            // Pass the closure to handle selection
-                            onSelectColor: { color in handleColorSelection(color) }, 
-                            context: modelContext
-                        )
-                    } else if let brand = selectedBrand {
-                        MaterialTypeListView(
-                            brandId: brand.id,
-                            selectedMaterialTypeId: $selectedMaterialTypeId,
-                            viewModel: filamentLibraryViewModel,
-                            context: modelContext
-                        )
-                    } else {
-                        BrandListView(brands: brands, selectedBrandId: $selectedBrandId)
+                contentView
+                    .refreshable {
+                        // 添加下拉刷新功能
+                        // 这里使用Task以保证异步函数在正确的上下文中运行
+                        await refreshData()
                     }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle("耗材库")
             .toolbar {
@@ -114,6 +95,86 @@ struct FilamentLibraryView: View {
                 selectedMaterialTypeId = nil
             }
         }
+    }
+    
+    // 内容区域视图
+    @ViewBuilder
+    private var contentView: some View {
+        ZStack {
+            if !searchText.isEmpty {
+                let searchResults = filamentLibraryViewModel.searchLibrary(query: searchText, context: modelContext)
+                searchResultsView(searchResults)
+            } else if let materialTypeId = selectedMaterialTypeId {
+                ColorGridView(
+                    materialTypeId: materialTypeId,
+                    viewModel: filamentLibraryViewModel,
+                    onSelectColor: handleColorSelection,
+                    context: modelContext
+                )
+            } else if let brandId = selectedBrandId {
+                MaterialTypeListView(
+                    brandId: brandId,
+                    selectedMaterialTypeId: $selectedMaterialTypeId,
+                    viewModel: filamentLibraryViewModel,
+                    context: modelContext
+                )
+            } else {
+                // 品牌列表
+                let brands = filamentLibraryViewModel.fetchBrands(context: modelContext)
+                BrandListView(
+                    brands: brands,
+                    selectedBrandId: $selectedBrandId
+                )
+            }
+            
+            // 刷新状态提示
+            if filamentLibraryViewModel.isRefreshing {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Text("正在更新耗材库...")
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(8)
+                        Spacer()
+                    }
+                    .padding(.bottom, 20)
+                }
+            }
+        }
+    }
+    
+    // 搜索结果视图
+    private func searchResultsView(_ results: [SwiftDataFilamentColor]) -> some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 16) {
+                ForEach(results) { color in
+                    ColorCard(color: color, onSelectColor: handleColorSelection)
+                }
+            }
+            .padding()
+        }
+        .overlay {
+            if results.isEmpty {
+                ContentUnavailableView(
+                    "未找到结果",
+                    systemImage: "magnifyingglass",
+                    description: Text("尝试搜索不同的关键词")
+                )
+            }
+        }
+    }
+    
+    // 刷新数据方法
+    private func refreshData() async {
+        // 强制刷新预设数据
+        await filamentLibraryViewModel.refreshLibraryData(context: modelContext)
+        
+        // 添加一个小延迟，让用户能感知到刷新过程
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒
     }
     
     // Function to handle color selection and prepare sheet item
@@ -642,6 +703,7 @@ struct SearchResultsView: View {
 
 struct ColorCard: View {
     let color: SwiftDataFilamentColor
+    let onSelectColor: (SwiftDataFilamentColor) -> Void
     
     var body: some View {
         VStack(spacing: 8) {
@@ -723,6 +785,9 @@ struct ColorCard: View {
         .padding(.vertical, 8)
         .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
+        .onTapGesture {
+            onSelectColor(color)
+        }
     }
 }
 

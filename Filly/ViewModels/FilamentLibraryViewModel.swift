@@ -11,6 +11,9 @@ class FilamentLibraryViewModel: ObservableObject {
     @Published var selectedMaterialType: SwiftDataMaterialType? = nil
     @Published var searchQuery: String = ""
     
+    // 添加刷新状态变量
+    @Published var isRefreshing: Bool = false
+    
     // MARK: - Initialization
     
     func initializePresetDataIfNeeded(context: ModelContext) {
@@ -29,6 +32,91 @@ class FilamentLibraryViewModel: ObservableObject {
         initializeFromPresetData(context: context)
         
         print("耗材库预设数据初始化完成。")
+    }
+    
+    // 刷新耗材库预设数据
+    func refreshLibraryData(context: ModelContext) async {
+        guard !isRefreshing else { return }
+        
+        isRefreshing = true
+        
+        do {
+            // 检查哪些品牌是预设数据中的新品牌
+            let existingBrands = fetchBrands(context: context)
+            let existingBrandNames = Set(existingBrands.map { $0.name })
+            
+            // 找出预设数据中不存在于当前数据库的品牌
+            var newBrands = [PresetFilamentData.Brand]()
+            for brandData in PresetFilamentData.brands {
+                if !existingBrandNames.contains(brandData.name) {
+                    newBrands.append(brandData)
+                }
+            }
+            
+            // 只添加新的品牌数据
+            if !newBrands.isEmpty {
+                print("发现\(newBrands.count)个新品牌，正在添加...")
+                
+                // 遍历新品牌数据并添加
+                for brandData in newBrands {
+                    // 创建品牌
+                    let brand = SwiftDataBrand(name: brandData.name)
+                    context.insert(brand)
+                    
+                    // 为每个品牌添加材料类型
+                    for materialTypeData in brandData.materialTypes {
+                        let materialType = SwiftDataMaterialType(name: materialTypeData.name, brand: brand)
+                        context.insert(materialType)
+                        brand.materialTypes.append(materialType)
+                        
+                        // 为每个材料类型添加颜色
+                        for colorData in materialTypeData.colors {
+                            // 处理含料盘和不含料盘版本
+                            addColorFromPreset(
+                                colorData: colorData,
+                                materialType: materialType,
+                                context: context
+                            )
+                            
+                            // 如果每个颜色只定义了一次，这里需要添加其对应的料盘版本
+                            if !isWholeSpoolDefinedSeparately(in: materialTypeData.colors) {
+                                // 添加对应的不含料盘版本
+                                if colorData.hasSpool {
+                                    var noSpoolColor = colorData
+                                    noSpoolColor = PresetFilamentData.ColorProperties(
+                                        name: colorData.name,
+                                        code: colorData.code,
+                                        hasSpool: false,
+                                        isTransparent: colorData.isTransparent,
+                                        isMetallic: colorData.isMetallic
+                                    )
+                                    addColorFromPreset(
+                                        colorData: noSpoolColor, 
+                                        materialType: materialType, 
+                                        context: context
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // 保存上下文
+                saveContext(context)
+                print("新品牌数据添加完成。")
+            } else {
+                print("没有发现新的品牌数据，无需刷新。")
+            }
+            
+            // 还可以检查和更新已有品牌的新材料类型或新颜色
+            // 这个功能可以在后续版本中添加
+            
+        } catch {
+            print("刷新耗材库数据时出错: \(error)")
+        }
+        
+        // 标记刷新完成
+        isRefreshing = false
     }
     
     // 从预设数据文件加载所有品牌和颜色
