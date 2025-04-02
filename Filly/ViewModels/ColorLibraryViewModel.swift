@@ -212,8 +212,15 @@ class ColorLibraryViewModel: ObservableObject {
     
     // 重置所有颜色为预设颜色
     func resetToDefaults() {
-        colors = FilamentColor.presets
+        colors = []
+        for color in FilamentColor.presets {
+            colors.append(color)
+        }
         saveColors()
+        updateFilteredColors()
+        #if DEBUG
+        print("已重置为 \(colors.count) 个预设颜色")
+        #endif
     }
     
     // 添加特定品牌的所有颜色
@@ -224,17 +231,71 @@ class ColorLibraryViewModel: ObservableObject {
     
     // 保存颜色库
     func saveColors() {
-        if let encoded = try? JSONEncoder().encode(colors) {
+        do {
+            let encoded = try JSONEncoder().encode(colors)
             UserDefaults.standard.set(encoded, forKey: saveKey)
+            #if DEBUG
+            print("保存了 \(colors.count) 个颜色到 UserDefaults")
+            for (index, color) in colors.enumerated() {
+                print("  \(index + 1). \(color.name): RGB(\(color.debugRed), \(color.debugGreen), \(color.debugBlue))")
+            }
+            #endif
+        } catch {
+            #if DEBUG
+            print("颜色数据保存失败: \(error.localizedDescription)")
+            #endif
         }
     }
     
     // 加载颜色库
     private func loadColors() {
-        if let data = UserDefaults.standard.data(forKey: saveKey),
-           let decoded = try? JSONDecoder().decode([FilamentColor].self, from: data) {
-            colors = decoded
+        if let data = UserDefaults.standard.data(forKey: saveKey) {
+            do {
+                let decoded = try JSONDecoder().decode([FilamentColor].self, from: data)
+                colors = decoded
+                #if DEBUG
+                print("从 UserDefaults 加载了 \(colors.count) 个颜色")
+                for (index, color) in colors.enumerated() {
+                    print("  \(index + 1). \(color.name): RGB(\(color.debugRed), \(color.debugGreen), \(color.debugBlue))")
+                }
+                #endif
+                
+                // 检查颜色数据是否有效
+                var hasInvalidColors = false
+                for color in colors where color.colorData.red == 0 && color.colorData.green == 0 && color.colorData.blue == 0 && color.colorData.alpha == 0 {
+                    hasInvalidColors = true
+                    break
+                }
+                
+                // 如果有无效颜色数据，则重新加载预设颜色
+                if hasInvalidColors {
+                    #if DEBUG
+                    print("检测到无效颜色数据，重置为预设颜色")
+                    #endif
+                    resetToDefaults()
+                }
+            } catch {
+                #if DEBUG
+                print("颜色数据加载失败: \(error.localizedDescription)")
+                print("重置为预设颜色")
+                #endif
+                resetToDefaults()
+            }
+        } else {
+            #if DEBUG
+            print("未找到保存的颜色数据，使用预设颜色")
+            #endif
+            resetToDefaults()
         }
+    }
+    
+    // 清除保存的数据并重置为预设颜色
+    func clearSavedColorsAndReset() {
+        #if DEBUG
+        print("清除保存的颜色数据并重置")
+        #endif
+        UserDefaults.standard.removeObject(forKey: saveKey)
+        resetToDefaults()
     }
     
     func addAllTinzhuPLABasicColors() {

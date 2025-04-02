@@ -15,8 +15,26 @@ struct FilamentColor: Identifiable, Codable, Equatable {
     var brand: String
     var materialType: String
     
+    // 直接保存RGB值用于调试
+    var debugRed: Double {
+        return colorData.red
+    }
+    var debugGreen: Double {
+        return colorData.green
+    }
+    var debugBlue: Double {
+        return colorData.blue
+    }
+    
     init(name: String, color: Color, brand: String = "", materialType: String = "") {
         self.name = name
+        
+        #if DEBUG
+        // 在初始化时打印颜色信息
+        let components = color.getRGBComponents()
+        print("创建新颜色 \(name): RGB(\(components.red), \(components.green), \(components.blue))")
+        #endif
+        
         self.colorData = ColorData(from: color)
         self.lastUsed = Date()
         self.brand = brand
@@ -30,6 +48,10 @@ struct FilamentColor: Identifiable, Codable, Equatable {
         self.lastUsed = lastUsed
         self.brand = brand
         self.materialType = materialType
+        
+        #if DEBUG
+        print("从存储恢复颜色 \(name): RGB(\(colorData.red), \(colorData.green), \(colorData.blue))")
+        #endif
     }
     
     func getUIColor() -> Color {
@@ -48,6 +70,83 @@ struct FilamentColor: Identifiable, Codable, Equatable {
     
     static func ==(lhs: FilamentColor, rhs: FilamentColor) -> Bool {
         return lhs.id == rhs.id
+    }
+    
+    // Fix：修复编码和解码机制
+    enum CodingKeys: String, CodingKey {
+        case id, name, colorData, lastUsed, brand, materialType
+    }
+    
+    // 自定义编码以确保颜色数据正确保存
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(colorData, forKey: .colorData)
+        try container.encode(lastUsed, forKey: .lastUsed)
+        try container.encode(brand, forKey: .brand)
+        try container.encode(materialType, forKey: .materialType)
+        
+        #if DEBUG
+        print("编码颜色 \(name): RGB(\(colorData.red), \(colorData.green), \(colorData.blue))")
+        #endif
+    }
+    
+    // 自定义解码以确保颜色数据正确恢复
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        colorData = try container.decode(ColorData.self, forKey: .colorData)
+        lastUsed = try container.decode(Date.self, forKey: .lastUsed)
+        brand = try container.decode(String.self, forKey: .brand)
+        materialType = try container.decode(String.self, forKey: .materialType)
+        
+        #if DEBUG
+        print("解码颜色 \(name): RGB(\(colorData.red), \(colorData.green), \(colorData.blue))")
+        #endif
+        
+        // 确保颜色数据有效
+        if colorData.red == 0 && colorData.green == 0 && colorData.blue == 0 && colorData.alpha == 0 {
+            #if DEBUG
+            print("警告: 检测到无效颜色数据，重置为默认值 \(name)")
+            #endif
+            
+            // 使用预定义颜色修复无效数据
+            if name.contains("红色") {
+                colorData = ColorData(red: 1.0, green: 0.0, blue: 0.0)
+            } else if name.contains("蓝色") || name.contains("灰蓝") {
+                colorData = ColorData(red: 0.0, green: 0.0, blue: 1.0)
+            } else if name.contains("绿色") {
+                colorData = ColorData(red: 0.0, green: 1.0, blue: 0.0)
+            } else if name.contains("黄色") || name.contains("金色") {
+                colorData = ColorData(red: 1.0, green: 1.0, blue: 0.0)
+            } else if name.contains("白色") {
+                colorData = ColorData(red: 1.0, green: 1.0, blue: 1.0)
+            } else if name.contains("黑色") {
+                colorData = ColorData(red: 0.0, green: 0.0, blue: 0.0)
+            } else if name.contains("灰色") || name.contains("银色") {
+                colorData = ColorData(red: 0.7, green: 0.7, blue: 0.7)
+            } else if name.contains("橙色") {
+                colorData = ColorData(red: 1.0, green: 0.65, blue: 0.0)
+            } else if name.contains("紫色") {
+                colorData = ColorData(red: 0.5, green: 0.0, blue: 0.5)
+            } else if name.contains("粉") || name.contains("桃红") {
+                colorData = ColorData(red: 1.0, green: 0.7, blue: 0.7)
+            } else if name.contains("青色") {
+                colorData = ColorData(red: 0.0, green: 1.0, blue: 1.0)
+            } else if name.contains("棕色") || name.contains("可可") || name.contains("青铜") {
+                colorData = ColorData(red: 0.6, green: 0.4, blue: 0.2)
+            } else {
+                // 默认为中等灰色
+                colorData = ColorData(red: 0.5, green: 0.5, blue: 0.5)
+            }
+            
+            // 确保alpha有效
+            if colorData.alpha <= 0.0 {
+                colorData.alpha = 1.0
+            }
+        }
     }
     
     // 基础预设颜色

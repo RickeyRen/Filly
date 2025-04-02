@@ -38,9 +38,33 @@ struct ColorPickerView: View {
                         .padding(.vertical, 8)
                         .background(SystemColorCompatibility.tertiarySystemBackground)
                         .cornerRadius(10)
-                        .onChange(of: searchText) { oldValue, newValue in
+                        .onChange(of: searchText) { _ in
                             updateFilteredColors()
                         }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(SystemColorCompatibility.secondarySystemBackground)
+                
+                // 品牌和材料类型过滤区域
+                HStack {
+                    Picker("品牌", selection: $colorLibrary.selectedBrand) {
+                        Text("全部").tag("")
+                        ForEach(colorLibrary.availableBrands, id: \.self) { brand in
+                            Text(brand).tag(brand)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(maxWidth: .infinity)
+                    
+                    Picker("材料", selection: $colorLibrary.selectedMaterialType) {
+                        Text("全部").tag("")
+                        ForEach(colorLibrary.availableMaterialTypes, id: \.self) { type in
+                            Text(type).tag(type)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -50,8 +74,11 @@ struct ColorPickerView: View {
                 ScrollView {
                     LazyVGrid(columns: gridItems, spacing: 16) {
                         ForEach(cachedFilteredColors, id: \.id) { color in
-                            ColorItemView(color: color, isSelected: selectedColorName == color.name) {
-                                selectedColor = color.getUIColor()
+                            ColorItemView(
+                                color: color,
+                                isSelected: selectedColor?.id == color.id
+                            ) {
+                                selectedColor = color
                                 selectedColorName = color.name
                                 colorLibrary.updateLastUsed(for: color)
                                 presentationMode.wrappedValue.dismiss()
@@ -72,10 +99,28 @@ struct ColorPickerView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        isAddingNew = true
-                    }) {
-                        Label("添加", systemImage: "plus")
+                    Menu {
+                        Button(action: {
+                            colorLibrary.clearSavedColorsAndReset()
+                            updateFilteredColors()
+                        }) {
+                            Label("重置颜色库", systemImage: "arrow.counterclockwise")
+                        }
+                        
+                        Button(action: {
+                            colorLibrary.addAllTinzhuPLABasicColors()
+                            updateFilteredColors()
+                        }) {
+                            Label("添加拓竹所有颜色", systemImage: "paintpalette")
+                        }
+                        
+                        Button(action: {
+                            isAddingNew = true
+                        }) {
+                            Label("添加新颜色", systemImage: "plus.circle")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
                     }
                 }
             }
