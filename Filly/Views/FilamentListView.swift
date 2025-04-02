@@ -70,8 +70,9 @@ struct FilamentRowView: View {
     
     var body: some View {
         HStack(spacing: 15) {
-            SimpleFillamentReel2D(color: filament.getColor())
+            FilamentReelView(color: filament.getColor())
                 .frame(width: 40, height: 40)
+                .scaleEffect(0.5)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(filament.brand)

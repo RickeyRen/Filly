@@ -1,7 +1,7 @@
 import SwiftUI
 
-// 简化的2D耗材盘图标 - 精细优化设计
-public struct SimpleFillamentReel2D: View {
+// 3D线材卷模型 - 精细优化设计
+public struct FilamentReelView: View {
     let color: Color
     @State private var rotationDegree: Double = 0
     @Environment(\.colorScheme) private var colorScheme // 添加环境变量获取当前颜色模式
@@ -12,7 +12,7 @@ public struct SimpleFillamentReel2D: View {
     
     public var body: some View {
         ZStack {
-            // 背景圆 - 使用渐变增强立体感
+            // 外部圆环 - 采用渐变填充增强立体感
             Circle()
                 .fill(
                     RadialGradient(
@@ -23,26 +23,26 @@ public struct SimpleFillamentReel2D: View {
                         ]),
                         center: .center,
                         startRadius: 0,
-                        endRadius: 25
+                        endRadius: 38
                     )
                 )
-                .frame(width: 50, height: 50)
+                .frame(width: 76, height: 76)
             
-            // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线 - 增强线条可见性
-            ForEach(0..<5) { i in
-                let radius = 14.0 + CGFloat(i) * 3.5
+            // 耗材线材质感 - 使用同心圆模拟缠绕的耗材线 - 增强线条对比度
+            ForEach(0..<8) { i in
+                let radius = 20.0 + CGFloat(i) * 3.0
                 let rotationSpeed = i % 2 == 0 ? 1.0 : -0.85
-                let rotationOffset = Double(i) * 72 // 错开初始角度
+                let rotationOffset = Double(i) * 45 // 错开初始角度
                 
                 // 主线条 - 增强对比度和可见性
                 Circle()
-                    .trim(from: i % 2 == 0 ? 0.0 : 0.05, to: i % 3 == 0 ? 0.95 : 1.0) // 添加间隙使旋转更明显
+                    .trim(from: i % 3 == 0 ? 0.0 : 0.03, to: i % 4 == 0 ? 0.97 : 1.0) // 添加间隙使旋转更明显
                     .stroke(
                         i % 2 == 0 ? 
-                            getEnhancedContrastColor(for: color, index: i) :
+                            getEnhancedContrastColor(for: color, index: i) : 
                             (colorScheme == .dark ? Color.white.opacity(0.8) : Color.black.opacity(0.7)), // 根据模式设置虚线颜色
                         style: StrokeStyle(
-                            lineWidth: 1.2 + (CGFloat(4-i) * 0.1),
+                            lineWidth: 1.2 + (CGFloat(7-i) * 0.05),
                             lineCap: .round,
                             lineJoin: .round,
                             dash: i % 2 == 0 ? [] : [3, 3] // 偶数圆为实线，奇数圆为虚线
@@ -53,14 +53,14 @@ public struct SimpleFillamentReel2D: View {
             }
             
             // 添加非对称标记，使旋转更加明显
-            ForEach(0..<2) { i in
-                let angle = Double(i) * 180.0
-                let radius = 20.0
+            ForEach(0..<3) { i in
+                let angle = Double(i) * 120.0
+                let radius = 32.0
                 
                 // 小圆点标记 - 根据模式调整颜色
                 Circle()
                     .fill(colorScheme == .dark ? Color.white.opacity(0.9) : Color.black.opacity(0.7))
-                    .frame(width: 3, height: 3)
+                    .frame(width: 5, height: 5)
                     .offset(
                         x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius),
                         y: CGFloat(sin(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius)
@@ -71,11 +71,11 @@ public struct SimpleFillamentReel2D: View {
             Circle()
                 .stroke(
                     getStrongContrastColor(for: color),
-                    lineWidth: 1.5
+                    lineWidth: 2.0
                 )
-                .frame(width: 18, height: 18)
+                .frame(width: 27, height: 27)
             
-            // 中心孔 - 替换为三等分的中间有空隙圆环
+            // 中心孔 - 替换为三等分圆环
             ZStack {
                 // 背景圆 - 提供白色背景
                 Circle()
@@ -86,11 +86,11 @@ public struct SimpleFillamentReel2D: View {
                                 Color.white.opacity(0.95)
                             ]),
                             center: .center,
-                            startRadius: 2,
-                            endRadius: 7
+                            startRadius: 5,
+                            endRadius: 15
                         )
                     )
-                    .frame(width: 15, height: 15)
+                    .frame(width: 25, height: 25)
                 
                 // 三等分圆环 - 每段80度，间隔40度
                 ForEach(0..<3) { i in
@@ -101,34 +101,35 @@ public struct SimpleFillamentReel2D: View {
                         .trim(from: startAngle / 360, to: endAngle / 360)
                         .stroke(
                             Color.black.opacity(0.8),
-                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+                            style: StrokeStyle(lineWidth: 4.0, lineCap: .round)
                         )
-                        .frame(width: 12, height: 12)
+                        .frame(width: 20, height: 20)
                         .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 反向旋转，速度比外层快50%
                 }
             }
-            .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.4)
+            .shadow(color: Color.black.opacity(0.15), radius: 1.0, x: 0, y: 0.5)
             
             // 顶部高光 - 增强塑料质感，改为非对称高光并旋转
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
                     Color.white.opacity(0.5),
-                    style: StrokeStyle(lineWidth: 15, lineCap: .round)
+                    style: StrokeStyle(lineWidth: 20, lineCap: .round)
                 )
-                .frame(width: 30, height: 30)
+                .frame(width: 44, height: 44)
                 .rotationEffect(Angle(degrees: -20 + rotationDegree * 0.5))
-                .offset(y: -6)
-                .blur(radius: 3.0)
+                .offset(y: -7)
+                .blur(radius: 3)
                 
             // 最外侧边框 - 使用更清晰的边框
             Circle()
                 .stroke(
                     getStrongBorderColor(for: color),
-                    lineWidth: 1.0
+                    lineWidth: 1.2
                 )
-                .frame(width: 50, height: 50)
+                .frame(width: 76, height: 76)
         }
+        .frame(width: 85, height: 85)
         .modifier(BreathingEffect())
         .onAppear {
             // 使用无限循环动画，避免重新开始感
@@ -197,114 +198,105 @@ public struct SimpleFillamentReel2D: View {
         }
     }
     
-    // 获取三等分圆环的颜色
-    private func getThreePartRingColor(for backgroundColor: Color, index: Int) -> Color {
-        let brightness = getColorBrightness(backgroundColor)
-        
-        // 根据背景亮度和部分索引选择不同的颜色
-        switch index {
-        case 0: // 第一部分
-            return brightness > 0.5 ? 
-                darken(backgroundColor, by: 0.4).opacity(0.9) : 
-                lighten(backgroundColor, by: 0.5).opacity(0.9)
-        case 1: // 第二部分
-            return brightness > 0.5 ? 
-                darken(backgroundColor, by: 0.6).opacity(0.9) : 
-                lighten(backgroundColor, by: 0.7).opacity(0.9)
-        case 2: // 第三部分
-            return brightness > 0.5 ? 
-                darken(backgroundColor, by: 0.5).opacity(0.9) : 
-                lighten(backgroundColor, by: 0.6).opacity(0.9)
-        default:
-            return Color.gray
-        }
-    }
-    
     // 获取中心孔边缘的强对比色
     private func getStrongContrastColor(for backgroundColor: Color) -> Color {
         let brightness = getColorBrightness(backgroundColor)
         
-        if brightness > 0.5 {
-            // 亮色背景使用深色对比
-            return darken(backgroundColor, by: 0.6).opacity(0.9)
+        if brightness > 0.6 {
+            // 亮色背景
+            return Color.black.opacity(0.7)
         } else {
-            // 暗色背景使用亮色对比
-            return lighten(backgroundColor, by: 0.7).opacity(0.9)
+            // 暗色背景
+            return Color.white.opacity(0.8)
         }
-    }
-    
-    // 使颜色变暗一定程度
-    private func darken(_ color: Color, by amount: CGFloat) -> Color {
-        #if os(iOS)
-        let uiColor = UIColor(color)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
-        return Color(UIColor(
-            red: max(0, red - amount),
-            green: max(0, green - amount),
-            blue: max(0, blue - amount),
-            alpha: alpha
-        ))
-        #elseif os(macOS)
-        let nsColor = NSColor(color)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
-        return Color(NSColor(
-            red: max(0, red - amount),
-            green: max(0, green - amount),
-            blue: max(0, blue - amount),
-            alpha: alpha
-        ))
-        #endif
-    }
-    
-    // 使颜色变亮一定程度
-    private func lighten(_ color: Color, by amount: CGFloat) -> Color {
-        #if os(iOS)
-        let uiColor = UIColor(color)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
-        return Color(UIColor(
-            red: min(1, red + amount),
-            green: min(1, green + amount),
-            blue: min(1, blue + amount),
-            alpha: alpha
-        ))
-        #elseif os(macOS)
-        let nsColor = NSColor(color)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
-        return Color(NSColor(
-            red: min(1, red + amount),
-            green: min(1, green + amount),
-            blue: min(1, blue + amount),
-            alpha: alpha
-        ))
-        #endif
-    }
-    
-    // 估算颜色亮度 (0-1范围)
-    private func getColorBrightness(_ color: Color) -> CGFloat {
-        #if os(iOS)
-        let uiColor = UIColor(color)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        #elseif os(macOS)
-        let nsColor = NSColor(color)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        nsColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        #endif
-        
-        // 使用亮度公式: 0.299R + 0.587G + 0.114B
-        return 0.299 * red + 0.587 * green + 0.114 * blue
     }
 }
 
-// 呼吸效果修饰器 - 用于添加微妙的缩放动画
+// 颜色处理辅助函数
+func getColorBrightness(_ color: Color) -> Double {
+    // 近似估计颜色亮度 (简化版)
+    var red: CGFloat = 0
+    var green: CGFloat = 0
+    var blue: CGFloat = 0
+    
+    #if os(iOS)
+    let uiColor = UIColor(color)
+    uiColor.getRed(&red, green: &green, blue: &blue, alpha: nil)
+    #elseif os(macOS)
+    let nsColor = NSColor(color)
+    nsColor.usingColorSpace(.genericRGB)?.getRed(&red, green: &green, blue: &blue, alpha: nil)
+    #endif
+    
+    // 使用感知亮度公式 (人眼对绿色更敏感)
+    return Double(0.299 * red + 0.587 * green + 0.114 * blue)
+}
+
+func lighten(_ color: Color, by percentage: Double) -> Color {
+    var red: CGFloat = 0
+    var green: CGFloat = 0
+    var blue: CGFloat = 0
+    var alpha: CGFloat = 0
+    
+    #if os(iOS)
+    let uiColor = UIColor(color)
+    uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+    #elseif os(macOS)
+    let nsColor = NSColor(color)
+    nsColor.usingColorSpace(.genericRGB)?.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+    #endif
+    
+    // 向白色方向移动
+    return Color(
+        red: min(red + CGFloat(percentage), 1.0),
+        green: min(green + CGFloat(percentage), 1.0),
+        blue: min(blue + CGFloat(percentage), 1.0),
+        opacity: Double(alpha)
+    )
+}
+
+func darken(_ color: Color, by percentage: Double) -> Color {
+    var red: CGFloat = 0
+    var green: CGFloat = 0
+    var blue: CGFloat = 0
+    var alpha: CGFloat = 0
+    
+    #if os(iOS)
+    let uiColor = UIColor(color)
+    uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+    #elseif os(macOS)
+    let nsColor = NSColor(color)
+    nsColor.usingColorSpace(.genericRGB)?.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+    #endif
+    
+    // 向黑色方向移动
+    return Color(
+        red: max(red - CGFloat(percentage), 0.0),
+        green: max(green - CGFloat(percentage), 0.0),
+        blue: max(blue - CGFloat(percentage), 0.0),
+        opacity: Double(alpha)
+    )
+}
+
+// 迷你线材卷模型 - 用于颜色选择器和添加耗材视图
+public struct MiniFilamentReelView: View {
+    let color: Color
+    
+    public init(color: Color) {
+        self.color = color
+    }
+    
+    public var body: some View {
+        ZStack {
+            // 使用FilamentReelView替代SimpleFillamentReel2D
+            FilamentReelView(color: color)
+                .scaleEffect(0.7)  // 缩小到适合UI的大小
+        }
+        .frame(width: 55, height: 55)
+        .clipShape(Circle())  // 确保内容不会溢出边界
+    }
+}
+
+// 呼吸效果组件
 struct BreathingEffect: ViewModifier {
     // 使用多个状态变量来创建更平滑的循环
     @State private var scale1: CGFloat = 1.0
@@ -347,24 +339,5 @@ struct BreathingEffect: ViewModifier {
             animationPhase = (animationPhase + 1) % 2
             startNextAnimationPhase()
         }
-    }
-}
-
-// 迷你线材卷模型 - 用于颜色选择器和添加耗材视图 (简化2D版本)
-public struct MiniFilamentReelView: View {
-    let color: Color
-    
-    public init(color: Color) {
-        self.color = color
-    }
-    
-    public var body: some View {
-        ZStack {
-            // 简单耗材盘2D图标
-            SimpleFillamentReel2D(color: color)
-                .scaleEffect(0.95)  // 稍微缩小以确保呼吸动画效果不会溢出
-        }
-        .frame(width: 55, height: 55)
-        .clipShape(Circle())  // 确保内容不会溢出边界
     }
 }
