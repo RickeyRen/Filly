@@ -344,6 +344,12 @@ struct ColorPickerView: View {
                                 }) {
                                     Label("添加天瑞所有颜色", systemImage: "plus.circle")
                                 }
+                                
+                                Button(action: {
+                                    colorLibrary.addAllTinzhuPLABasicColors()
+                                }) {
+                                    Label("添加拓竹所有颜色", systemImage: "plus.circle")
+                                }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
                             }
@@ -385,6 +391,12 @@ struct ColorPickerView: View {
                                     colorLibrary.addAllColorsForBrand("天瑞 Tinmorry")
                                 }) {
                                     Label("添加天瑞所有颜色", systemImage: "plus.circle")
+                                }
+                                
+                                Button(action: {
+                                    colorLibrary.addAllTinzhuPLABasicColors()
+                                }) {
+                                    Label("添加拓竹所有颜色", systemImage: "plus.circle")
                                 }
                             } label: {
                                 Image(systemName: "ellipsis.circle")
