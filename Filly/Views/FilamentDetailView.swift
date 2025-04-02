@@ -691,46 +691,9 @@ struct SpoolItemView: View {
             HStack(spacing: 10) {
                 // 添加"用完了"按钮
                 Button(action: {
-                    // 开始平滑动画序列
-                    isDragging = true // 设置为拖动状态，这样UI会使用currentDragPercentage
-                    
-                    // 动画组合 - 同时进行特效和值变化
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.2)) {
-                        // 特效动画
-                        animatedScale = 1.05
-                        animatedRotation = -5
-                        shadowRadius = 12
-                        glowOpacity = 0.4
-                        highlightOpacity = 0.8
-                        backgroundSaturation = 0.1
-                    }
-                    
-                    // 值动画与特效动画并行，无需等待
-                    withAnimation(.easeOut(duration: 0.8)) {
-                        currentDragPercentage = 0 // 平滑动画到0%
-                    }
-                    
-                    // 更新数据库中的值并结束动画
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                        // 更新数据库中的值
-                        viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 0)
-                        onUpdate(spool)
-                        
-                        // 结束特效 - 渐变回正常状态
-                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.2)) {
-                            animatedScale = 1.0
-                            animatedRotation = 0
-                            shadowRadius = 5
-                            glowOpacity = 0.0
-                            highlightOpacity = 0.0
-                            backgroundSaturation = 0.0
-                        }
-                        
-                        // 完成后重置状态
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            isDragging = false
-                        }
-                    }
+                    // 直接设置为0%而不进行动画
+                    viewModel.updateSpoolPercentage(filamentId: filamentId, spoolId: spool.id, percentage: 0)
+                    onUpdate(spool)
                 }) {
                     HStack {
                         Image(systemName: "xmark.circle.fill")
@@ -747,58 +710,9 @@ struct SpoolItemView: View {
                 
                 // 删除按钮
                 Button(action: {
-                    // 高级物理感动画效果
-                    print("执行删除操作: filamentId=\(filamentId), spoolId=\(spool.id)")
-
-                    // 第一阶段：轻微震动与发光效果
-                    #if os(iOS)
-                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                    impactFeedback.impactOccurred()
-                    #endif
-                    
-                    // 初始轻微震动
-                    withAnimation(.interpolatingSpring(mass: 0.2, stiffness: 170, damping: 8, initialVelocity: 20)) {
-                        animatedScale = 0.94
-                        animatedRotation = -3
-                        glowOpacity = 0.1
-                    }
-                    
-                    // 第二阶段：弹性扩张与准备
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation(.interpolatingSpring(mass: 0.4, stiffness: 120, damping: 10, initialVelocity: 5)) {
-                            animatedScale = 1.12
-                            animatedRotation = 5
-                            glowOpacity = 0.6
-                            highlightOpacity = 0.9
-                            shadowRadius = 15
-                            backgroundSaturation = 0.15
-                        }
-                        
-                        // 第三阶段：强调状态与浮动效果
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                            // 轻微位置浮动动画
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                animatedRotation = -2
-                            }
-                            
-                            // 第四阶段：融化消失效果
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
-                                withAnimation(.timingCurve(0.55, 0.055, 0.675, 0.19, duration: 0.28)) {
-                                    animatedScale = 0.001
-                                    animatedRotation = 90
-                                    glowOpacity = 1.0
-                                    shadowRadius = 2
-                                    backgroundSaturation = 0.0
-                                }
-                                
-                                // 执行实际删除
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
-                                    onUpdate(FilamentSpool())
-                                }
-                            }
-                        }
-                    }
+                    // 直接删除而不显示动画
+                    viewModel.removeEmptySpool(filamentId: filamentId, spoolId: spool.id)
+                    onUpdate(FilamentSpool())
                 }) {
                     Image(systemName: "trash.circle.fill")
                         .font(.system(size: 22))
@@ -831,7 +745,7 @@ struct SpoolItemView: View {
                 
                 // 深度阴影层
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.black.opacity(0.03 + (glowOpacity * 0.1)))
+                    .fill(Color.black.opacity(0.03))
                     .offset(x: 0, y: 1)
                     .blur(radius: 2)
                 
@@ -840,7 +754,7 @@ struct SpoolItemView: View {
                     .fill(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                statusColor.opacity(0.12 + (glowOpacity * 0.4)),
+                                statusColor.opacity(0.12),
                                 Color.clear
                             ]),
                             startPoint: .topLeading,
@@ -849,42 +763,28 @@ struct SpoolItemView: View {
                     )
                     .blendMode(.overlay)
                 
-                // 动态光晕效果
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(statusColor)
-                    .opacity(glowOpacity)
-                    .blur(radius: 8 * glowOpacity)
-                    .blendMode(.screen)
-                
                 // 精致边框
                 RoundedRectangle(cornerRadius: 16)
                     .strokeBorder(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                statusColor.opacity(0.7 + (highlightOpacity * 0.3)),
+                                statusColor.opacity(0.7),
                                 statusColor.opacity(0.3),
-                                statusColor.opacity(0.5 + (highlightOpacity * 0.3))
+                                statusColor.opacity(0.5)
                             ]), 
                             startPoint: .topLeading, 
                             endPoint: .bottomTrailing
                         ), 
                         lineWidth: 1.2
                     )
-                    .opacity(0.4 + highlightOpacity * 0.6)
+                    .opacity(0.4)
             }
         )
-        .scaleEffect(animatedScale)
-        .rotation3DEffect(
-            .degrees(animatedRotation),
-            axis: (x: 0.2, y: 1.0, z: 0.1),
-            anchor: .center,
-            anchorZ: 0.0,
-            perspective: 0.2
-        )
+        // 移除所有动画相关属性
         .shadow(
-            color: statusColor.opacity(0.2 + glowOpacity * 0.4), 
-            radius: shadowRadius, 
-            x: animatedRotation * 0.1, 
+            color: statusColor.opacity(0.2), 
+            radius: 5, 
+            x: 0, 
             y: 3
         )
         .shadow(
@@ -893,15 +793,6 @@ struct SpoolItemView: View {
             x: 0,
             y: 3
         )
-        .brightness(glowOpacity * 0.05)
-        .saturation(1.0 + backgroundSaturation)
-        .blur(radius: glowOpacity > 0.8 ? (glowOpacity - 0.8) * 4 : 0) // 消失时轻微模糊
-        .onAppear {
-            // 仅当是新添加的耗材盘时才触发动画
-            if isNewlyAdded {
-                startAnimationSequence()
-            }
-        }
         .contentShape(Rectangle())
         .sheet(isPresented: $isEditingPercentage) {
             SpoolPercentageAdjustSheet(
@@ -914,57 +805,7 @@ struct SpoolItemView: View {
         }
     }
     
-    private func startAnimationSequence() {
-        shouldAnimate = true
-        
-        // 1. 初始状态设置
-        animatedScale = 0.95
-        animatedRotation = -5
-        shadowRadius = 2
-        glowOpacity = 0.0
-        highlightOpacity = 0.0
-        backgroundSaturation = 0.0
-        
-        // 2. 第一阶段动画：弹出和旋转
-        withAnimation(.spring(response: 1.5, dampingFraction: 0.7, blendDuration: 0.9)) {
-            animatedScale = 1.05
-            animatedRotation = 5
-            shadowRadius = 12
-            glowOpacity = 0.3
-            highlightOpacity = 0.8
-            backgroundSaturation = 0.1
-        }
-        
-        // 3. 第二阶段：稳定动画
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            withAnimation(.spring(response: 1.2, dampingFraction: 0.65, blendDuration: 0.9)) {
-                animatedScale = 1.02
-                animatedRotation = 0
-                shadowRadius = 8
-                glowOpacity = 0.2
-                backgroundSaturation = 0.05
-            }
-        }
-        
-        // 4. 第三阶段：脉冲光晕效果
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.7) {
-            withAnimation(.easeInOut(duration: 3.6).repeatCount(3, autoreverses: true)) {
-                glowOpacity = 0.4
-                highlightOpacity = 1.0
-            }
-        }
-        
-        // 5. 最终阶段：回到正常状态
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4.5) {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8, blendDuration: 0.3)) {
-                animatedScale = 1.0
-                shadowRadius = 5
-                glowOpacity = 0.0
-                highlightOpacity = 0.0
-                backgroundSaturation = 0.0
-            }
-        }
-    }
+    // 移除动画序列函数
     
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
@@ -974,10 +815,11 @@ struct SpoolItemView: View {
     }
 }
 
-// 3D耗材盘模型
+// 3D耗材盘模型 - 移除动画
 struct SpoolModel: View {
     let color: Color
-    @State private var rotationDegree: Double = 0
+    // 改为常量
+    private let rotationDegree: Double = 45
     
     var body: some View {
         ZStack {
@@ -1006,7 +848,7 @@ struct SpoolModel: View {
                 )
                 .frame(width: 22, height: 22)
             
-            // 中心孔 - 替换为三等分圆环
+            // 中心孔 - 使用固定角度
             ZStack {
                 // 背景圆 - 提供白色背景
                 Circle()
@@ -1023,7 +865,7 @@ struct SpoolModel: View {
                     )
                     .frame(width: 14, height: 14)
                 
-                // 三等分圆环 - 每段80度，间隔40度
+                // 三等分圆环 - 使用固定角度
                 ForEach(0..<3) { i in
                     let startAngle = Double(i) * 120 + 20 // 起始角度，加上20度偏移
                     let endAngle = startAngle + 80 // 结束角度，覆盖80度
@@ -1035,12 +877,12 @@ struct SpoolModel: View {
                             style: StrokeStyle(lineWidth: 2.0, lineCap: .round)
                         )
                         .frame(width: 12, height: 12)
-                        .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5)) // 反向旋转，速度比外层快50%
+                        .rotationEffect(Angle(degrees: -90 - rotationDegree * 0.5)) // 固定旋转角度
                 }
             }
             .shadow(color: Color.black.opacity(0.15), radius: 0.8, x: 0, y: 0.5)
             
-            // 高光效果 - 添加旋转
+            // 高光效果 - 固定位置
             Circle()
                 .trim(from: 0, to: 0.4)
                 .stroke(
@@ -1052,12 +894,7 @@ struct SpoolModel: View {
                     lineWidth: 2
                 )
                 .frame(width: 30, height: 30)
-                .rotationEffect(Angle(degrees: -45 + rotationDegree))
-        }
-        .onAppear {
-            withAnimation(Animation.linear(duration: 24).repeatForever(autoreverses: false)) {
-                rotationDegree = 360
-            }
+                .rotationEffect(Angle(degrees: -45))
         }
     }
     
@@ -1430,10 +1267,11 @@ struct SpoolStatusItem: View {
     }
 }
 
-// 3D线材卷模型 - 精细优化设计
+// 3D线材卷模型 - 移除动画
 struct FilamentReelView: View {
     let color: Color
-    @State private var rotationDegree: Double = 0
+    // 改为常量
+    private let rotationDegree: Double = 45
     @Environment(\.colorScheme) private var colorScheme
     
     // 缓存计算的颜色值
@@ -1521,24 +1359,24 @@ struct FilamentReelView: View {
                 )
                 .frame(width: 76, height: 76)
             
-            // 耗材线材质感 - 提取到单独组件减少主视图复杂度
+            // 耗材线材质感 - 固定角度
             OptimizedCircleWindings(
                 colorScheme: colorScheme,
                 rotationDegree: rotationDegree,
                 contrastColors: cachedColors.contrastColors
             )
             
-            // 减少标记点的数量，只保留必要的视觉指示物
+            // 减少标记点的数量，使用固定位置
             ForEach(0..<2) { i in
-                let angle = Double(i) * 180.0
+                let angle = Double(i) * 180.0 + rotationDegree
                 let radius = 32.0
                 
                 Circle()
                     .fill(colorScheme == .dark ? Color.white.opacity(0.9) : Color.black.opacity(0.7))
                     .frame(width: 5, height: 5)
                     .offset(
-                        x: CGFloat(cos(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius),
-                        y: CGFloat(sin(Angle(degrees: angle + rotationDegree * 1.2).radians) * radius)
+                        x: CGFloat(cos(Angle(degrees: angle).radians) * radius),
+                        y: CGFloat(sin(Angle(degrees: angle).radians) * radius)
                     )
             }
             
@@ -1547,10 +1385,10 @@ struct FilamentReelView: View {
                 .stroke(cachedColors.centerContrastColor, lineWidth: 2.0)
                 .frame(width: 27, height: 27)
             
-            // 中心孔 - 提取到单独组件
+            // 中心孔 - 固定角度
             OptimizedCenterHole(rotationDegree: rotationDegree)
             
-            // 顶部高光
+            // 顶部高光 - 固定位置
             Circle()
                 .trim(from: 0.0, to: 0.3)
                 .stroke(
@@ -1558,7 +1396,7 @@ struct FilamentReelView: View {
                     style: StrokeStyle(lineWidth: 20, lineCap: .round)
                 )
                 .frame(width: 44, height: 44)
-                .rotationEffect(Angle(degrees: -20 + rotationDegree * 0.5))
+                .rotationEffect(Angle(degrees: -20))
                 .offset(y: -7)
                 .blur(radius: 3)
                 
@@ -1568,16 +1406,7 @@ struct FilamentReelView: View {
                 .frame(width: 76, height: 76)
         }
         .frame(width: 85, height: 85)
-        .modifier(SimpleBreathingEffect())
-        .onAppear {
-            // 使用更长的动画周期减少渲染压力
-            let baseAnimation = Animation.linear(duration: 30)
-            let smoothAnimation = baseAnimation.repeatForever(autoreverses: false)
-            
-            withAnimation(smoothAnimation) {
-                rotationDegree = 360
-            }
-        }
+        // 移除呼吸效果修饰器
     }
     
     // 静态辅助函数
@@ -1648,7 +1477,7 @@ struct FilamentReelView: View {
     }
 }
 
-// 提取的同心圆组件
+// 提取的同心圆组件 - 固定角度
 private struct OptimizedCircleWindings: View {
     let colorScheme: ColorScheme
     let rotationDegree: Double
@@ -1656,12 +1485,11 @@ private struct OptimizedCircleWindings: View {
     
     var body: some View {
         // 减少圆圈数量以提高性能
-        ForEach(0..<5) { i in
+        ForEach(0..<4) { i in
             // 增加间隔减少视觉复杂度
             if i % 2 == 0 || i == 1 {
                 let radius = 20.0 + CGFloat(i) * 3.5
-                let rotationSpeed = i % 2 == 0 ? 1.0 : -0.85
-                let rotationOffset = Double(i) * 60 // 更大间隔的初始角度
+                let rotationOffset = Double(i) * 60 // 固定角度偏移
                 
                 Circle()
                     .trim(from: i % 3 == 0 ? 0.0 : 0.03, to: i % 4 == 0 ? 0.97 : 1.0)
@@ -1677,13 +1505,13 @@ private struct OptimizedCircleWindings: View {
                         )
                     )
                     .frame(width: radius * 2, height: radius * 2)
-                    .rotationEffect(Angle(degrees: rotationOffset + rotationDegree * rotationSpeed))
+                    .rotationEffect(Angle(degrees: rotationOffset))
             }
         }
     }
 }
 
-// 提取的中心孔组件
+// 提取的中心孔组件 - 固定角度
 private struct OptimizedCenterHole: View {
     let rotationDegree: Double
     
@@ -1704,7 +1532,7 @@ private struct OptimizedCenterHole: View {
                 )
                 .frame(width: 25, height: 25)
             
-            // 改为三段圆环，每段80度，均匀分布
+            // 三段圆环，使用固定角度
             ForEach(0..<3) { i in
                 let startAngle = Double(i) * 120 + 20 // 起始角度，每段相隔120度
                 let endAngle = startAngle + 80 // 结束角度，每段覆盖80度
@@ -1716,26 +1544,10 @@ private struct OptimizedCenterHole: View {
                         style: StrokeStyle(lineWidth: 4.0, lineCap: .round)
                     )
                     .frame(width: 20, height: 20)
-                    .rotationEffect(Angle(degrees: -90 - rotationDegree * 1.5))
+                    .rotationEffect(Angle(degrees: -90 - rotationDegree * 0.5))
             }
         }
         .shadow(color: Color.black.opacity(0.15), radius: 1.0, x: 0, y: 0.5)
-    }
-}
-
-// 简化的呼吸效果修饰器
-private struct SimpleBreathingEffect: ViewModifier {
-    @State private var scale: CGFloat = 1.0
-    
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(scale)
-            .onAppear {
-                let animation = Animation.easeInOut(duration: 8.0).repeatForever(autoreverses: true)
-                withAnimation(animation) {
-                    scale = 1.02
-                }
-            }
     }
 }
 
