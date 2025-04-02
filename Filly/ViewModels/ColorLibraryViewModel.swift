@@ -3,6 +3,8 @@ import Combine
 
 class ColorLibraryViewModel: ObservableObject {
     @Published var colors: [FilamentColor] = []
+    @Published var selectedBrand: String = ""
+    @Published var selectedMaterialType: String = ""
     
     private let saveKey = "savedColors"
     
@@ -94,10 +96,10 @@ class ColorLibraryViewModel: ObservableObject {
     // 根据名称搜索颜色
     func searchColors(query: String) -> [FilamentColor] {
         if query.isEmpty {
-            return colors
+            return filteredColors()
         }
         
-        return colors.filter { $0.name.lowercased().contains(query.lowercased()) }
+        return filteredColors().filter { $0.name.lowercased().contains(query.lowercased()) }
     }
     
     // 获取所有可用的品牌
@@ -122,6 +124,21 @@ class ColorLibraryViewModel: ObservableObject {
         return Array(types).sorted()
     }
     
+    // 根据所选品牌和材料类型过滤颜色
+    func filteredColors() -> [FilamentColor] {
+        var filteredColors = colors
+        
+        if !selectedBrand.isEmpty {
+            filteredColors = filteredColors.filter { $0.brand == selectedBrand }
+        }
+        
+        if !selectedMaterialType.isEmpty {
+            filteredColors = filteredColors.filter { $0.materialType == selectedMaterialType }
+        }
+        
+        return filteredColors
+    }
+    
     // 根据品牌获取颜色
     func colorsForBrand(_ brand: String) -> [FilamentColor] {
         return colors.filter { $0.brand == brand }
@@ -136,6 +153,12 @@ class ColorLibraryViewModel: ObservableObject {
     func resetToDefaults() {
         colors = FilamentColor.presets
         saveColors()
+    }
+    
+    // 添加特定品牌的所有颜色
+    func addAllColorsForBrand(_ brand: String) {
+        let brandColors = FilamentColor.colorsForBrand(brand)
+        addColors(brandColors)
     }
     
     // 保存颜色库
