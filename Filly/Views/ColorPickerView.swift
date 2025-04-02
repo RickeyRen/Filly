@@ -169,27 +169,28 @@ struct ColorPickerView: View {
                 
                 // 最近使用的颜色 - 使用LazyHStack提高性能
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 15) {
+                    LazyHStack(spacing: 12) {
                         Text("最近使用:")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .padding(.leading, 12)
                         
                         ForEach(colorLibrary.recentlyUsedColors()) { colorItem in
-                            VStack(spacing: 5) {
+                            VStack(spacing: 2) {
                                 MiniFilamentReelView(color: colorItem.getUIColor())
-                                    .frame(width: 44, height: 44)
+                                    .frame(width: 36, height: 36)
                                     .overlay(
                                         Circle()
                                             .stroke(selectedColorName == colorItem.name ? Color.blue : Color.clear, lineWidth: 2)
                                     )
                                 
                                 Text(colorItem.name)
-                                    .font(.system(size: 10))
+                                    .font(.system(size: 9))
                                     .lineLimit(1)
-                                    .frame(width: 70)
+                                    .frame(width: 60)
                                     .multilineTextAlignment(.center)
                             }
+                            .frame(width: 60, height: 60)
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 self.selectedColorName = colorItem.name
@@ -199,8 +200,9 @@ struct ColorPickerView: View {
                             }
                         }
                     }
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 8)
                 }
+                .frame(height: 70)
                 .background(SystemColorCompatibility.tertiarySystemBackground)
                 
                 // 添加新颜色的视图或颜色网格
