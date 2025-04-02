@@ -23,6 +23,15 @@ struct FilamentColor: Identifiable, Codable, Equatable {
         self.materialType = materialType
     }
     
+    init(id: UUID, name: String, colorData: ColorData, lastUsed: Date, brand: String = "", materialType: String = "") {
+        self.id = id
+        self.name = name
+        self.colorData = colorData
+        self.lastUsed = lastUsed
+        self.brand = brand
+        self.materialType = materialType
+    }
+    
     func getUIColor() -> Color {
         return Color(red: colorData.red, green: colorData.green, blue: colorData.blue, opacity: colorData.alpha)
     }

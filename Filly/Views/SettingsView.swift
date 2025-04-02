@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var themeManager: ThemeManager
+    @StateObject private var colorLibrary = ColorLibraryViewModel()
+    @State private var showingColorLibrary = false
     @State private var showingAbout = false
     
     var body: some View {
@@ -50,6 +52,25 @@ struct SettingsView: View {
                                 .padding(.vertical, 2)
                                 .padding(.horizontal, 4)
                         )
+                    }
+                }
+                
+                // 颜色库管理
+                Section(header: Text("耗材管理")) {
+                    Button(action: {
+                        showingColorLibrary = true
+                    }) {
+                        HStack {
+                            Image(systemName: "paintpalette")
+                                .foregroundColor(.blue)
+                            Text("颜色库管理")
+                            Spacer()
+                            Text("\(colorLibrary.colors.count)")
+                                .foregroundColor(.secondary)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
                 
@@ -107,6 +128,9 @@ struct SettingsView: View {
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: themeManager.selectedTheme)
             .sheet(isPresented: $showingAbout) {
                 AboutView(isPresented: $showingAbout)
+            }
+            .sheet(isPresented: $showingColorLibrary) {
+                ColorLibraryManageView(colorLibrary: colorLibrary)
             }
         }
     }

@@ -142,7 +142,7 @@ class ColorLibraryViewModel: ObservableObject {
     }
     
     // 保存颜色库
-    private func saveColors() {
+    func saveColors() {
         if let encoded = try? JSONEncoder().encode(colors) {
             UserDefaults.standard.set(encoded, forKey: saveKey)
         }

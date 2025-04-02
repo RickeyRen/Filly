@@ -251,45 +251,42 @@ struct ColorPickerView: View {
                         } else {
                             LazyVGrid(
                                 columns: [
-                                    GridItem(.flexible(), spacing: 0),
-                                    GridItem(.flexible(), spacing: 0),
-                                    GridItem(.flexible(), spacing: 0),
-                                    GridItem(.flexible(), spacing: 0),
-                                    GridItem(.flexible(), spacing: 0)
+                                    GridItem(.flexible(), spacing: 8),
+                                    GridItem(.flexible(), spacing: 8),
+                                    GridItem(.flexible(), spacing: 8),
+                                    GridItem(.flexible(), spacing: 8)
                                 ],
-                                spacing: 5
+                                spacing: 16
                             ) {
                                 ForEach(filteredColors) { colorItem in
-                                    VStack {
+                                    VStack(spacing: 4) {
                                         ColorGridItem(
                                             color: colorItem.getUIColor(),
                                             name: colorItem.name,
                                             isSelected: selectedColorName == colorItem.name
                                         )
                                         
+                                        // 品牌和材料类型信息
                                         if !colorItem.brand.isEmpty || !colorItem.materialType.isEmpty {
-                                            HStack(spacing: 4) {
+                                            VStack(spacing: 1) {
                                                 if !colorItem.brand.isEmpty {
-                                                    Text(colorItem.brand)
-                                                        .font(.system(size: 7))
-                                                        .foregroundColor(.gray)
-                                                }
-                                                
-                                                if !colorItem.brand.isEmpty && !colorItem.materialType.isEmpty {
-                                                    Text("·")
-                                                        .font(.system(size: 7))
-                                                        .foregroundColor(.gray)
+                                                    Text(colorItem.brand.replacingOccurrences(of: " Tinmorry", with: ""))
+                                                        .font(.system(size: 9))
+                                                        .foregroundColor(.secondary)
+                                                        .lineLimit(1)
                                                 }
                                                 
                                                 if !colorItem.materialType.isEmpty {
                                                     Text(colorItem.materialType)
-                                                        .font(.system(size: 7))
-                                                        .foregroundColor(.gray)
+                                                        .font(.system(size: 9))
+                                                        .foregroundColor(.secondary)
+                                                        .lineLimit(1)
                                                 }
                                             }
-                                            .lineLimit(1)
+                                            .frame(width: 70)
                                         }
                                     }
+                                    .frame(height: 85)
                                     .onTapGesture {
                                         self.selectedColorName = colorItem.name
                                         self.selectedColor = colorItem.getUIColor()
@@ -307,7 +304,7 @@ struct ColorPickerView: View {
                                     }
                                 }
                             }
-                            .padding(.horizontal, 5)
+                            .padding(.horizontal, 10)
                             .padding(.bottom, 20)
                         }
                     }
@@ -486,38 +483,35 @@ struct ColorGridItem: View {
     let isSelected: Bool
     
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
             // 图标容器，固定尺寸并裁剪溢出部分
             ZStack {
                 MiniFilamentReelView(color: color)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 50, height: 50)
                     .overlay(
                         Circle()
                             .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
-                            .frame(width: 42, height: 42)
+                            .frame(width: 52, height: 52)
                     )
             }
-            .frame(width: 44, height: 44)
+            .frame(width: 54, height: 54)
             .clipShape(Circle())
             
             // 文本放在图标下方，避免重叠
-            HStack(spacing: 1) {
+            HStack(spacing: 2) {
                 Text(name)
-                    .font(.system(size: 8))
+                    .font(.system(size: 11, weight: .medium))
                     .lineLimit(1)
-                    .multilineTextAlignment(.center)
+                    .foregroundColor(.primary)
                 
                 if isSelected {
                     Image(systemName: "checkmark")
                         .foregroundColor(.blue)
-                        .font(.system(size: 6, weight: .bold))
+                        .font(.system(size: 9, weight: .bold))
                 }
             }
-            .padding(.top, 1)
-            .frame(maxWidth: .infinity)
+            .frame(width: 70)
         }
-        .frame(height: 68)
         .contentShape(Rectangle())
-        .padding(.horizontal, 2)
     }
 } 
