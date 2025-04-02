@@ -23,13 +23,25 @@ struct FilamentLibraryView: View {
     @EnvironmentObject var colorLibrary: ColorLibraryViewModel
 
     @State private var searchText = ""
-    @State private var selectedBrand: SwiftDataBrand? = nil
-    @State private var selectedMaterialType: SwiftDataMaterialType? = nil
+    // 保存 ID 而不是对象引用
+    @State private var selectedBrandId: UUID? = nil
+    @State private var selectedMaterialTypeId: UUID? = nil
     
     // Use identifiable item for the sheet state
     @State private var sheetItem: FilamentSheetItem? = nil 
 
     @Query(sort: \SwiftDataBrand.name) private var brands: [SwiftDataBrand]
+    
+    // 通过 ID 安全获取对象的计算属性
+    private var selectedBrand: SwiftDataBrand? {
+        guard let id = selectedBrandId else { return nil }
+        return brands.first { $0.id == id }
+    }
+    
+    private var selectedMaterialType: SwiftDataMaterialType? {
+        guard let id = selectedMaterialTypeId, let brand = selectedBrand else { return nil }
+        return brand.materialTypes.first { $0.id == id }
+    }
 
     var body: some View {
         NavigationStack {
@@ -42,8 +54,8 @@ struct FilamentLibraryView: View {
                 if searchText.isEmpty {
                     FilterScrollView(
                         brands: brands,
-                        selectedBrand: $selectedBrand,
-                        selectedMaterialType: $selectedMaterialType,
+                        selectedBrandId: $selectedBrandId,
+                        selectedMaterialTypeId: $selectedMaterialTypeId,
                         viewModel: filamentLibraryViewModel,
                         context: modelContext
                     )
@@ -71,12 +83,12 @@ struct FilamentLibraryView: View {
                     } else if let brand = selectedBrand {
                         MaterialTypeListView(
                             brand: brand,
-                            selectedMaterialType: $selectedMaterialType,
+                            selectedMaterialTypeId: $selectedMaterialTypeId,
                             viewModel: filamentLibraryViewModel,
                             context: modelContext
                         )
                     } else {
-                        BrandListView(brands: brands, selectedBrand: $selectedBrand)
+                        BrandListView(brands: brands, selectedBrandId: $selectedBrandId)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -102,21 +114,27 @@ struct FilamentLibraryView: View {
     
     // Function to handle color selection and prepare sheet item
     private func handleColorSelection(_ color: SwiftDataFilamentColor) {
-        // Pre-access data (keep the potential fix)
-        _ = color.materialType?.name
-        _ = color.materialType?.brand?.name
+        // 安全提取数据，避免在创建 item 后又访问已销毁的对象
+        let brandName = color.materialType?.brand?.name ?? "未知品牌"
+        let materialTypeName = color.materialType?.name ?? "未知类型"
+        let colorName = color.name
+        let baseColorName = color.baseColorName
+        let colorCode = color.code
+        let hasSpool = color.hasSpool
+        let colorValue = color.colorData.toColor()
+        let colorId = color.id
         
-        // Create the identifiable item with extracted data
+        // 使用提取的数据创建 item
         self.sheetItem = FilamentSheetItem(
-            id: color.id,
-            libraryColorName: color.name,
-            libraryColorBaseName: color.baseColorName,
-            libraryColorCode: color.code,
-            libraryColorHasSpool: color.hasSpool,
-            brandName: color.materialType?.brand?.name ?? "未知品牌",
-            materialTypeName: color.materialType?.name ?? "未知类型",
-            swiftUIColor: color.colorData.toColor(),
-            originalColorID: color.id
+            id: colorId,
+            libraryColorName: colorName,
+            libraryColorBaseName: baseColorName,
+            libraryColorCode: colorCode,
+            libraryColorHasSpool: hasSpool,
+            brandName: brandName,
+            materialTypeName: materialTypeName,
+            swiftUIColor: colorValue,
+            originalColorID: colorId
         )
     }
 }
@@ -151,16 +169,22 @@ struct LibrarySearchBar: View {
 
 struct FilterScrollView: View {
     let brands: [SwiftDataBrand]
-    @Binding var selectedBrand: SwiftDataBrand?
-    @Binding var selectedMaterialType: SwiftDataMaterialType?
+    @Binding var selectedBrandId: UUID?
+    @Binding var selectedMaterialTypeId: UUID?
     let viewModel: FilamentLibraryViewModel
     let context: ModelContext
+
+    // 临时存储当前选中的品牌，避免嵌套获取导致的性能问题
+    private var selectedBrand: SwiftDataBrand? {
+        guard let id = selectedBrandId else { return nil }
+        return brands.first { $0.id == id }
+    }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 // Clear Filter Button
-                if selectedBrand != nil || selectedMaterialType != nil {
+                if selectedBrandId != nil || selectedMaterialTypeId != nil {
                     Button(action: clearFilters) {
                         Label("清除", systemImage: "xmark")
                             .font(.caption)
@@ -174,16 +198,16 @@ struct FilterScrollView: View {
                 ForEach(brands) { brand in
                     Button(brand.name) {
                         withAnimation {
-                            if selectedBrand?.id == brand.id {
-                                selectedBrand = nil
-                                selectedMaterialType = nil
+                            if selectedBrandId == brand.id {
+                                selectedBrandId = nil
+                                selectedMaterialTypeId = nil
                             } else {
-                                selectedBrand = brand
-                                selectedMaterialType = nil // Reset material type when brand changes
+                                selectedBrandId = brand.id
+                                selectedMaterialTypeId = nil // Reset material type when brand changes
                             }
                         }
                     }
-                    .buttonStyle(FilterChipStyle(isSelected: selectedBrand?.id == brand.id, color: .blue))
+                    .buttonStyle(FilterChipStyle(isSelected: selectedBrandId == brand.id, color: .blue))
                 }
 
                 // Material Type Buttons (Show only if a brand is selected)
@@ -192,14 +216,14 @@ struct FilterScrollView: View {
                     ForEach(materialTypes) { type in
                         Button(type.name) {
                             withAnimation {
-                                if selectedMaterialType?.id == type.id {
-                                    selectedMaterialType = nil
+                                if selectedMaterialTypeId == type.id {
+                                    selectedMaterialTypeId = nil
                                 } else {
-                                    selectedMaterialType = type
+                                    selectedMaterialTypeId = type.id
                                 }
                             }
                         }
-                        .buttonStyle(FilterChipStyle(isSelected: selectedMaterialType?.id == type.id, color: .green))
+                        .buttonStyle(FilterChipStyle(isSelected: selectedMaterialTypeId == type.id, color: .green))
                     }
                 }
             }
@@ -209,21 +233,21 @@ struct FilterScrollView: View {
 
     private func clearFilters() {
         withAnimation {
-            selectedBrand = nil
-            selectedMaterialType = nil
+            selectedBrandId = nil
+            selectedMaterialTypeId = nil
         }
     }
 }
 
 struct BrandListView: View {
     let brands: [SwiftDataBrand]
-    @Binding var selectedBrand: SwiftDataBrand?
+    @Binding var selectedBrandId: UUID?
 
     var body: some View {
         List {
             ForEach(brands) { brand in
                 Button {
-                    withAnimation { selectedBrand = brand }
+                    withAnimation { selectedBrandId = brand.id }
                 } label: {
                     HStack {
                         Text(brand.name)
@@ -246,7 +270,7 @@ struct BrandListView: View {
 
 struct MaterialTypeListView: View {
     let brand: SwiftDataBrand
-    @Binding var selectedMaterialType: SwiftDataMaterialType?
+    @Binding var selectedMaterialTypeId: UUID?
     let viewModel: FilamentLibraryViewModel
     let context: ModelContext
 
@@ -259,7 +283,7 @@ struct MaterialTypeListView: View {
             } else {
                 ForEach(materialTypes) { type in
                     Button {
-                        withAnimation { selectedMaterialType = type }
+                        withAnimation { selectedMaterialTypeId = type.id }
                     } label: {
                         HStack {
                             Text(type.name)
@@ -419,6 +443,9 @@ struct AddLegacyFilamentSheet: View {
     @State private var notes: String = ""
     @State private var spoolCount: Int = 1
     @State private var spoolsData: [FilamentSpool] = [FilamentSpool()]
+    // 添加错误处理的状态变量
+    @State private var showingAddError = false
+    @State private var addErrorMessage = ""
 
     var body: some View {
         NavigationView {
@@ -517,6 +544,12 @@ struct AddLegacyFilamentSheet: View {
                      // Add validation if needed, e.g., disable if weight is 0?
                 }
             }
+            // 添加错误提示的 alert
+            .alert("添加失败", isPresented: $showingAddError) {
+                Button("好的") { }
+            } message: {
+                Text(addErrorMessage)
+            }
         }
     }
     
@@ -532,42 +565,65 @@ struct AddLegacyFilamentSheet: View {
 
     // Update addFilamentToInventory to use data from the item
     private func addFilamentToInventory() {
-        // Use data passed in the item struct
-        guard let inventoryType = FilamentType(rawValue: item.materialTypeName) else {
+        // 材料类型映射，处理特殊情况如 "PLA Lite" -> "PLA"
+        let mappedTypeName: String
+        
+        // 处理特殊的材料类型名称
+        if item.materialTypeName.contains("PLA") {
+            // 所有包含 "PLA" 的变种（如 PLA Lite, PLA+等）都映射到标准 "PLA"
+            mappedTypeName = "PLA"
+        } else if item.materialTypeName.contains("ABS") {
+            mappedTypeName = "ABS"
+        } else if item.materialTypeName.contains("PETG") {
+            mappedTypeName = "PETG"
+        } else if item.materialTypeName.contains("TPU") {
+            mappedTypeName = "TPU"
+        } else {
+            // 如果没有特殊处理的映射，就保留原始名称
+            mappedTypeName = item.materialTypeName
+        }
+        
+        // 现在使用映射后的类型名称
+        guard let inventoryType = FilamentType(rawValue: mappedTypeName) else {
+            addErrorMessage = "无法识别的材料类型: \(item.materialTypeName)"
+            showingAddError = true
             print("错误：无法将库材料类型映射到 FilamentType: \(item.materialTypeName)")
             return
         }
         
-        let brandName = item.brandName
-        let baseColorName = item.libraryColorBaseName // Use base name from item
-        
-        var inventoryColorData: ColorData?
-        if let existingInventoryColor = colorLibrary.colors.first(where: { $0.name == baseColorName && $0.brand == brandName && $0.materialType == item.materialTypeName }) {
-            inventoryColorData = existingInventoryColor.colorData
-             colorLibrary.updateLastUsed(for: existingInventoryColor)
-        } else {
-            inventoryColorData = ColorData(from: item.swiftUIColor) // Use color from item
-            let newInventoryColor = FilamentColor(
-                name: baseColorName,
-                color: item.swiftUIColor, // Use color from item
-                brand: brandName,
-                materialType: item.materialTypeName
-            )
-            colorLibrary.addColor(newInventoryColor)
-        }
-        
-        let newInventoryFilament = Filament(
-            brand: brandName,
+        // 创建Filament对象并添加到库存
+        let newFilament = Filament(
+            brand: item.brandName,
             type: inventoryType,
-            color: baseColorName,
-            colorData: inventoryColorData,
+            color: item.libraryColorBaseName,
+            colorData: ColorData(from: item.swiftUIColor),
             weight: weight,
             diameter: selectedDiameter,
             spools: spoolsData,
             notes: notes
         )
         
-        filamentViewModel.addFilament(newInventoryFilament)
+        // 添加到库存
+        filamentViewModel.addFilament(newFilament)
+        
+        // 更新最后使用的颜色
+        if let existingInventoryColor = colorLibrary.colors.first(where: {
+            $0.name == item.libraryColorBaseName &&
+            $0.brand == item.brandName &&
+            $0.materialType == item.materialTypeName
+        }) {
+            colorLibrary.updateLastUsed(for: existingInventoryColor)
+        } else {
+            let newLegacyColor = FilamentColor(
+                name: item.libraryColorBaseName,
+                color: item.swiftUIColor,
+                brand: item.brandName,
+                materialType: item.materialTypeName
+            )
+            colorLibrary.addColor(newLegacyColor)
+        }
+        
+        // 关闭sheet并重置状态
         dismiss()
     }
 }
