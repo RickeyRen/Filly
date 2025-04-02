@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import CoreData
 
 @main
 struct FillyApp: App {
@@ -92,8 +93,7 @@ struct FillyApp: App {
             let config = ModelConfiguration(
                 schema: schema,
                 isStoredInMemoryOnly: false,
-                allowsSave: true,
-                migrations: nil // 不提供显式迁移策略
+                allowsSave: true
             )
             
             // 处理可能的迁移错误
@@ -104,10 +104,9 @@ struct FillyApp: App {
                 print("尝试删除现有数据库并重新创建...")
                 
                 // 删除现有数据库并创建新的
-                if let storeURL = NSPersistentStoreDescription.defaultURL {
-                    try? FileManager.default.removeItem(at: storeURL)
-                    print("已删除旧数据库: \(storeURL.path)")
-                }
+                let url = URL.applicationSupportDirectory.appending(component: "default.store")
+                try? FileManager.default.removeItem(at: url)
+                print("已删除旧数据库: \(url.path)")
                 
                 // 重新创建数据库
                 container = try ModelContainer(for: schema, configurations: [config])
