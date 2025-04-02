@@ -59,7 +59,7 @@ class FilamentLibraryViewModel: ObservableObject {
                         // 添加对应的不含料盘版本
                         if colorData.hasSpool {
                             var noSpoolColor = colorData
-                            noSpoolColor = ColorProperties(
+                            noSpoolColor = PresetFilamentData.ColorProperties(
                                 name: colorData.name,
                                 code: colorData.code,
                                 hasSpool: false,
