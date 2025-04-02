@@ -109,7 +109,7 @@ public struct SimpleFillamentReel2D: View {
                 .onAppear {
                     // 打印颜色信息以便调试
                     #if DEBUG
-                    let colorInfo = extractColorValues(color)
+                    let colorInfo = SimpleFillamentReel2D.extractColorValues(color)
                     print("颜色显示: \(colorName), RGB: \(colorInfo.0), \(colorInfo.1), \(colorInfo.2)")
                     #endif
                 }
