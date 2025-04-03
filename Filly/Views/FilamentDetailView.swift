@@ -580,10 +580,17 @@ struct SpoolItemView: View {
                                             // 检测是否有显著的百分比变化
                                             let percentageDelta = abs(newPercentage - currentDragPercentage)
                                             if percentageDelta > 1.0 {
-                                                // 主要触觉反馈 - 连续拖动时的流畅反馈
-                                                let feedbackGenerator = UISelectionFeedbackGenerator()
-                                                feedbackGenerator.prepare()
-                                                feedbackGenerator.selectionChanged()
+                                                // 主要触觉反馈 - 连续拖动时的流畅反馈 - 增强为两种反馈叠加
+                                                let selectionFeedback = UISelectionFeedbackGenerator()
+                                                selectionFeedback.prepare()
+                                                selectionFeedback.selectionChanged()
+                                                
+                                                // 额外添加轻微冲击反馈，增强震感
+                                                if percentageDelta > 2.0 {
+                                                    let lightImpact = UIImpactFeedbackGenerator(style: .light)
+                                                    lightImpact.prepare()
+                                                    lightImpact.impactOccurred(intensity: 0.7)
+                                                }
                                             }
                                             
                                             // 在特定节点提供更明显的反馈 (0%, 25%, 50%, 75%, 100%)
@@ -594,10 +601,10 @@ struct SpoolItemView: View {
                                                 let crossingDown = currentDragPercentage > point && newPercentage <= point
                                                 
                                                 if crossingUp || crossingDown {
-                                                    // 强烈触觉反馈 - 关键节点
-                                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                                    // 强烈触觉反馈 - 关键节点 - 升级为heavy
+                                                    let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
                                                     impactFeedback.prepare()
-                                                    impactFeedback.impactOccurred()
+                                                    impactFeedback.impactOccurred(intensity: 1.0)
                                                     
                                                     // 状态变化反馈 (如从用完到部分使用，或从部分使用到全新)
                                                     if point == 0 || point == 95 {
@@ -605,6 +612,13 @@ struct SpoolItemView: View {
                                                         let notificationFeedback = UINotificationFeedbackGenerator()
                                                         notificationFeedback.prepare()
                                                         notificationFeedback.notificationOccurred(point == 0 ? .warning : .success)
+                                                        
+                                                        // 添加双重冲击以强化重要状态变化
+                                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                                            let secondImpact = UIImpactFeedbackGenerator(style: .rigid)
+                                                            secondImpact.prepare()
+                                                            secondImpact.impactOccurred(intensity: 1.0)
+                                                        }
                                                     }
                                                     break // 只触发一次最近的关键点反馈
                                                 }
@@ -628,16 +642,34 @@ struct SpoolItemView: View {
                                             
                                             // 拖动结束时的触觉反馈
                                             #if os(iOS)
-                                            // 成功确认的触觉反馈
-                                            let impactFeedback = UIImpactFeedbackGenerator(style: .rigid)
-                                            impactFeedback.prepare()
-                                            impactFeedback.impactOccurred(intensity: 0.8)
+                                            // 成功确认的触觉反馈 - 使用重型+刚性组合
+                                            let heavyImpact = UIImpactFeedbackGenerator(style: .heavy)
+                                            heavyImpact.prepare()
+                                            heavyImpact.impactOccurred(intensity: 1.0)
+                                            
+                                            // 延迟一点点增加第二次反馈，产生"咔哒"双震感
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                                let rigidImpact = UIImpactFeedbackGenerator(style: .rigid)
+                                                rigidImpact.prepare()
+                                                rigidImpact.impactOccurred(intensity: 1.0)
+                                            }
                                             
                                             // 如果是关键值，提供额外反馈
                                             if newPercentage == 0 || newPercentage == 100 || newPercentage.truncatingRemainder(dividingBy: 25) < 1 {
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                                    let secondaryFeedback = UIImpactFeedbackGenerator(style: .heavy)
-                                                    secondaryFeedback.impactOccurred(intensity: 0.6)
+                                                // 延迟提供第三次强烈反馈
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                                    // 先提供通知反馈
+                                                    let notificationFeedback = UINotificationFeedbackGenerator()
+                                                    notificationFeedback.prepare()
+                                                    notificationFeedback.notificationOccurred(newPercentage == 0 ? .warning : 
+                                                                                           newPercentage == 100 ? .success : .success)
+                                                    
+                                                    // 然后提供额外冲击反馈
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                                        let finalImpact = UIImpactFeedbackGenerator(style: .heavy)
+                                                        finalImpact.prepare()
+                                                        finalImpact.impactOccurred(intensity: 1.0)
+                                                    }
                                                 }
                                             }
                                             #endif
