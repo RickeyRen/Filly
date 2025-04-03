@@ -634,7 +634,7 @@ struct SpoolItemView: View {
                                             impactFeedback.impactOccurred(intensity: 0.8)
                                             
                                             // 如果是关键值，提供额外反馈
-                                            if newPercentage == 0 || newPercentage == 100 || newPercentage % 25 < 1 {
+                                            if newPercentage == 0 || newPercentage == 100 || newPercentage.truncatingRemainder(dividingBy: 25) < 1 {
                                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                                     let secondaryFeedback = UIImpactFeedbackGenerator(style: .heavy)
                                                     secondaryFeedback.impactOccurred(intensity: 0.6)
