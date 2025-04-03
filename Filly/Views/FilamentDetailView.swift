@@ -575,6 +575,42 @@ struct SpoolItemView: View {
                                             // 计算百分比，限制在0-100范围内
                                             let newPercentage = max(0, min(100, Double(relativePosition / trackWidth * 100)))
                                             
+                                            // 触觉反馈 - 根据百分比变化提供不同强度的触觉反馈
+                                            #if os(iOS)
+                                            // 检测是否有显著的百分比变化
+                                            let percentageDelta = abs(newPercentage - currentDragPercentage)
+                                            if percentageDelta > 1.0 {
+                                                // 主要触觉反馈 - 连续拖动时的流畅反馈
+                                                let feedbackGenerator = UISelectionFeedbackGenerator()
+                                                feedbackGenerator.prepare()
+                                                feedbackGenerator.selectionChanged()
+                                            }
+                                            
+                                            // 在特定节点提供更明显的反馈 (0%, 25%, 50%, 75%, 100%)
+                                            let keyPoints: [Double] = [0, 25, 50, 75, 100]
+                                            for point in keyPoints {
+                                                // 检查是否跨过了任何关键点
+                                                let crossingUp = currentDragPercentage < point && newPercentage >= point
+                                                let crossingDown = currentDragPercentage > point && newPercentage <= point
+                                                
+                                                if crossingUp || crossingDown {
+                                                    // 强烈触觉反馈 - 关键节点
+                                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                                    impactFeedback.prepare()
+                                                    impactFeedback.impactOccurred()
+                                                    
+                                                    // 状态变化反馈 (如从用完到部分使用，或从部分使用到全新)
+                                                    if point == 0 || point == 95 {
+                                                        // 状态变化时提供更强的反馈
+                                                        let notificationFeedback = UINotificationFeedbackGenerator()
+                                                        notificationFeedback.prepare()
+                                                        notificationFeedback.notificationOccurred(point == 0 ? .warning : .success)
+                                                    }
+                                                    break // 只触发一次最近的关键点反馈
+                                                }
+                                            }
+                                            #endif
+                                            
                                             // 立即更新UI，不使用动画
                                             withAnimation(.interactiveSpring()) {
                                                 currentDragPercentage = newPercentage
@@ -590,6 +626,22 @@ struct SpoolItemView: View {
                                             let normalizedPercentage = max(0.0, min(1.0, percentage))
                                             let newPercentage = normalizedPercentage * 100.0
                                             
+                                            // 拖动结束时的触觉反馈
+                                            #if os(iOS)
+                                            // 成功确认的触觉反馈
+                                            let impactFeedback = UIImpactFeedbackGenerator(style: .rigid)
+                                            impactFeedback.prepare()
+                                            impactFeedback.impactOccurred(intensity: 0.8)
+                                            
+                                            // 如果是关键值，提供额外反馈
+                                            if newPercentage == 0 || newPercentage == 100 || newPercentage % 25 < 1 {
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                                    let secondaryFeedback = UIImpactFeedbackGenerator(style: .heavy)
+                                                    secondaryFeedback.impactOccurred(intensity: 0.6)
+                                                }
+                                            }
+                                            #endif
+                                            
                                             // 更新剩余量
                                             viewModel.updateSpoolPercentage(
                                                 filamentId: filamentId, 
@@ -597,6 +649,8 @@ struct SpoolItemView: View {
                                                 percentage: newPercentage
                                             )
                                             onUpdate(spool)
+                                            
+                                            // 重置拖动状态
                                             isDragging = false
                                         }
                                 )
