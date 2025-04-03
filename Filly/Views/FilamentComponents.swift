@@ -2,28 +2,35 @@ import SwiftUI
 
 // 3D线材卷模型 - 精细优化设计
 public struct FilamentReelView: View {
-    let color: Color
+    let colors: [Color] // 修改为接收颜色数组
     @State private var rotationDegree: Double = 0
     @Environment(\.colorScheme) private var colorScheme // 添加环境变量获取当前颜色模式
     
+    public init(colors: [Color]) { // 修改初始化方法
+        self.colors = colors.isEmpty ? [Color.gray] : colors // 确保至少有一种颜色
+    }
+    
+    // 单色初始化兼容
     public init(color: Color) {
-        self.color = color
+        self.init(colors: [color])
+    }
+    
+    // 计算主色调，用于对比色计算等
+    private var primaryColor: Color {
+        // 可以选择数组中的第一个颜色，或者计算平均色等
+        colors.first ?? .gray
     }
     
     public var body: some View {
         ZStack {
-            // 外部圆环 - 采用渐变填充增强立体感
+            // 外部圆环 - 使用渐变填充
             Circle()
                 .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            lighten(color, by: 0.1),
-                            color,
-                            darken(color, by: 0.2)
-                        ]),
+                    AngularGradient(
+                        gradient: Gradient(colors: colors + [colors.first ?? .gray]), // 循环渐变
                         center: .center,
-                        startRadius: 0,
-                        endRadius: 38
+                        startAngle: .degrees(0),
+                        endAngle: .degrees(360)
                     )
                 )
                 .frame(width: 76, height: 76)
@@ -39,7 +46,7 @@ public struct FilamentReelView: View {
                     .trim(from: i % 3 == 0 ? 0.0 : 0.03, to: i % 4 == 0 ? 0.97 : 1.0) // 添加间隙使旋转更明显
                     .stroke(
                         i % 2 == 0 ? 
-                            getEnhancedContrastColor(for: color, index: i) : 
+                            getEnhancedContrastColor(for: primaryColor, index: i) : // 使用主色调计算对比色
                             (colorScheme == .dark ? Color.white.opacity(0.8) : Color.black.opacity(0.7)), // 根据模式设置虚线颜色
                         style: StrokeStyle(
                             lineWidth: 1.2 + (CGFloat(7-i) * 0.05),
@@ -70,7 +77,7 @@ public struct FilamentReelView: View {
             // 中心孔周围的边缘 - 加粗边缘线
             Circle()
                 .stroke(
-                    getStrongContrastColor(for: color),
+                    getStrongContrastColor(for: primaryColor), // 使用主色调计算对比色
                     lineWidth: 2.0
                 )
                 .frame(width: 27, height: 27)
@@ -124,7 +131,7 @@ public struct FilamentReelView: View {
             // 最外侧边框 - 使用更清晰的边框
             Circle()
                 .stroke(
-                    getStrongBorderColor(for: color),
+                    getStrongBorderColor(for: primaryColor), // 使用主色调计算对比色
                     lineWidth: 1.2
                 )
                 .frame(width: 76, height: 76)

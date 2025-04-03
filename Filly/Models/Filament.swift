@@ -90,14 +90,46 @@ struct Filament: Identifiable, Codable {
         return spools.filter { $0.remainingPercentage >= 100 }.count
     }
     
-    // 获取颜色对象
+    // 获取颜色对象 - 如果是单一颜色则返回，否则返回第一个颜色
     func getColor() -> Color {
-        if let colorData = colorData {
-            return colorData.getUIColor()
-        } else {
-            // 返回默认颜色映射
-            return getDefaultColor(for: color)
+        let colors = getGradientColors()
+        return colors.first ?? getDefaultColor(for: color) // 如果无法解析，返回默认颜色
+    }
+
+    // 获取渐变颜色数组
+    func getGradientColors() -> [Color] {
+        // 特殊处理彩虹色
+        if color.lowercased() == "rainbow" || color == "彩虹色" {
+            return [
+                .red, .orange, .yellow, .green, .blue, .indigo, .purple
+            ]
         }
+        
+        // 尝试解析以'-'分隔的颜色字符串
+        let colorComponents = color.split(separator: "-").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+        
+        // 如果只有一个组件或无法解析，则返回单一颜色数组
+        if colorComponents.count <= 1 {
+            if let colorData = colorData {
+                return [colorData.getUIColor()]
+            } else {
+                return [getDefaultColor(for: color)]
+            }
+        }
+        
+        // 尝试将每个组件解析为颜色
+        let colors: [Color] = colorComponents.compactMap { component in
+            // 优先尝试解析十六进制颜色
+            if component.starts(with: "#"), let uiColor = UIColor(hexString: component) {
+                return Color(uiColor)
+            } else {
+                // 否则，使用默认颜色映射
+                return getDefaultColor(for: component)
+            }
+        }
+        
+        // 如果成功解析出多种颜色，则返回颜色数组
+        return colors.count > 1 ? colors : [getColor()] // 如果解析后仍为单一颜色，则返回单一颜色数组
     }
     
     // 默认颜色映射
@@ -122,10 +154,24 @@ struct Filament: Identifiable, Codable {
             return .orange
         } else if lowerName.contains("灰") || lowerName.contains("gray") {
             return .gray
+        } else if lowerName.contains("银") || lowerName.contains("silver") {
+            return Color(red: 192/255, green: 192/255, blue: 192/255)
+        } else if lowerName.contains("金") || lowerName.contains("gold") {
+            return Color(red: 255/255, green: 215/255, blue: 0/255)
         } else if lowerName.contains("透明") || lowerName.contains("clear") {
             return Color(white: 0.9, opacity: 0.5)
         } else {
-            return .gray
+            // 尝试随机生成颜色基于字符串哈希值 - 保持颜色一致性
+            var hash = 0
+            for char in lowerName.unicodeScalars {
+                hash = 31 &* hash &+ Int(char.value)
+            }
+            let random = RandomNumberGeneratorWithSeed(seed: UInt64(abs(hash)))
+            return Color(
+                red: Double.random(in: 0.2...0.8, using: &random),
+                green: Double.random(in: 0.2...0.8, using: &random),
+                blue: Double.random(in: 0.2...0.8, using: &random)
+            )
         }
     }
 }
@@ -173,4 +219,39 @@ struct PresetBrands {
         "思普瑞 Raise3D",
         "IEMAI"
     ]
+}
+
+// 添加UIColor扩展以支持十六进制字符串
+extension UIColor {
+    convenience init?(hexString: String) {
+        let hex = hexString.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int = UInt64()
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            return nil
+        }
+        self.init(red: CGFloat(r) / 255, green: CGFloat(g) / 255, blue: CGFloat(b) / 255, alpha: CGFloat(a) / 255)
+    }
+}
+
+// 添加随机数生成器以确保基于名称的颜色一致性
+struct RandomNumberGeneratorWithSeed: RandomNumberGenerator {
+    var seed: UInt64
+    
+    init(seed: UInt64) {
+        self.seed = seed
+    }
+    
+    mutating func next() -> UInt64 {
+        seed = seed &* 1103515245 &+ 12345
+        return seed
+    }
 } 
