@@ -823,8 +823,24 @@ struct SpoolItemView: View {
 
                     // 第一阶段：轻微震动与发光效果
                     #if os(iOS)
-                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                    impactFeedback.impactOccurred()
+                    // 增强初始触感反馈
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+                    impactFeedback.prepare()
+                    impactFeedback.impactOccurred(intensity: 1.0)
+                    
+                    // 添加额外的触感反馈
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        let rigidFeedback = UIImpactFeedbackGenerator(style: .rigid)
+                        rigidFeedback.prepare()
+                        rigidFeedback.impactOccurred(intensity: 1.0)
+                        
+                        // 添加警告通知
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            let notificationFeedback = UINotificationFeedbackGenerator()
+                            notificationFeedback.prepare()
+                            notificationFeedback.notificationOccurred(.error)
+                        }
+                    }
                     #endif
                     
                     // 初始轻微震动
