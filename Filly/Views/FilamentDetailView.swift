@@ -740,6 +740,28 @@ struct SpoolItemView: View {
             HStack(spacing: 10) {
                 // 添加"用完了"按钮
                 Button(action: {
+                    // 触感反馈序列 - 点击时立即触发第一次强烈反馈
+                    #if os(iOS)
+                    // 初始重型反馈
+                    let heavyFeedback = UIImpactFeedbackGenerator(style: .heavy)
+                    heavyFeedback.prepare()
+                    heavyFeedback.impactOccurred(intensity: 1.0)
+                    
+                    // 随后添加警告反馈，表示状态的重大变化
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        let notificationFeedback = UINotificationFeedbackGenerator()
+                        notificationFeedback.prepare()
+                        notificationFeedback.notificationOccurred(.warning)
+                        
+                        // 最后添加一个刚性反馈，产生"咔哒"完成感
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            let rigidFeedback = UIImpactFeedbackGenerator(style: .rigid)
+                            rigidFeedback.prepare()
+                            rigidFeedback.impactOccurred(intensity: 1.0)
+                        }
+                    }
+                    #endif
+                    
                     // 开始平滑动画序列
                     isDragging = true // 设置为拖动状态，这样UI会使用currentDragPercentage
                     
