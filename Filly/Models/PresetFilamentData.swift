@@ -126,7 +126,23 @@ struct PresetFilamentData {
             ]
         ),
         
+        // 易生 eSUN - 添加渐变色测试数据
+        Brand(
+            name: "易生 eSUN",
+            materialTypes: [
+                MaterialType(
+                    name: "PLA丝绸", // 假设这是您想要的材料类型名称
+                    colors: [
+                        ColorProperties(name: "红-绿-蓝"), // 三色渐变
+                        ColorProperties(name: "红-蓝"),   // 双色渐变
+                        ColorProperties(name: "Rainbow") // 彩虹色
+                    ]
+                )
+                // 如果易生还有其他材料类型，可以在这里继续添加
+            ]
+        ),
+        
         // 这里可以添加更多品牌...
-        // 例如：易生、Polymaker等
+        // 例如：Polymaker等
     ]
 } 
