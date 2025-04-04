@@ -166,7 +166,7 @@ struct Filament: Identifiable, Codable {
             for char in lowerName.unicodeScalars {
                 hash = 31 &* hash &+ Int(char.value)
             }
-            let random = RandomNumberGeneratorWithSeed(seed: UInt64(abs(hash)))
+            var random = RandomNumberGeneratorWithSeed(seed: UInt64(abs(hash)))
             return Color(
                 red: Double.random(in: 0.2...0.8, using: &random),
                 green: Double.random(in: 0.2...0.8, using: &random),
