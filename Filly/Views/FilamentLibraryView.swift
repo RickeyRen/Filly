@@ -646,15 +646,17 @@ struct ColorCard: View {
 
     // 计算渐变色数组
     private var gradientColors: [Color] {
-        // 特殊处理彩虹色
-        if color.name.lowercased() == "rainbow" || color.name == "彩虹色" {
+        let lowercasedName = color.baseColorName.lowercased() // 使用 baseColorName 并转为小写
+        // 特殊处理彩虹色 - 改为包含判断
+        if lowercasedName.contains("rainbow") || lowercasedName.contains("彩虹") {
             return [
                 .red, .orange, .yellow, .green, .blue, .indigo, .purple
             ]
         }
         
-        // 尝试解析以'-'分隔的颜色字符串
-        let colorComponents = color.name.split(separator: "-").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+        // 尝试解析以'-'分隔的颜色字符串 (使用 color.name 或 color.baseColorName)
+        // 如果 name 包含 (含料盘) 等后缀，分割 baseColorName 可能更准确
+        let colorComponents = color.baseColorName.split(separator: "-").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
         
         // 如果只有一个组件或无法解析，则返回来自ColorData的颜色
         if colorComponents.count <= 1 {

@@ -135,7 +135,16 @@ struct PresetFilamentData {
                     colors: [
                         ColorProperties(name: "红-绿-蓝"), // 三色渐变
                         ColorProperties(name: "红-蓝"),   // 双色渐变
-                        ColorProperties(name: "Rainbow") // 彩虹色
+                        ColorProperties(name: "Rainbow"), // 彩虹色
+                        // 新增更多渐变色组合
+                        ColorProperties(name: "黑-白"),
+                        ColorProperties(name: "金-银"),
+                        ColorProperties(name: "蓝-紫"),
+                        ColorProperties(name: "绿-黄"),
+                        ColorProperties(name: "红-橙-黄"),
+                        ColorProperties(name: "蓝-绿-青"), // 青色在解析时会被默认颜色逻辑处理
+                        ColorProperties(name: "黑-红"),
+                        ColorProperties(name: "粉-白")
                     ]
                 )
                 // 如果易生还有其他材料类型，可以在这里继续添加
