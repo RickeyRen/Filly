@@ -129,7 +129,14 @@ struct Filament: Identifiable, Codable {
         }
         
         // 如果成功解析出多种颜色，则返回颜色数组
-        return colors.count > 1 ? colors : [getColor()] // 如果解析后仍为单一颜色，则返回单一颜色数组
+        if colors.count > 1 {
+            return colors
+        } else if let firstParsedColor = colors.first {
+            return [firstParsedColor]
+        } else {
+            // 如果完全无法解析（例如输入了无效的颜色名且无ColorData），返回默认灰色
+            return [getDefaultColor(for: color)]
+        }
     }
     
     // 默认颜色映射
@@ -152,6 +159,8 @@ struct Filament: Identifiable, Codable {
             return .purple
         } else if lowerName.contains("橙") || lowerName.contains("orange") {
             return .orange
+        } else if lowerName.contains("靛") || lowerName.contains("indigo") {
+            return .indigo
         } else if lowerName.contains("灰") || lowerName.contains("gray") {
             return .gray
         } else if lowerName.contains("银") || lowerName.contains("silver") {

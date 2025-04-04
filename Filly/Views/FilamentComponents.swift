@@ -286,16 +286,22 @@ func darken(_ color: Color, by percentage: Double) -> Color {
 
 // 迷你线材卷模型 - 用于颜色选择器和添加耗材视图
 public struct MiniFilamentReelView: View {
-    let color: Color
+    let colors: [Color] // 修改为接收颜色数组
     
+    // 支持颜色数组初始化
+    public init(colors: [Color]) {
+        self.colors = colors.isEmpty ? [Color.gray] : colors
+    }
+    
+    // 单色初始化兼容
     public init(color: Color) {
-        self.color = color
+        self.init(colors: [color])
     }
     
     public var body: some View {
         ZStack {
-            // 使用FilamentReelView替代SimpleFillamentReel2D
-            FilamentReelView(color: color)
+            // 使用FilamentReelView并传递颜色数组
+            FilamentReelView(colors: colors) 
                 .scaleEffect(0.7)  // 缩小到适合UI的大小
         }
         .frame(width: 55, height: 55)

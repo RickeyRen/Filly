@@ -644,10 +644,64 @@ struct ColorCard: View {
     let color: SwiftDataFilamentColor
     private let textContentMinHeight: CGFloat = 70
 
+    // 计算渐变色数组
+    private var gradientColors: [Color] {
+        // 特殊处理彩虹色
+        if color.name.lowercased() == "rainbow" || color.name == "彩虹色" {
+            return [
+                .red, .orange, .yellow, .green, .blue, .indigo, .purple
+            ]
+        }
+        
+        // 尝试解析以'-'分隔的颜色字符串
+        let colorComponents = color.name.split(separator: "-").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+        
+        // 如果只有一个组件或无法解析，则返回来自ColorData的颜色
+        if colorComponents.count <= 1 {
+            return [color.colorData.toColor()]
+        }
+        
+        // 尝试将每个组件解析为颜色
+        let colors: [Color] = colorComponents.compactMap { component in
+            // 优先尝试解析十六进制颜色
+            if component.starts(with: "#"), let uiColor = UIColor(hexString: component) {
+                return Color(uiColor)
+            } else {
+                // 否则，尝试使用默认颜色映射 (需要能访问到getDefaultColor)
+                // 为了简化，这里我们直接返回一个默认颜色或尝试从 ColorData 获取
+                // 注意：更健壮的方案是在 SwiftDataFilamentColor 或其ViewModel中实现颜色解析
+                return getDefaultColorFallback(for: component) ?? color.colorData.toColor()
+            }
+        }
+        
+        // 如果成功解析出多种颜色，则返回颜色数组，否则返回单一颜色
+        return colors.count > 1 ? colors : [color.colorData.toColor()]
+    }
+    
+    // 简化的颜色名称到Color的映射（备用）
+    private func getDefaultColorFallback(for name: String) -> Color? {
+        let lowerName = name.lowercased()
+        switch lowerName {
+            case "red", "红": return .red
+            case "green", "绿": return .green
+            case "blue", "蓝": return .blue
+            case "yellow", "黄": return .yellow
+            case "orange", "橙": return .orange
+            case "purple", "紫": return .purple
+            case "indigo", "靛": return .indigo
+            case "black", "黑": return .black
+            case "white", "白": return .white
+            case "gray", "灰": return .gray
+            case "silver", "银": return Color(red: 192/255, green: 192/255, blue: 192/255)
+            case "gold", "金": return Color(red: 255/255, green: 215/255, blue: 0/255)
+            default: return nil
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Reel Image part (remains the same)
-            MiniFilamentReelView(color: color.colorData.toColor())
+            // Reel Image part - 使用计算出的渐变色数组
+            MiniFilamentReelView(colors: gradientColors) 
                 .frame(height: 80)
                 .frame(maxWidth: .infinity)
                 .background(Color(uiColor: .systemGray6))

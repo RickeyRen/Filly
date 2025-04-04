@@ -21,7 +21,7 @@ struct FilamentDetailView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     // 耗材颜色和基本信息
                     HStack(spacing: 20) {
-                        FilamentReelView(color: filament.getColor())
+                        FilamentReelView(colors: filament.getGradientColors())
                             .frame(width: 80, height: 80)
                         
                         VStack(alignment: .leading, spacing: 6) {

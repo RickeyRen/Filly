@@ -234,7 +234,7 @@ struct FilamentRowView: View {
     
     var body: some View {
         HStack(spacing: 15) {
-            FilamentReelView(color: filament.getColor())
+            FilamentReelView(colors: filament.getGradientColors())
                 .frame(width: 40, height: 40)
                 .scaleEffect(0.5)
             
