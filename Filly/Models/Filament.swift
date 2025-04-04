@@ -163,6 +163,8 @@ struct Filament: Identifiable, Codable {
             return .indigo
         } else if lowerName.contains("粉") || lowerName.contains("pink") {
             return .pink
+        } else if lowerName.contains("青") || lowerName.contains("cyan") {
+            return .cyan
         } else if lowerName.contains("灰") || lowerName.contains("gray") {
             return .gray
         } else if lowerName.contains("银") || lowerName.contains("silver") {

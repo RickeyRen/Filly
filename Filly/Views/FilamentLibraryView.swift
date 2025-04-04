@@ -691,6 +691,8 @@ struct ColorCard: View {
             case "orange", "橙": return .orange
             case "purple", "紫": return .purple
             case "indigo", "靛": return .indigo
+            case "pink", "粉": return .pink
+            case "cyan", "青": return .cyan
             case "black", "黑": return .black
             case "white", "白": return .white
             case "gray", "灰": return .gray

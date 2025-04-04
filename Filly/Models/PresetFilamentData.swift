@@ -142,9 +142,19 @@ struct PresetFilamentData {
                         ColorProperties(name: "蓝-紫"),
                         ColorProperties(name: "绿-黄"),
                         ColorProperties(name: "红-橙-黄"),
-                        ColorProperties(name: "蓝-绿-青"), // 青色在解析时会被默认颜色逻辑处理
+                        ColorProperties(name: "蓝-绿-青"), // 现在青色可以被识别
                         ColorProperties(name: "黑-红"),
-                        ColorProperties(name: "粉-白")
+                        ColorProperties(name: "粉-白"),
+                        // 添加更多测试组合覆盖所有颜色
+                        ColorProperties(name: "绿-青-蓝"),
+                        ColorProperties(name: "靛-紫-粉"),
+                        ColorProperties(name: "金-银-灰"),
+                        ColorProperties(name: "透明-白"), // 透明色测试
+                        ColorProperties(name: "红-白"),
+                        ColorProperties(name: "蓝-黄"),   // 对比色测试
+                        ColorProperties(name: "绿-紫"),   // 对比色测试
+                        ColorProperties(name: "黑-金"),
+                        ColorProperties(name: "青-橙")    // 更多组合
                     ]
                 )
                 // 如果易生还有其他材料类型，可以在这里继续添加
