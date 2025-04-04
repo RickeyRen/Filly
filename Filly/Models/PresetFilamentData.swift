@@ -126,35 +126,36 @@ struct PresetFilamentData {
             ]
         ),
         
-        // 易生 eSUN - 添加渐变色测试数据
+        // 易生 eSUN - 更新为PLA仿丝绸和新的颜色列表
         Brand(
             name: "易生 eSUN",
             materialTypes: [
                 MaterialType(
-                    name: "PLA丝绸", // 假设这是您想要的材料类型名称
-                    colors: [
-                        ColorProperties(name: "红-绿-蓝"), // 三色渐变
-                        ColorProperties(name: "红-蓝"),   // 双色渐变
-                        ColorProperties(name: "Rainbow"), // 彩虹色
-                        // 新增更多渐变色组合
-                        ColorProperties(name: "黑-白"),
+                    name: "PLA仿丝绸", // 新的材料类型名称
+                    colors: [ // 使用新的颜色列表
                         ColorProperties(name: "金-银"),
-                        ColorProperties(name: "蓝-紫"),
-                        ColorProperties(name: "绿-黄"),
-                        ColorProperties(name: "红-橙-黄"),
-                        ColorProperties(name: "蓝-绿-青"), // 现在青色可以被识别
-                        ColorProperties(name: "黑-红"),
-                        ColorProperties(name: "粉-白"),
-                        // 添加更多测试组合覆盖所有颜色
-                        ColorProperties(name: "绿-青-蓝"),
-                        ColorProperties(name: "靛-紫-粉"),
-                        ColorProperties(name: "金-银-灰"),
-                        ColorProperties(name: "透明-白"), // 透明色测试
-                        ColorProperties(name: "红-白"),
-                        ColorProperties(name: "蓝-黄"),   // 对比色测试
-                        ColorProperties(name: "绿-紫"),   // 对比色测试
+                        ColorProperties(name: "红-蓝"),
+                        ColorProperties(name: "蓝-绿"),
+                        ColorProperties(name: "红-金"),
                         ColorProperties(name: "黑-金"),
-                        ColorProperties(name: "青-橙")    // 更多组合
+                        ColorProperties(name: "黑-红"),
+                        ColorProperties(name: "黑-绿"),
+                        ColorProperties(name: "紫-金"),
+                        ColorProperties(name: "红-绿"),
+                        ColorProperties(name: "蓝-银"),
+                        ColorProperties(name: "黑-紫"),
+                        ColorProperties(name: "金-红-绿"),
+                        ColorProperties(name: "铜-紫-绿"),
+                        ColorProperties(name: "金-绿-黑"),
+                        ColorProperties(name: "蓝-橙-绿"),
+                        ColorProperties(name: "金-银-铜"),
+                        ColorProperties(name: "红-黄-蓝"),
+                        ColorProperties(name: "红-金-紫"),
+                        ColorProperties(name: "黑-红-金"),
+                        ColorProperties(name: "红-绿-蓝"),
+                        ColorProperties(name: "蓝-红-紫"),
+                        ColorProperties(name: "金-绿-紫"),
+                        ColorProperties(name: "金-蓝-紫")
                     ]
                 )
                 // 如果易生还有其他材料类型，可以在这里继续添加

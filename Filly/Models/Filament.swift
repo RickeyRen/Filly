@@ -171,6 +171,8 @@ struct Filament: Identifiable, Codable {
             return Color(red: 192/255, green: 192/255, blue: 192/255)
         } else if lowerName.contains("金") || lowerName.contains("gold") {
             return Color(red: 255/255, green: 215/255, blue: 0/255)
+        } else if lowerName.contains("铜") || lowerName.contains("copper") {
+            return Color(red: 184/255, green: 115/255, blue: 51/255)
         } else if lowerName.contains("透明") || lowerName.contains("clear") {
             return Color(white: 0.9, opacity: 0.5)
         } else {
