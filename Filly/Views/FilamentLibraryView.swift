@@ -696,7 +696,7 @@ struct ColorCard: View {
             case "black", "黑": return .black
             case "white", "白": return .white
             case "gray", "灰": return .gray
-            case "silver", "银": return Color(red: 192/255, green: 192/255, blue: 192/255)
+            case "silver", "银": return Color(red: 160/255, green: 160/255, blue: 160/255)
             case "gold", "金": return Color(red: 255/255, green: 215/255, blue: 0/255)
             case "copper", "铜": return Color(red: 184/255, green: 115/255, blue: 51/255)
             default: return nil

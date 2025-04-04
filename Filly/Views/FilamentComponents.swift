@@ -21,13 +21,77 @@ public struct FilamentReelView: View {
         colors.first ?? .gray
     }
     
+    // 计算带平滑过渡区的渐变停止点
+    private var gradientStops: [Gradient.Stop] {
+        guard !colors.isEmpty else { return [Gradient.Stop(color: .gray, location: 0.0), Gradient.Stop(color: .gray, location: 1.0)] }
+        guard colors.count > 1 else { return [Gradient.Stop(color: colors[0], location: 0.0), Gradient.Stop(color: colors[0], location: 1.0)] } // 单色处理
+
+        let count = colors.count
+        var stops: [Gradient.Stop] = []
+        let transitionWidth = 0.5 // 过渡区域占总圆周的百分比，例如 5% (可调整)
+
+        for i in 0..<count {
+            let currentColor = colors[i]
+            let nextColor = colors[(i + 1) % count] // 处理回绕
+
+            // 计算当前颜色块结束后的过渡中点（边界）
+            let boundary = Double(i + 1) / Double(count)
+
+            // 计算过渡区的开始和结束位置
+            let transitionStart = boundary - transitionWidth / 2.0
+            let transitionEnd = boundary + transitionWidth / 2.0
+
+            // 计算当前颜色固体部分的结束位置 (处理 < 0 的情况, 使用 modulo)
+            let currentSolidEndLocation = (transitionStart + 1.0).truncatingRemainder(dividingBy: 1.0)
+
+            // 计算下一个颜色固体部分的开始位置 (处理 > 1 的情况, 使用 modulo)
+            let nextSolidStartLocation = (transitionEnd + 1.0).truncatingRemainder(dividingBy: 1.0)
+
+            // 添加当前颜色固体部分的结束点
+            // 确保 location 在 [0, 1] 范围内，并处理浮点精度问题
+            let safeEndLocation = max(0.0, min(1.0, currentSolidEndLocation))
+            stops.append(Gradient.Stop(color: currentColor, location: safeEndLocation))
+
+            // 添加下一个颜色固体部分的开始点 (渐变发生在这两点之间)
+            let safeStartLocation = max(0.0, min(1.0, nextSolidStartLocation))
+            stops.append(Gradient.Stop(color: nextColor, location: safeStartLocation))
+        }
+
+        // 按位置排序，因为回绕计算可能打乱顺序
+        stops.sort { $0.location < $1.location }
+        
+        // 去除因计算精度或回绕产生的几乎重复的停止点，保留边界点
+        var uniqueStops: [Gradient.Stop] = []
+        if !stops.isEmpty {
+            uniqueStops.append(stops[0])
+            for j in 1..<stops.count {
+                // 如果位置非常接近，并且颜色相同，则忽略；否则添加
+                if abs(stops[j].location - stops[j-1].location) > 0.001 || stops[j].color != stops[j-1].color {
+                    uniqueStops.append(stops[j])
+                }
+            }
+        }
+
+        // 确保第一个点是 0.0，最后一个点是 1.0 (对于 AngularGradient 可能非必须，但更健壮)
+        if let first = uniqueStops.first, first.location > 0.001 {
+            // 如果第一个点不是从 0 开始，则在 0 处插入最后一个颜色，以保证循环平滑
+            uniqueStops.insert(Gradient.Stop(color: colors.last!, location: 0.0), at: 0)
+        }
+        if let last = uniqueStops.last, last.location < 0.999 {
+            // 如果最后一个点没到 1.0，添加最后一个颜色在 1.0 处
+            uniqueStops.append(Gradient.Stop(color: last.color, location: 1.0))
+        }
+        
+        return uniqueStops
+    }
+    
     public var body: some View {
         ZStack {
-            // 外部圆环 - 使用渐变填充
+            // 外部圆环 - 使用精确停止点的渐变填充
             Circle()
                 .fill(
                     AngularGradient(
-                        gradient: Gradient(colors: colors + [colors.first ?? .gray]), // 循环渐变
+                        gradient: Gradient(stops: gradientStops), // 使用精确的停止点
                         center: .center,
                         startAngle: .degrees(0),
                         endAngle: .degrees(360)
